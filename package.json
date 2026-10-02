@@ -1,0 +1,19 @@
+{
+  "name": "patola-saree-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,magenta\" \"dotnet run --project backend --launch-profile http\" \"npm run dev --prefix frontend\"",
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,magenta\" \"dotnet run --project backend --launch-profile http\" \"npm run dev --prefix frontend\"",
+    "backend": "dotnet run --project backend --launch-profile http",
+    "frontend": "npm run dev --prefix frontend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}

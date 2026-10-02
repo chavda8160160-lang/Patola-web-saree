@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin3868
+Disallow: /chavda3868
+
+Sitemap: https://patolamadevankar.com/sitemap.xml

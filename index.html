@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PATOLA MADE VANKAR | Authentic Handwoven Double Ikat Silk Sarees & Royal Heritage</title>
+  <meta name="description" content="Discover authentic handwoven Patola silk sarees. Crafted through sacred Double Ikat geometry, pure mulberry silk, and natural dyes. Silk Mark Certified royal masterpieces.">
+  <meta name="keywords" content="Patola Saree, Double Ikat, Single Ikat, Gujarat Silk Sarees, Pure Silk Handloom, Nari Kunjar, Ratanchowk, Bridal Patola, Handwoven Sarees">
+
+  <!-- Open Graph Meta -->
+  <meta property="og:title" content="PATOLA MADE VANKAR | Authentic Handwoven Silk Sarees">
+  <meta property="og:description" content="Padi Patole Bhat, Phate Pan Fite Nahi. Explore legendary Double Ikat masterpieces handcrafted over 6 to 12 months.">
+  <meta property="og:image" content="assets/images/hero.jpg">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Official Razorpay Checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP LUXURY ANNOUNCEMENT BAR
+       ======================================================================== -->
+  <div class="top-announcement-bar">
+    <div class="announcement-inner">
+      <div class="announcement-left">
+        <span class="announcement-message">
+          <span class="badge-tag">Certified Handloom</span>
+          👑 Complimentary Insured Global Express Shipping on All Pure Silk Patolas
+        </span>
+      </div>
+      <div class="announcement-right">
+        <div class="currency-selector-wrap">
+          <label for="currencySelector">Currency:</label>
+          <select id="currencySelector" class="currency-select" aria-label="Select Currency">
+            <option value="INR" selected>₹ INR</option>
+            <option value="USD">$ USD</option>
+            <option value="EUR">€ EUR</option>
+            <option value="GBP">£ GBP</option>
+          </select>
+        </div>
+        <a href="https://wa.me/919876543210" target="_blank" rel="noopener" class="whatsapp-concierge-link" title="Chat with Bridal Concierge">
+          <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.969.586 1.761.882 2.796.883h.005c3.179 0 5.767-2.587 5.767-5.766.001-3.18-2.587-5.77-5.772-5.77zm0 10.375h-.004c-.958 0-1.745-.278-2.529-.757l-.181-.11-1.879.493.501-1.831-.118-.189c-.534-.847-.852-1.637-.851-2.215.001-2.535 2.064-4.598 4.602-4.598 2.539 0 4.604 2.064 4.604 4.602 0 2.538-2.065 4.605-4.606 4.605zM12 2C6.48 2 2 6.48 2 12c0 2.17.696 4.184 1.885 5.827L2.553 22l4.31-.902A9.957 9.957 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          Direct Concierge
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       STICKY NAVIGATION BAR
+       ======================================================================== -->
+  <header class="main-navbar" id="mainNavbar">
+    <div class="container navbar-container">
+      <!-- Brand Logo -->
+      <a href="#hero" class="brand-logo-link" aria-label="PATOLA MADE VANKAR Home">
+        <div class="brand-insignia">
+          <img src="assets/images/charkha-logo.png" alt="PATOLA MADE VANKAR Logo" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        <div class="brand-text-block">
+          <span class="brand-name">
+            <span class="brand-diamond-motif">❖</span>
+            PATOLA
+            <span class="brand-diamond-motif">❖</span>
+          </span>
+          <span class="brand-tagline">MADE VANKAR</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Menu -->
+      <nav aria-label="Main Navigation">
+        <ul class="nav-menu">
+          <li><a href="#collection" class="nav-link">Collections</a></li>
+          <li><a href="#motifs" class="nav-link">Motif & Weave</a></li>
+          <li><a href="#craftsmanship" class="nav-link">8-Step Ritual</a></li>
+          <li><a href="#artisans" class="nav-link">Loom Heritage</a></li>
+          <li><a href="#authenticity" class="nav-link">Silk Mark</a></li>
+          <li><a href="#consultation" class="nav-link">Bespoke Booking</a></li>
+        </ul>
+      </nav>
+
+      <!-- Nav Actions -->
+      <div class="nav-actions">
+        <!-- Cart Button -->
+        <button class="btn-icon" id="navCartBtn" aria-label="View Shopping Bag" title="View Luxury Bag">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+          </svg>
+          <span class="cart-count-badge" id="navCartCount" style="display:none;">0</span>
+        </button>
+
+        <!-- Book Consultation Button -->
+        <a href="#consultation" class="btn-consult-nav">
+          <span>Book Loom Visit</span>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Navigation Menu">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ========================================================================
+         HERO SECTION: ROYAL HERITAGE STATEMENT
+         ======================================================================== -->
+    <section class="hero-section" id="hero">
+      <div class="hero-background-media">
+        <img src="assets/images/hero.jpg" alt="Exquisite Royal Patola Silk Saree on Loom" loading="eager">
+      </div>
+      <div class="hero-overlay-gradient"></div>
+
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-badge-pill">
+            <span>✦ Master Double Ikat Heritage ✦</span>
+          </div>
+
+          <div class="hero-gujarati-proverb">
+            "Once Woven in Patola, The Motif May Tear But Never Fades"
+          </div>
+
+          <h1 class="hero-title">
+            The Eternal <span>Royal Silk</span> of Gujarat
+          </h1>
+
+          <p class="hero-description">
+            Where sacred mathematical geometry meets pure mulberry silk. Every single warp and weft thread is individually tied, resist-dyed, and handwoven to create identical vibrancy on both sides—crafted to outlive generations.
+          </p>
+
+          <div class="hero-cta-group">
+            <a href="#collection" class="btn-primary-gold">
+              <span>Explore Masterpieces</span>
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+            <a href="#consultation" class="btn-secondary-outline">
+              <span>Private Loom Consultation</span>
+            </a>
+          </div>
+
+          <!-- Hero Highlights -->
+          <div class="hero-stats-row">
+            <div class="hero-stat-card">
+              <span class="stat-number">6 - 12</span>
+              <span class="stat-label">Months to Weave 1 Saree</span>
+            </div>
+            <div class="hero-stat-card">
+              <span class="stat-number">100%</span>
+              <span class="stat-label">Mulberry Silk & Natural Dyes</span>
+            </div>
+            <div class="hero-stat-card">
+              <span class="stat-number">Double Ikat</span>
+              <span class="stat-label">Dual-Side Identical Radiance</span>
+            </div>
+            <div class="hero-stat-card">
+              <span class="stat-number">Silk Mark</span>
+              <span class="stat-label">Guaranteed Authenticity</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         HERITAGE MARQUEE RIBBON
+         ======================================================================== -->
+    <div class="heritage-ribbon" aria-hidden="true">
+      <div class="marquee-content">
+        <span class="marquee-item">PADI PATOLE BHAT, PHATE PAN FITE NAHI <span class="marquee-dot">◆</span></span>
+        <span class="marquee-item">PURE MULBERRY SILK WEAVE <span class="marquee-dot">◆</span></span>
+        <span class="marquee-item">SACRED DOUBLE IKAT GEOMETRY <span class="marquee-dot">◆</span></span>
+        <span class="marquee-item">NARI KUNJAR & RATANCHOWK BHAT <span class="marquee-dot">◆</span></span>
+        <span class="marquee-item">NATURAL VEGETABLE INDIGO & MADDER DYES <span class="marquee-dot">◆</span></span>
+        <span class="marquee-item">AUTHENTIC HEIRLOOM TROUSSEAU <span class="marquee-dot">◆</span></span>
+        <!-- Duplicated for seamless loop -->
+        <span class="marquee-item">PADI PATOLE BHAT, PHATE PAN FITE NAHI <span class="marquee-dot">◆</span></span>
+        <span class="marquee-item">PURE MULBERRY SILK WEAVE <span class="marquee-dot">◆</span></span>
+        <span class="marquee-item">SACRED DOUBLE IKAT GEOMETRY <span class="marquee-dot">◆</span></span>
+        <span class="marquee-item">NARI KUNJAR & RATANCHOWK BHAT <span class="marquee-dot">◆</span></span>
+        <span class="marquee-item">NATURAL VEGETABLE INDIGO & MADDER DYES <span class="marquee-dot">◆</span></span>
+        <span class="marquee-item">AUTHENTIC HEIRLOOM TROUSSEAU <span class="marquee-dot">◆</span></span>
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         CURATED COLLECTION CATALOG & FILTERS
+         ======================================================================== -->
+    <section class="section-padding collection-section" id="collection">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-eyebrow">Rare Handloom Treasures</span>
+          <h2 class="section-title">The Royal Saree Collection</h2>
+          <p class="section-subtitle">
+            Each drape represents hundreds of hours of patient artisan devotion. Filter our collection by weave style or auspicious motif.
+          </p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="catalog-filter-controls">
+          <div class="filter-tab-group" role="tablist" aria-label="Weave Category Filter">
+            <button class="filter-btn active" data-filter="all">All Treasures</button>
+            <button class="filter-btn" data-filter="double-ikat">Double Ikat Masterpieces</button>
+            <button class="filter-btn" data-filter="single-ikat">Single Ikat Handloom</button>
+            <button class="filter-btn" data-filter="semi-patola">Semi Patola Saree</button>
+            <button class="filter-btn" data-filter="zari-buta">Zari Buta Patola Saree</button>
+          </div>
+
+          <div class="motif-subfilter">
+            <label for="motifFilterSelect">Filter by Motif:</label>
+            <select id="motifFilterSelect" class="motif-select" aria-label="Filter by Motif">
+              <option value="all">All Motifs</option>
+              <option value="nari-kunjar">Nari Kunjar (Elephant & Lady)</option>
+              <option value="ratanchowk">Ratanchowk (Jewel Squares)</option>
+              <option value="chhabdi">Chhabdi Bhat (Floral Basket)</option>
+              <option value="pan-bhat">Pan Bhat (Betel Leaf & Gems)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Dynamic Saree Grid -->
+        <div class="saree-grid" id="sareeGridContainer">
+          <!-- Populated by js/app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         INTERACTIVE MOTIF & WEAVE MAGNIFIER
+         ======================================================================== -->
+    <section class="section-padding motif-spotlight-section" id="motifs">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-eyebrow" style="color: var(--color-gold);">Sacred Semiotics</span>
+          <h2 class="section-title" style="color: #ffffff;">The Language of Motifs</h2>
+          <p class="section-subtitle" style="color: rgba(255,255,255,0.75);">
+            In Patola weaving, motifs are sacred cosmic symbols. Explore each motif and zoom in to inspect the mathematically aligned warp and weft double ikat silk.
+          </p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <div class="motif-interactive-grid">
+          <!-- Left: Motif Selectors -->
+          <div class="motif-selector-cards">
+            <div class="motif-choice-card active" data-motif="nari-kunjar">
+              <div class="motif-symbol-icon">🐘</div>
+              <div class="motif-choice-info">
+                <h4>Nari Kunjar (Elephant & Lady)</h4>
+                <p>Royal majesty of the elephant combined with the elegance of celestial court dancers.</p>
+              </div>
+            </div>
+
+            <div class="motif-choice-card" data-motif="ratanchowk">
+              <div class="motif-symbol-icon">💎</div>
+              <div class="motif-choice-info">
+                <h4>Ratanchowk Bhat (Jewel Square)</h4>
+                <p>Four-cornered gem matrix embodying universal harmony, wealth, and spiritual protection.</p>
+              </div>
+            </div>
+
+            <div class="motif-choice-card" data-motif="chhabdi">
+              <div class="motif-symbol-icon">🌸</div>
+              <div class="motif-choice-info">
+                <h4>Chhabdi Bhat (Floral Basket)</h4>
+                <p>Auspicious temple blossom baskets invoking blessings of fertility and family prosperity.</p>
+              </div>
+            </div>
+
+            <div class="motif-choice-card" data-motif="popat-mor">
+              <div class="motif-symbol-icon">🦚</div>
+              <div class="motif-choice-info">
+                <h4>Popat-Mor (Parrot & Peacock)</h4>
+                <p>Folklore symbols of romantic sweetness, joyful monsoon rain, and immortal love.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Interactive Magnifier Display -->
+          <div class="weave-inspector-display">
+            <div class="inspector-header">
+              <span>Interactive Weave Inspector</span>
+              <span style="font-size: 0.75rem; color: var(--color-gold-light);">Hover or drag on image to magnify weave</span>
+            </div>
+
+            <div class="inspector-magnifier-view" id="inspectorMagnifierView">
+              <img src="assets/images/saree_nari_kunjar.jpg" alt="Patola Weave Magnification View" id="inspectorImage">
+            </div>
+
+            <div class="inspector-caption-bar">
+              <div class="inspector-caption-title" id="inspectorTitle">Nari Kunjar (Elephant & Lady of Grace)</div>
+              <div style="font-size: 0.78rem; color: var(--color-gold); margin-bottom: 0.4rem;" id="inspectorTag">Symbol of Royal Dignity & Feminine Grace</div>
+              <div class="inspector-caption-desc" id="inspectorDesc">
+                In the sacred grammar of Gujarat Patola, "Kunjar" (the elephant) heralds royalty, wisdom, and steadfast prosperity, while "Nari" embodies divine beauty, music, and grace. Woven with double resist dye precision.
+              </div>
+              <div style="margin-top: 0.6rem; font-size: 0.75rem; color: var(--color-gold-light); font-weight: 600;" id="inspectorFact">
+                ✦ Requires 4,800 individually calculated silk yarn knots tied by hand before dyeing.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         8-STEP WEAVING RITUAL (PROCESS TIMELINE)
+         ======================================================================== -->
+    <section class="section-padding craftsmanship-section" id="craftsmanship">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-eyebrow">The 1000-Day Discipline</span>
+          <h2 class="section-title">The 8-Fold Weaving Ritual</h2>
+          <p class="section-subtitle">
+            Unlike ordinary printed or jacquard sarees, a true Double Ikat Patola is created through sheer mathematics and handloom mastery.
+          </p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <div class="timeline-track-wrap">
+          <!-- Step 1 -->
+          <div class="timeline-step-row">
+            <div class="timeline-center-node">1</div>
+            <div class="timeline-step-content">
+              <span class="step-meta-badge">Step 1 • Selection</span>
+              <h3>Pure Mulberry Silk Spinning</h3>
+              <p>Only premium eight-ply raw mulberry silk yarns are spun and degummed to achieve high tensile resilience and radiant natural lustre.</p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="timeline-step-row">
+            <div class="timeline-center-node">2</div>
+            <div class="timeline-step-content">
+              <span class="step-meta-badge">Step 2 • Mathematics</span>
+              <h3>Geometric Graph Plotting</h3>
+              <p>The Master Weaver drafts the entire saree design on graph paper. Every intersecting coordinate of warp (vertical) and weft (horizontal) is calculated before a single knot is tied.</p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="timeline-step-row">
+            <div class="timeline-center-node">3</div>
+            <div class="timeline-step-content">
+              <span class="step-meta-badge">Step 3 • Resist Tying</span>
+              <h3>Bandhani on Loose Silk Threads</h3>
+              <p>Cotton strings are tied tightly around microscopic clusters of silk yarn according to the graph to block dyes from penetrating specific zones.</p>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="timeline-step-row">
+            <div class="timeline-center-node">4</div>
+            <div class="timeline-step-content">
+              <span class="step-meta-badge">Step 4 • Resilient Dyeing</span>
+              <h3>Natural Herbal Dyes</h3>
+              <p>Threads undergo repetitive cycles of tying, untying, and boiling in natural pigments—madder root for crimson, fermented indigo for peacock blue, and turmeric for golden saffron.</p>
+            </div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="timeline-step-row">
+            <div class="timeline-center-node">5</div>
+            <div class="timeline-step-content">
+              <span class="step-meta-badge">Step 5 • Loom Dressing</span>
+              <h3>Mounting on Slanted Rosewood Loom</h3>
+              <p>Dyed warp yarns are stretched onto a handcrafted rosewood loom, tilted at an angle so two master weavers can balance body weight and maintain uniform tension.</p>
+            </div>
+          </div>
+
+          <!-- Step 6 -->
+          <div class="timeline-step-row">
+            <div class="timeline-center-node">6</div>
+            <div class="timeline-step-content">
+              <span class="step-meta-badge">Step 6 • Dual Weaving</span>
+              <h3>Bamboo Needle Alignment</h3>
+              <p>With every single pass of the weft shuttle, artisans use pointed bamboo pins to microscopically lock each color point in place. Only 8 to 10 inches can be woven in a full working day.</p>
+            </div>
+          </div>
+
+          <!-- Step 7 -->
+          <div class="timeline-step-row">
+            <div class="timeline-center-node">7</div>
+            <div class="timeline-step-content">
+              <span class="step-meta-badge">Step 7 • Reversible Perfection</span>
+              <h3>Identical Front & Back Radiance</h3>
+              <p>Because every thread is dyed completely through before weaving, the finished masterpiece is 100% identical on both front and back. There is no 'reverse' side.</p>
+            </div>
+          </div>
+
+          <!-- Step 8 -->
+          <div class="timeline-step-row">
+            <div class="timeline-center-node">8</div>
+            <div class="timeline-step-content">
+              <span class="step-meta-badge">Step 8 • Heirloom Seal</span>
+              <h3>Silk Mark & Lifetime Guarantee</h3>
+              <p>Each saree is numbered, tested, and sealed with government Silk Mark certification, arriving in a custom handcrafted velvet box with an authenticity scroll.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         ARTISAN HERITAGE & LOOM SPOTLIGHT
+         ======================================================================== -->
+    <section class="section-padding artisan-section" id="artisans">
+      <div class="container">
+        <div class="artisan-split-grid">
+          <!-- Left: Real Artisan Photo -->
+          <div class="artisan-media-composition">
+            <img src="assets/images/artisan_loom.jpg" alt="Master Craftsman weaving authentic Patola on traditional loom" class="artisan-main-img">
+            <div class="artisan-floating-quote-card">
+              <p>"We don't weave threads; we weave prayers and mathematics that will live for three hundred years."</p>
+              <span>— Master Artisan, 4th Generation</span>
+            </div>
+          </div>
+
+          <!-- Right: Story Details -->
+          <div class="artisan-text-details">
+            <span class="section-eyebrow">Living Cultural Heritage</span>
+            <h2>Preserving An Ancient Loom Lineage</h2>
+            <p>
+              For centuries, the traditional weavers of Gujarat have guarded the closely held secrets of Double Ikat. Passed down strictly from father to son, this complex mathematical art requires two master artisans working synchronously on a single loom.
+            </p>
+            <p>
+              By collecting a Virasat Patola drape, you become a custodian of this rare handloom heritage, ensuring master weaver families continue to practice their sacred art with dignity and pride.
+            </p>
+
+            <ul class="artisan-features-list">
+              <li>
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                100% Ethical Fair-Trade compensation direct to weaver families
+              </li>
+              <li>
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                No modern powerlooms or digital printed replicas
+              </li>
+              <li>
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                Personal certificate signed by the master craftsman who crafted your saree
+              </li>
+            </ul>
+
+            <a href="#consultation" class="btn-primary-gold">Plan a Loom Studio Visit</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         AUTHENTICITY, SILK MARK & TESTIMONIALS
+         ======================================================================== -->
+    <section class="section-padding authenticity-section" id="authenticity">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-eyebrow" style="color: var(--color-gold);">Hallmark of Royalty</span>
+          <h2 class="section-title" style="color: #fff;">How to Recognize Real Patola</h2>
+          <p class="section-subtitle" style="color: rgba(255,255,255,0.7);">
+            Because of its high value, machine-printed imitations are common in the market. Here is the Virasat promise of absolute authenticity.
+          </p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <!-- Guarantee 3-Grid -->
+        <div class="guarantee-badges-grid">
+          <div class="guarantee-card">
+            <div class="guarantee-icon">🔍</div>
+            <h3>Dual-Side Identical Clarity</h3>
+            <p>A genuine Double Ikat Patola has absolutely zero wrong side. The color intensity and geometric boundaries are 100% identical on both sides.</p>
+          </div>
+
+          <div class="guarantee-card">
+            <div class="guarantee-icon">🛡️</div>
+            <h3>Silk Mark Government Seal</h3>
+            <p>Each drape is certified by the Silk Mark Organisation of India, guaranteeing 100% natural pure mulberry silk with zero synthetic blending.</p>
+          </div>
+
+          <div class="guarantee-card">
+            <div class="guarantee-icon">💎</div>
+            <h3>Lifetime Dye Guarantee</h3>
+            <p>True to the folklore <em>"Phate Pan Fite Nahi"</em>, natural resist-dyed colors seep into the core of silk filaments and never fade or bleed.</p>
+          </div>
+        </div>
+
+        <!-- Client Testimonials -->
+        <div class="section-header" style="margin-bottom: 2.5rem;">
+          <span class="section-eyebrow" style="color: var(--color-gold);">Heirloom Stories</span>
+          <h3 style="font-family: var(--font-royal); font-size: 1.8rem; color: #fff;">Words from Royal Trousseau Collectors</h3>
+        </div>
+
+        <div class="testimonial-grid">
+          <div class="testimonial-card">
+            <p class="testimonial-quote">
+              "Wearing the Nari Kunjar Patola on my wedding day was ethereal. The dual-sided color radiance and pure silk weight was admired by everyone. It is truly an investment piece for my daughter."
+            </p>
+            <div class="testimonial-author">
+              <div class="author-avatar">AM</div>
+              <div class="author-meta">
+                <h4>Ananya Mehta</h4>
+                <span>Mumbai • Bridal Trousseau 2024</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <p class="testimonial-quote">
+              "I visited their heritage loom studio through the bespoke consultation. Seeing the master weavers spend hours aligning single millimetres of yarn gave me profound respect for this priceless art."
+            </p>
+            <div class="testimonial-author">
+              <div class="author-avatar">RP</div>
+              <div class="author-meta">
+                <h4>Radhika Patel</h4>
+                <span>London, UK • Heritage Collector</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <p class="testimonial-quote">
+              "The Ratanchowk silk saree arrived in the velvet trunk with full Silk Mark documentation. The geometry is flawless. Exceptional customer service from their concierge team."
+            </p>
+            <div class="testimonial-author">
+              <div class="author-avatar">SK</div>
+              <div class="author-meta">
+                <h4>Dr. Sunita Kothari</h4>
+                <span>Ahmedabad • Textile Connoisseur</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         BESPOKE CONSULTATION & LOOM STUDIO BOOKING
+         ======================================================================== -->
+    <section class="section-padding consultation-section" id="consultation">
+      <div class="container">
+        <div class="consultation-card-wrapper">
+          <!-- Left: Intro Pane -->
+          <div class="consultation-intro-pane">
+            <div>
+              <span class="section-eyebrow" style="color: var(--color-gold-light);">Private Concierge</span>
+              <h3>Bespoke Loom Experience & Bridal Consultation</h3>
+              <p>
+                Whether you wish to customize a family heirloom for an upcoming wedding or experience the rhythmic clack of the loom in person, our master concierges are at your service.
+              </p>
+
+              <ul class="concierge-perks">
+                <li>
+                  <svg width="18" height="18" fill="var(--color-gold)" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                  1-on-1 High-Definition Video Loom Consultation
+                </li>
+                <li>
+                  <svg width="18" height="18" fill="var(--color-gold)" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                  In-person Traditional Loom Studio Tour
+                </li>
+                <li>
+                  <svg width="18" height="18" fill="var(--color-gold)" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                  Custom Motif & Blouse Zari Personalization
+                </li>
+              </ul>
+            </div>
+
+            <div style="font-size: 0.85rem; color: rgba(255,255,255,0.7); border-top: 1px solid rgba(212,175,55,0.3); padding-top: 1.5rem;">
+              📞 Direct Concierge Desk: <strong style="color: #fff;">+91 </strong>
+            </div>
+          </div>
+
+          <!-- Right: Booking Form -->
+          <div class="consultation-form-pane">
+            <form class="booking-form" id="heritageBookingForm">
+              <div>
+                <label class="form-label" for="bookName">Full Name *</label>
+                <input type="text" id="bookName" class="form-input" placeholder="e.g. Priyadarshini Mehta" required>
+              </div>
+
+              <div>
+                <label class="form-label" for="bookPhone">Phone / WhatsApp *</label>
+                <input type="tel" id="bookPhone" class="form-input" placeholder="+91 " required>
+              </div>
+
+              <div>
+                <label class="form-label" for="bookEmail">Email Address *</label>
+                <input type="email" id="bookEmail" class="form-input" placeholder="priya@example.com" required>
+              </div>
+
+              <div>
+                <label class="form-label" for="bookType">Experience Type</label>
+                <select id="bookType" class="form-select">
+                  <option value="Virtual Video Call">Virtual Loom Video Consultation</option>
+                  <option value="Studio Loom Visit">In-person Loom Studio Visit</option>
+                  <option value="Bridal Trousseau Curation">Bridal Trousseau Curation</option>
+                  <option value="Museum Collector Inquiries">Collector / Bespoke Commission</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label" for="bookDate">Preferred Date</label>
+                <input type="date" id="bookDate" class="form-input" required>
+              </div>
+
+              <div>
+                <label class="form-label" for="bookMotifPref">Motif Preference</label>
+                <select id="bookMotifPref" class="form-select">
+                  <option value="Nari Kunjar">Nari Kunjar (Elephant & Lady)</option>
+                  <option value="Ratanchowk">Ratanchowk (Jewel Square)</option>
+                  <option value="Chhabdi Bhat">Chhabdi Bhat (Floral Basket)</option>
+                  <option value="Custom Motif">Custom Family Heirlooms</option>
+                </select>
+              </div>
+
+              <div class="form-group-full">
+                <label class="form-label" for="bookNotes">Special Notes or Wedding Date</label>
+                <textarea id="bookNotes" class="form-textarea" placeholder="Share your trousseau preferences or wedding timelines..."></textarea>
+              </div>
+
+              <button type="submit" class="btn-submit-booking">
+                Schedule Royal Consultation ✦
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================================================
+       SLIDE-OVER SHOPPING CART DRAWER
+       ======================================================================== -->
+  <div class="cart-drawer-backdrop" id="cartDrawerBackdrop">
+    <div class="cart-drawer" role="dialog" aria-modal="true" aria-label="Luxury Shopping Bag">
+      <div class="cart-header">
+        <h3>Your Royal Bag</h3>
+        <button class="btn-close-cart" id="closeCartBtn" aria-label="Close Bag">✕</button>
+      </div>
+
+      <div class="cart-items-body" id="cartItemsContainer">
+        <!-- Cart items rendered by js/app.js -->
+      </div>
+
+      <div class="cart-footer">
+        <div class="cart-perk-notice">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          Includes Handcrafted Velvet Heirloom Box & Silk Mark Seal
+        </div>
+
+        <div class="cart-summary-row">
+          <span>Subtotal</span>
+          <span id="cartSubtotalAmount">₹0</span>
+        </div>
+        <div class="cart-summary-row">
+          <span>Insured Heritage Shipping</span>
+          <span style="color: var(--color-emerald); font-weight: 600;">Complimentary</span>
+        </div>
+
+        <div class="cart-total-row">
+          <span>Grand Total</span>
+          <span id="cartTotalAmount">₹0</span>
+        </div>
+
+        <button class="btn-checkout-proceed" id="cartProceedCheckoutBtn">
+          Proceed to Royal Checkout
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       QUICK VIEW SAREE DETAIL MODAL
+       ======================================================================== -->
+  <div class="modal-backdrop" id="quickViewModalBackdrop">
+    <div class="modal-container">
+      <button class="btn-close-modal" id="closeQuickViewBtn" aria-label="Close Preview">✕</button>
+
+      <div class="modal-saree-content">
+        <div class="modal-saree-gallery">
+          <img src="" alt="Saree Preview" id="modalSareeImg">
+        </div>
+
+        <div class="modal-saree-details">
+          <span class="modal-badge" id="modalSareeBadge">Double Ikat</span>
+          <h3 class="modal-title" id="modalSareeTitle">Saree Title</h3>
+          <div class="modal-price" id="modalSareePrice">₹0</div>
+          <p class="modal-desc" id="modalSareeDesc">Description goes here</p>
+
+          <div class="modal-spec-grid">
+            <div class="modal-spec-item">
+              <span class="spec-key">Fabric & Dyes</span>
+              <span class="spec-val" id="modalSareeFabric">Pure Mulberry Silk</span>
+            </div>
+            <div class="modal-spec-item">
+              <span class="spec-key">Dimensions</span>
+              <span class="spec-val" id="modalSareeLength">6.30 Meters</span>
+            </div>
+            <div class="modal-spec-item">
+              <span class="spec-key">Weight</span>
+              <span class="spec-val" id="modalSareeWeight">Approx. 850 grams</span>
+            </div>
+            <div class="modal-spec-item">
+              <span class="spec-key">Key Hues</span>
+              <span class="spec-val" id="modalSareeColors">Crimson & Gold</span>
+            </div>
+          </div>
+
+          <div class="modal-actions-group">
+            <button class="btn-primary-gold" id="modalAddCartBtn" style="flex:1;">
+              Add to Bag
+            </button>
+            <a href="#" target="_blank" rel="noopener" class="btn-secondary-outline" id="modalWhatsAppBtn" style="background:#25D366; color:#fff; border-color:#25D366; font-size: 0.8rem; padding: 0.8rem 1.2rem;">
+              WhatsApp Inquiry
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       CHECKOUT CONFIRMATION MODAL
+       ======================================================================== -->
+  <div class="modal-backdrop" id="checkoutModalBackdrop">
+    <div class="modal-container checkout-modal-container">
+      <button class="btn-close-modal" id="closeCheckoutBtn" aria-label="Close Checkout">✕</button>
+
+      <div class="checkout-steps-badge">
+        <span>✦ Royal Checkout Concierge ✦</span>
+      </div>
+
+      <div style="background: var(--color-ivory); border-radius: var(--radius-sm); padding: 1.2rem; margin-bottom: 1.5rem; border: 1px solid var(--color-border);">
+        <h4 style="font-family: var(--font-royal); font-size: 0.95rem; color: var(--color-primary-dark); margin-bottom: 0.6rem;">Order Summary</h4>
+        <div id="checkoutOrderSummaryList"></div>
+        <div style="border-top: 1px dashed var(--color-border); padding-top: 0.6rem; margin-top: 0.6rem; display: flex; justify-content: space-between; font-weight: 700;">
+          <span>Payable Amount</span>
+          <span id="checkoutTotalDisplay" style="color: var(--color-primary);">₹0</span>
+        </div>
+      </div>
+
+      <form onsubmit="handleCheckoutSubmit(event)">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;">
+          <div>
+            <label class="form-label">Recipient Name *</label>
+            <input type="text" class="form-input" placeholder="Full Name" required>
+          </div>
+          <div>
+            <label class="form-label">Contact Mobile *</label>
+            <input type="tel" class="form-input" placeholder="ENTER PHONE NUMBER" required>
+          </div>
+          <div style="grid-column: span 2;">
+            <label class="form-label">Delivery Address *</label>
+            <input type="text" class="form-input" placeholder="House / Suite / Street address" required>
+          </div>
+          <div>
+            <label class="form-label">City *</label>
+            <input type="text" class="form-input" placeholder="e.g. Mumbai / New York" required>
+          </div>
+          <div>
+            <label class="form-label">Postal / ZIP Code *</label>
+            <input type="text" class="form-input" placeholder="PIN Code" required>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label class="form-label">Preferred Payment Mode</label>
+          <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+            <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; cursor:pointer; background:var(--color-cream); padding:6px 12px; border-radius:4px; border:1px solid var(--color-border);">
+              <input type="radio" name="payment" value="upi" checked> UPI / NetBanking
+            </label>
+            <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; cursor:pointer; background:var(--color-cream); padding:6px 12px; border-radius:4px; border:1px solid var(--color-border);">
+              <input type="radio" name="payment" value="card"> Credit / Debit Card
+            </label>
+            <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; cursor:pointer; background:var(--color-cream); padding:6px 12px; border-radius:4px; border:1px solid var(--color-border);">
+              <input type="radio" name="payment" value="wire"> International Wire / SWIFT
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary-gold" style="width: 100%; justify-content: center;">
+          Confirm Heirloom Booking ✦
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ========================================================================
+       SITE FOOTER
+       ======================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top-grid">
+        <!-- Brand Info -->
+        <div class="footer-brand-pane">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0.8rem;">
+            <img src="assets/images/charkha-logo.png" alt="PATOLA MADE VANKAR Logo" style="width: 44px; height: 44px; object-fit: contain;">
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-family: var(--font-royal); font-size: 1.25rem; font-weight: 700; letter-spacing: 0.14em; color: #fdf7ee; display: flex; align-items: center; gap: 0.35rem;">
+                <span style="color: #d4af37; font-size: 0.85em;">❖</span>
+                PATOLA
+                <span style="color: #d4af37; font-size: 0.85em;">❖</span>
+              </span>
+              <span style="font-family: var(--font-royal); font-size: 0.66rem; letter-spacing: 0.3em; color: #d4af37; text-transform: uppercase; font-weight: 600; text-align: center; margin-top: 1px;">
+                MADE VANKAR
+              </span>
+            </div>
+          </div>
+          <p>
+            Celebrating the timeless splendor of authentic Double Ikat handloom silk. Handcrafted in Gujarat with unyielding adherence to sacred geometry, pure silk, and living traditions.
+          </p>
+          <div class="footer-social-links">
+            <a href="#" class="footer-social-link" aria-label="Instagram">IG</a>
+            <a href="#" class="footer-social-link" aria-label="Facebook">FB</a>
+            <a href="#" class="footer-social-link" aria-label="Pinterest">PIN</a>
+            <a href="#" class="footer-social-link" aria-label="YouTube">YT</a>
+          </div>
+        </div>
+
+        <!-- Collections Links -->
+        <div class="footer-col">
+          <h4>Collections</h4>
+            <ul class="footer-link-list">
+              <li><a href="#collection">Double Ikat Sarees</a></li>
+              <li><a href="#collection">Single Ikat Drapes</a></li>
+              <li><a href="#collection">Semi Patola Saree</a></li>
+              <li><a href="#collection">Zari Buta Patola Saree</a></li>
+            </ul>
+        </div>
+
+        <!-- Heritage & Craft Links -->
+        <div class="footer-col">
+          <h4>Craft & Care</h4>
+          <ul class="footer-link-list">
+            <li><a href="#motifs">Motif Symbolism</a></li>
+            <li><a href="#craftsmanship">The 8-Step Ritual</a></li>
+            <li><a href="#artisans">Loom Heritage Story</a></li>
+            <li><a href="#authenticity">Silk Mark Verification</a></li>
+            <li><a href="#authenticity">Pure Silk Care Guide</a></li>
+          </ul>
+        </div>
+
+        <!-- Newsletter & Concierge -->
+        <div class="footer-col">
+          <h4>Royal Gazette</h4>
+          <p style="font-size: 0.85rem; margin-bottom: 1rem; color: rgba(255,255,255,0.65);">
+            Receive exclusive private viewings of limited loom releases and bridal editions.
+          </p>
+          <form class="newsletter-form" onsubmit="handleNewsletterSubmit(event)">
+            <input type="email" class="newsletter-input" placeholder="Enter your email" required>
+            <button type="submit" class="btn-primary-gold" style="padding: 0.65rem 1.2rem; font-size: 0.78rem;">
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <div>
+          © 2026 PATOLA MADE VANKAR. All Rights Reserved. Pure Handloom Double Ikat.
+        </div>
+        <div>
+          <span>Silk Mark Organisation of India Certified Handloom</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+</body>
+</html>

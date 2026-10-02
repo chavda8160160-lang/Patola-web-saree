@@ -1,0 +1,40 @@
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm
+.eslintcache
+
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+project.lock.json
+*.nuget.props
+*.nuget.targets
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+appsettings.Development.json
+appsettings.Production.json
+
+# Uploaded product images are stored on the API host and must be backed up separately.
+backend/wwwroot/uploads/sarees/*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backups, Duplicates and Scratch
+patola-copy/
+scratch/
+*.zip
+*.tar.gz
