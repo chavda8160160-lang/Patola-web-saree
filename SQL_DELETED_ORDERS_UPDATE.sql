@@ -138,7 +138,7 @@ BEGIN
             )
             SELECT 
                 [OrderReference], [CustomerName], [ContactPhone], NULL,
-                [DeliveryAddress], [City], [PostalCode], NULL,
+                [DeliveryAddress], [City], [PostalCode], [State],
                 [Currency], [TotalAmount], [PaymentMode], [OrderStatus],
                 [CreatedAt], SYSUTCDATETIME(), @DeletedBy, @ItemsJson
             FROM [dbo].[Orders]

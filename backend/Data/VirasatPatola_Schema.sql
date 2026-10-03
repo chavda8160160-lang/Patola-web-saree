@@ -99,9 +99,21 @@ BEGIN
         [PreferredDate] DATE NOT NULL,
         [MotifPreference] NVARCHAR(250) NULL,
         [Notes] NVARCHAR(MAX) NULL,
+        [ReferencePhoto] NVARCHAR(MAX) NULL,
         [Status] NVARCHAR(250) NOT NULL DEFAULT ('Confirmed'),
         [CreatedAt] DATETIME2 NOT NULL DEFAULT (SYSUTCDATETIME())
     );
+END
+ELSE
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Bookings]') AND name = 'ReferencePhoto')
+        ALTER TABLE [dbo].[Bookings] ADD [ReferencePhoto] NVARCHAR(MAX) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Bookings]') AND name = 'ExperienceType')
+        ALTER TABLE [dbo].[Bookings] ADD [ExperienceType] NVARCHAR(250) NOT NULL DEFAULT ('Virtual Video Call');
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Bookings]') AND name = 'MotifPreference')
+        ALTER TABLE [dbo].[Bookings] ADD [MotifPreference] NVARCHAR(250) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Bookings]') AND name = 'Status')
+        ALTER TABLE [dbo].[Bookings] ADD [Status] NVARCHAR(250) NOT NULL DEFAULT ('Confirmed');
 END
 GO
 
@@ -115,17 +127,19 @@ BEGIN
         [OrderReference] NVARCHAR(100) NOT NULL,
         [CustomerName] NVARCHAR(200) NOT NULL,
         [ContactPhone] NVARCHAR(50) NOT NULL,
-        [DeliveryAddress] NVARCHAR(1000) NOT NULL,
+        [DeliveryAddress] NVARCHAR(1000) NULL,
         [City] NVARCHAR(100) NOT NULL,
         [State] NVARCHAR(100) NOT NULL DEFAULT (''),
         [PostalCode] NVARCHAR(50) NOT NULL,
         [Currency] NVARCHAR(20) NOT NULL DEFAULT ('INR'),
         [TotalAmount] DECIMAL(18, 2) NOT NULL,
         [PaymentMode] NVARCHAR(250) NOT NULL DEFAULT ('UPI / NetBanking'),
-        [OrderStatus] NVARCHAR(250) NOT NULL DEFAULT ('Confirmed'),
+        [PaymentStatus] NVARCHAR(50) NOT NULL DEFAULT ('Pending'),
+        [OrderStatus] NVARCHAR(250) NOT NULL DEFAULT ('Pending'),
+        [OrderConfirmationOtp] NVARCHAR(20) NULL,
         [DeliveryOtp] NVARCHAR(20) NULL,
+        [TransactionId] NVARCHAR(200) NULL,
         [Notes] NVARCHAR(MAX) NULL,
-        [TransactionId] NVARCHAR(100) NULL,
         [CheckoutIdempotencyKey] NVARCHAR(128) NULL,
         [CheckoutIdempotencyFingerprint] NVARCHAR(64) NULL,
         [CreatedAt] DATETIME2 NOT NULL DEFAULT (SYSUTCDATETIME())
@@ -151,6 +165,11 @@ BEGIN
         ALTER TABLE [dbo].[Orders] ADD [CheckoutIdempotencyFingerprint] NVARCHAR(64) NULL;
     IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Orders]') AND name = 'State')
         ALTER TABLE [dbo].[Orders] ADD [State] NVARCHAR(100) NOT NULL CONSTRAINT [DF_Orders_State] DEFAULT ('');
+
+    ALTER TABLE [dbo].[Orders] ALTER COLUMN [CustomerName] NVARCHAR(200) NOT NULL;
+    ALTER TABLE [dbo].[Orders] ALTER COLUMN [DeliveryAddress] NVARCHAR(1000) NULL;
+    ALTER TABLE [dbo].[Orders] ALTER COLUMN [PaymentMode] NVARCHAR(250) NULL;
+    ALTER TABLE [dbo].[Orders] ALTER COLUMN [OrderStatus] NVARCHAR(250) NULL;
 END
 GO
 
@@ -194,37 +213,85 @@ END
 GO
 
 -- ====================================================================================================
--- 7. DeletedOrders Table (Audit History & Permanent Archive)
+-- 7. Customers Table (Customer Accounts, Authentication & Delivery Profiles)
+-- ====================================================================================================
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE [dbo].[Customers] (
+        [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        [CustomerName] NVARCHAR(150) NOT NULL,
+        [PhoneNumber] NVARCHAR(20) NOT NULL,
+        [PasswordHash] NVARCHAR(255) NOT NULL,
+        [PasswordSalt] NVARCHAR(255) NOT NULL,
+        [GeneratedPassword] NVARCHAR(100) NULL,
+        [Email] NVARCHAR(150) NULL,
+        [DeliveryAddress] NVARCHAR(500) NULL,
+        [City] NVARCHAR(100) NULL,
+        [State] NVARCHAR(100) NULL,
+        [PostalCode] NVARCHAR(20) NULL,
+        [CreatedAt] DATETIME2 NOT NULL DEFAULT (SYSUTCDATETIME()),
+        [LastLoginAt] DATETIME2 NULL
+    );
+
+    CREATE UNIQUE NONCLUSTERED INDEX [IX_Customers_PhoneNumber] ON [dbo].[Customers] ([PhoneNumber]);
+    CREATE NONCLUSTERED INDEX [IX_Customers_Email] ON [dbo].[Customers] ([Email]) WHERE [Email] IS NOT NULL;
+END
+ELSE
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND name = 'GeneratedPassword')
+        ALTER TABLE [dbo].[Customers] ADD [GeneratedPassword] NVARCHAR(100) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND name = 'LastLoginAt')
+        ALTER TABLE [dbo].[Customers] ADD [LastLoginAt] DATETIME2 NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND name = 'DeliveryAddress')
+        ALTER TABLE [dbo].[Customers] ADD [DeliveryAddress] NVARCHAR(500) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND name = 'City')
+        ALTER TABLE [dbo].[Customers] ADD [City] NVARCHAR(100) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND name = 'State')
+        ALTER TABLE [dbo].[Customers] ADD [State] NVARCHAR(100) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND name = 'PostalCode')
+        ALTER TABLE [dbo].[Customers] ADD [PostalCode] NVARCHAR(20) NULL;
+END
+GO
+
+-- ====================================================================================================
+-- 8. DeletedOrders Table (Audit History & Permanent Archive)
 -- ====================================================================================================
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeletedOrders]') AND type in (N'U'))
 BEGIN
     CREATE TABLE [dbo].[DeletedOrders] (
         [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
         [OrderReference] NVARCHAR(50) NOT NULL,
-        [CustomerName] NVARCHAR(150) NOT NULL,
+        [CustomerName] NVARCHAR(200) NOT NULL,
         [ContactPhone] NVARCHAR(50) NOT NULL,
-        [Email] NVARCHAR(150) NULL,
-        [DeliveryAddress] NVARCHAR(500) NULL,
+        [Email] NVARCHAR(200) NULL,
+        [DeliveryAddress] NVARCHAR(1000) NULL,
         [City] NVARCHAR(100) NULL,
         [PostalCode] NVARCHAR(30) NULL,
         [State] NVARCHAR(100) NULL,
         [Currency] NVARCHAR(10) NOT NULL DEFAULT ('INR'),
         [TotalAmount] DECIMAL(18, 2) NOT NULL,
-        [PaymentMode] NVARCHAR(50) NOT NULL DEFAULT ('UPI / NetBanking'),
-        [LastOrderStatus] NVARCHAR(100) NOT NULL DEFAULT ('Confirmed'),
+        [PaymentMode] NVARCHAR(250) NOT NULL DEFAULT ('UPI / NetBanking'),
+        [LastOrderStatus] NVARCHAR(250) NOT NULL DEFAULT ('Confirmed'),
         [OriginalCreatedAt] DATETIME2 NOT NULL DEFAULT (SYSUTCDATETIME()),
         [DeletedAt] DATETIME2 NOT NULL DEFAULT (SYSUTCDATETIME()),
-        [DeletedBy] NVARCHAR(100) NOT NULL DEFAULT ('Store Admin / Manager'),
+        [DeletedBy] NVARCHAR(150) NOT NULL DEFAULT ('Store Admin / Manager'),
         [ItemsJson] NVARCHAR(MAX) NOT NULL DEFAULT ('[]')
     );
 
     CREATE NONCLUSTERED INDEX [IX_DeletedOrders_OrderReference] ON [dbo].[DeletedOrders] ([OrderReference]);
     CREATE NONCLUSTERED INDEX [IX_DeletedOrders_DeletedAt] ON [dbo].[DeletedOrders] ([DeletedAt] DESC);
 END
+ELSE
+BEGIN
+    ALTER TABLE [dbo].[DeletedOrders] ALTER COLUMN [CustomerName] NVARCHAR(200) NOT NULL;
+    ALTER TABLE [dbo].[DeletedOrders] ALTER COLUMN [DeliveryAddress] NVARCHAR(1000) NULL;
+    ALTER TABLE [dbo].[DeletedOrders] ALTER COLUMN [PaymentMode] NVARCHAR(250) NULL;
+    ALTER TABLE [dbo].[DeletedOrders] ALTER COLUMN [LastOrderStatus] NVARCHAR(250) NULL;
+END
 GO
 
 -- ====================================================================================================
--- 8. STORED PROCEDURES (SPs) FOR ALL DATABASE OPERATIONS
+-- 9. STORED PROCEDURES (SPs) FOR ALL DATABASE OPERATIONS
 -- ====================================================================================================
 
 -- ----------------------------------------------------------------------------------------------------
@@ -339,10 +406,11 @@ CREATE PROCEDURE [dbo].[sp_CreateBooking]
     @FullName NVARCHAR(150),
     @Phone NVARCHAR(50),
     @Email NVARCHAR(150),
-    @ExperienceType NVARCHAR(100) = 'Virtual Video Call',
+    @ExperienceType NVARCHAR(250) = 'Virtual Video Call',
     @PreferredDate DATE,
-    @MotifPreference NVARCHAR(100) = 'Nari Kunjar',
+    @MotifPreference NVARCHAR(250) = 'Nari Kunjar',
     @Notes NVARCHAR(MAX) = NULL,
+    @ReferencePhoto NVARCHAR(MAX) = NULL,
     @NewBookingId INT OUTPUT
 AS
 BEGIN
@@ -350,10 +418,10 @@ BEGIN
 
     INSERT INTO [dbo].[Bookings] (
         [FullName], [Phone], [Email], [ExperienceType], 
-        [PreferredDate], [MotifPreference], [Notes], [Status], [CreatedAt]
+        [PreferredDate], [MotifPreference], [Notes], [ReferencePhoto], [Status], [CreatedAt]
     ) VALUES (
         @FullName, @Phone, @Email, @ExperienceType,
-        @PreferredDate, @MotifPreference, @Notes, N'Confirmed', SYSUTCDATETIME()
+        @PreferredDate, @MotifPreference, @Notes, @ReferencePhoto, N'Confirmed', SYSUTCDATETIME()
     );
 
     SET @NewBookingId = CONVERT(INT, SCOPE_IDENTITY());
@@ -382,10 +450,10 @@ CREATE PROCEDURE [dbo].[sp_CreateOrder]
     @TotalAmount DECIMAL(18,2),
     @PaymentMode NVARCHAR(250) = 'UPI / NetBanking',
     @ItemsJson NVARCHAR(MAX),
-    @OrderConfirmationOtp NVARCHAR(20),
+    @OrderConfirmationOtp NVARCHAR(20) = NULL,
     @DeliveryOtp NVARCHAR(20) = NULL,
-    @CheckoutIdempotencyKey NVARCHAR(128),
-    @CheckoutIdempotencyFingerprint NVARCHAR(64),
+    @CheckoutIdempotencyKey NVARCHAR(128) = NULL,
+    @CheckoutIdempotencyFingerprint NVARCHAR(64) = NULL,
     @NewOrderId INT OUTPUT
 AS
 BEGIN
@@ -724,7 +792,7 @@ BEGIN
             )
             SELECT 
                 [OrderReference], [CustomerName], [ContactPhone], NULL,
-                [DeliveryAddress], [City], [PostalCode], NULL,
+                [DeliveryAddress], [City], [PostalCode], [State],
                 [Currency], [TotalAmount], [PaymentMode], [OrderStatus],
                 [CreatedAt], SYSUTCDATETIME(), @DeletedBy, @ItemsJson
             FROM [dbo].[Orders]
@@ -746,7 +814,7 @@ END
 GO
 
 -- ====================================================================================================
--- 9. SEED INITIAL SAREES & DUPATTAS CATALOG
+-- 10. SEED INITIAL SAREES & DUPATTAS CATALOG
 -- ====================================================================================================
 IF NOT EXISTS (SELECT 1 FROM [dbo].[Sarees] WHERE [Id] = 'patola-01')
 BEGIN

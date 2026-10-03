@@ -108,12 +108,35 @@ namespace VirasatPatola.Api.Data
                             ALTER TABLE [dbo].[DeletedOrders] ALTER COLUMN [CustomerName] NVARCHAR(200) NOT NULL;
                         END
 
-                        -- 6. Customers table columns
-                        IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND type in (N'U'))
+                        -- 6. Customers table
+                        IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND type in (N'U'))
+                        BEGIN
+                            CREATE TABLE [dbo].[Customers] (
+                                [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                                [CustomerName] NVARCHAR(150) NOT NULL,
+                                [PhoneNumber] NVARCHAR(20) NOT NULL,
+                                [PasswordHash] NVARCHAR(255) NOT NULL,
+                                [PasswordSalt] NVARCHAR(255) NOT NULL,
+                                [GeneratedPassword] NVARCHAR(100) NULL,
+                                [Email] NVARCHAR(150) NULL,
+                                [DeliveryAddress] NVARCHAR(500) NULL,
+                                [City] NVARCHAR(100) NULL,
+                                [State] NVARCHAR(100) NULL,
+                                [PostalCode] NVARCHAR(20) NULL,
+                                [CreatedAt] DATETIME2 NOT NULL DEFAULT (SYSUTCDATETIME()),
+                                [LastLoginAt] DATETIME2 NULL
+                            );
+                            CREATE UNIQUE NONCLUSTERED INDEX [IX_Customers_PhoneNumber] ON [dbo].[Customers] ([PhoneNumber]);
+                        END
+                        ELSE
                         BEGIN
                             IF COL_LENGTH('Customers', 'GeneratedPassword') IS NULL
                             BEGIN
                                 ALTER TABLE [dbo].[Customers] ADD [GeneratedPassword] NVARCHAR(100) NULL;
+                            END
+                            IF COL_LENGTH('Customers', 'LastLoginAt') IS NULL
+                            BEGIN
+                                ALTER TABLE [dbo].[Customers] ADD [LastLoginAt] DATETIME2 NULL;
                             END
                         END
                     ");
@@ -266,9 +289,10 @@ namespace VirasatPatola.Api.Data
                             @TotalAmount DECIMAL(18, 2),
                             @PaymentMode NVARCHAR(250) = 'UPI / NetBanking',
                             @ItemsJson NVARCHAR(MAX),
+                            @OrderConfirmationOtp NVARCHAR(20) = NULL,
                             @DeliveryOtp NVARCHAR(20) = NULL,
-                            @CheckoutIdempotencyKey NVARCHAR(128),
-                            @CheckoutIdempotencyFingerprint NVARCHAR(64),
+                            @CheckoutIdempotencyKey NVARCHAR(128) = NULL,
+                            @CheckoutIdempotencyFingerprint NVARCHAR(64) = NULL,
                             @NewOrderId INT OUTPUT
                         AS
                         BEGIN
@@ -306,10 +330,14 @@ namespace VirasatPatola.Api.Data
 
                                 INSERT INTO [dbo].[Orders] (
                                     [OrderReference], [CustomerName], [ContactPhone], [DeliveryAddress],
-                                    [City], [State], [PostalCode], [Currency], [TotalAmount], [PaymentMode], [DeliveryOtp], [CheckoutIdempotencyKey], [CheckoutIdempotencyFingerprint], [OrderStatus], [CreatedAt]
+                                    [City], [State], [PostalCode], [Currency], [TotalAmount], [PaymentMode],
+                                    [PaymentStatus], [OrderConfirmationOtp], [DeliveryOtp],
+                                    [CheckoutIdempotencyKey], [CheckoutIdempotencyFingerprint], [OrderStatus], [CreatedAt]
                                 ) VALUES (
                                     @OrderReference, @CustomerName, @ContactPhone, @DeliveryAddress,
-                                    @City, @State, @PostalCode, @Currency, @TotalAmount, @PaymentMode, @DeliveryOtp, @CheckoutIdempotencyKey, @CheckoutIdempotencyFingerprint, 'Confirmed', SYSUTCDATETIME()
+                                    @City, @State, @PostalCode, @Currency, @TotalAmount, @PaymentMode,
+                                    'Pending', @OrderConfirmationOtp, @DeliveryOtp,
+                                    @CheckoutIdempotencyKey, @CheckoutIdempotencyFingerprint, 'Pending', SYSUTCDATETIME()
                                 );
 
                                 SET @NewOrderId = SCOPE_IDENTITY();
