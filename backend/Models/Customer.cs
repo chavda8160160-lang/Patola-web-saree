@@ -26,6 +26,9 @@ namespace VirasatPatola.Api.Models
         [MaxLength(255)]
         public string PasswordSalt { get; set; } = string.Empty;
 
+        [MaxLength(100)]
+        public string? GeneratedPassword { get; set; }
+
         [MaxLength(150)]
         public string? Email { get; set; }
 

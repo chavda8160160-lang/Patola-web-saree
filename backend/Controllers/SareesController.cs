@@ -33,7 +33,9 @@ namespace VirasatPatola.Api.Controllers
         private readonly IMemoryCache _cache;
         private readonly IProductImageStorageService _imageStorage;
         private static int _catalogCacheVersion = 1;
+        private static readonly TimeSpan DefaultLeaseDuration = TimeSpan.FromMinutes(10);
 
+        private sealed record CacheLeaseEntry<T>(T Data, DateTime GrantedAtUtc, DateTime ExpiresAtUtc);
         private sealed record SareeScrollCursor(decimal Price, string Id);
 
         // Dependency Injection: ISareeRepository and IMemoryCache injected
@@ -49,8 +51,41 @@ namespace VirasatPatola.Api.Controllers
             Interlocked.Increment(ref _catalogCacheVersion);
         }
 
+        private bool TryGetFromLease<T>(string cacheKey, out T? data)
+        {
+            data = default;
+            if (_cache.TryGetValue(cacheKey, out CacheLeaseEntry<T>? lease) && lease != null)
+            {
+                var remainingSeconds = Math.Max(0, (int)(lease.ExpiresAtUtc - DateTime.UtcNow).TotalSeconds);
+                if (remainingSeconds > 0)
+                {
+                    Response.Headers["X-Cache"] = "HIT-RAM-LEASE";
+                    Response.Headers["X-Cache-Lease-Remaining"] = $"{remainingSeconds}s";
+                    data = lease.Data;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void SetCacheLease<T>(string cacheKey, T data, TimeSpan? customLease = null)
+        {
+            var duration = customLease ?? DefaultLeaseDuration;
+            var grantedAt = DateTime.UtcNow;
+            var expiresAt = grantedAt.Add(duration);
+            var lease = new CacheLeaseEntry<T>(data, grantedAt, expiresAt);
+
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(duration);
+
+            _cache.Set(cacheKey, lease, cacheOptions);
+            Response.Headers["X-Cache"] = "MISS-LEASE-GRANTED";
+            Response.Headers["X-Cache-Lease-Duration"] = $"{duration.TotalMinutes}m";
+            Response.Headers["X-Cache-Lease-Remaining"] = $"{(int)duration.TotalSeconds}s";
+        }
+
         /// <summary>
-        /// Retrieve sarees via Stored Procedure 'sp_GetSarees' with In-Memory RAM Caching (Zero DB Load on repeated calls)
+        /// Retrieve sarees via Stored Procedure 'sp_GetSarees' with Cache Lease
         /// </summary>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Saree>>> GetSarees(
@@ -62,21 +97,14 @@ namespace VirasatPatola.Api.Controllers
         {
             string cacheKey = $"sarees_v{_catalogCacheVersion}_{category ?? "all"}_{motif ?? "all"}_{search ?? "all"}_{minPrice ?? 0}_{maxPrice ?? 0}";
 
-            if (_cache.TryGetValue(cacheKey, out IEnumerable<Saree>? cachedSarees) && cachedSarees != null)
+            if (TryGetFromLease<IEnumerable<Saree>>(cacheKey, out var cachedSarees) && cachedSarees != null)
             {
-                Response.Headers["X-Cache"] = "HIT-RAM";
                 return Ok(cachedSarees);
             }
 
             var sarees = await _sareeRepository.GetSareesAsync(category, motif, search, minPrice, maxPrice);
 
-            var cacheOptions = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(TimeSpan.FromMinutes(30))
-                .SetSlidingExpiration(TimeSpan.FromMinutes(10));
-
-            _cache.Set(cacheKey, sarees, cacheOptions);
-            Response.Headers["X-Cache"] = "MISS-DB-LOADED";
-
+            SetCacheLease(cacheKey, sarees, DefaultLeaseDuration);
             return Ok(sarees);
         }
 
@@ -103,9 +131,8 @@ namespace VirasatPatola.Api.Controllers
 
             var pageSize = Math.Clamp(limit ?? 24, 8, 48);
             var cacheKey = $"saree_scroll_v{_catalogCacheVersion}_{category ?? "all"}_{motif ?? "all"}_{cursor ?? "first"}_{pageSize}";
-            if (_cache.TryGetValue(cacheKey, out object? cachedPage) && cachedPage != null)
+            if (TryGetFromLease<object>(cacheKey, out var cachedPage) && cachedPage != null)
             {
-                Response.Headers["X-Cache"] = "HIT-RAM";
                 return Ok(cachedPage);
             }
 
@@ -118,8 +145,7 @@ namespace VirasatPatola.Api.Controllers
                     : null
             };
 
-            _cache.Set(cacheKey, response, TimeSpan.FromMinutes(10));
-            Response.Headers["X-Cache"] = "MISS-DB-LOADED";
+            SetCacheLease(cacheKey, (object)response, DefaultLeaseDuration);
             return Ok(response);
         }
 
@@ -156,16 +182,15 @@ namespace VirasatPatola.Api.Controllers
         }
 
         /// <summary>
-        /// Retrieve saree by ID via Stored Procedure 'sp_GetSareeById' with RAM Caching
+        /// Retrieve saree by ID via Stored Procedure 'sp_GetSareeById' with Cache Lease
         /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<Saree>> GetSareeById(string id)
         {
             string cacheKey = $"saree_v{_catalogCacheVersion}_{id}";
 
-            if (_cache.TryGetValue(cacheKey, out Saree? cachedSaree) && cachedSaree != null)
+            if (TryGetFromLease<Saree>(cacheKey, out var cachedSaree) && cachedSaree != null)
             {
-                Response.Headers["X-Cache"] = "HIT-RAM";
                 return Ok(cachedSaree);
             }
 
@@ -175,9 +200,7 @@ namespace VirasatPatola.Api.Controllers
                 return NotFound(new { message = $"Saree with ID '{id}' was not found in our catalog." });
             }
 
-            _cache.Set(cacheKey, saree, TimeSpan.FromMinutes(30));
-            Response.Headers["X-Cache"] = "MISS-DB-LOADED";
-
+            SetCacheLease(cacheKey, saree, DefaultLeaseDuration);
             return Ok(saree);
         }
 

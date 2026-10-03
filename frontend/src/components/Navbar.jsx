@@ -133,7 +133,22 @@ export default function Navbar({
           </a>
 
           <nav className={`nav-menu ${mobileOpen ? 'open' : ''}`}>
-            <a href="#collection" className="nav-link" onClick={() => setMobileOpen(false)}>
+            <a 
+              href="#collection" 
+              className="nav-link" 
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileOpen(false);
+                const elem = document.getElementById('sareeGridArea') || document.querySelector('.saree-grid') || document.getElementById('collection');
+                if (elem) {
+                  const navHeight = 65;
+                  const elementPosition = elem.getBoundingClientRect().top;
+                  const offsetPosition = elementPosition + window.pageYOffset - navHeight;
+                  window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                  window.history.pushState(null, '', '#sarees');
+                }
+              }}
+            >
               <span>Collections</span>
               <span className="mobile-nav-arrow">›</span>
             </a>

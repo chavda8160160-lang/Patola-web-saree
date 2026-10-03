@@ -894,7 +894,7 @@ export default function SareeCatalog({
             ))}
           </div>
         ) : (
-          <div className="saree-grid">
+          <div className="saree-grid" id="sareeCardsGrid">
             {sarees.map(saree => (
               <SareeCardItem
                 key={saree.id}

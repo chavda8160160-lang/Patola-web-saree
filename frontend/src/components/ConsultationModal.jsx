@@ -18,17 +18,33 @@ import React, { useState } from 'react';
 import { ApiService } from '../services/api';
 import { validateCustomerSecurity, showSecurityToast } from '../utils/security';
 
-export default function ConsultationModal({ isOpen, onClose, onShowToast }) {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
-    email: '',
+export default function ConsultationModal({ isOpen, onClose, onShowToast, loggedInCustomer = null }) {
+  const activeCustomer = loggedInCustomer || ApiService.getCurrentCustomer();
+
+  const [formData, setFormData] = useState(() => ({
+    fullName: activeCustomer?.customerName || '',
+    phone: activeCustomer?.phoneNumber || '',
+    email: activeCustomer?.email || '',
     experienceType: 'Virtual Video Call',
     preferredDate: '',
     motifPreference: 'Nari Kunjar',
     notes: ''
-  });
+  }));
   const [submitting, setSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      const cust = loggedInCustomer || ApiService.getCurrentCustomer();
+      if (cust) {
+        setFormData(prev => ({
+          ...prev,
+          fullName: cust.customerName || prev.fullName || '',
+          phone: cust.phoneNumber || prev.phone || '',
+          email: cust.email || prev.email || ''
+        }));
+      }
+    }
+  }, [isOpen, loggedInCustomer]);
 
   if (!isOpen) return null;
 

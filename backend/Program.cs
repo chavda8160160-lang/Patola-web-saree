@@ -23,6 +23,7 @@ using Microsoft.OpenApi;
 using System.Reflection;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.StaticFiles;
 using VirasatPatola.Api.Data;
 using VirasatPatola.Api.Repositories.Implementations;
 using VirasatPatola.Api.Repositories.Interfaces;
@@ -359,6 +360,48 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(uploadRoot),
     RequestPath = "/uploads"
 });
+
+// Configure content types for custom saree images
+var customContentTypeProvider = new FileExtensionContentTypeProvider();
+customContentTypeProvider.Mappings[".jpg"] = "image/jpeg";
+customContentTypeProvider.Mappings[".jpeg"] = "image/jpeg";
+customContentTypeProvider.Mappings[".png"] = "image/png";
+customContentTypeProvider.Mappings[".webp"] = "image/webp";
+
+// Serve custom booking reference photos from project root assets/images/custom-bookings
+var customBookingsRoot = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "assets", "images", "custom-bookings"));
+if (!Directory.Exists(customBookingsRoot))
+{
+    Directory.CreateDirectory(customBookingsRoot);
+}
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(customBookingsRoot),
+    RequestPath = "/assets/images/custom-bookings",
+    ContentTypeProvider = customContentTypeProvider,
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=86400");
+        ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+    }
+});
+
+// Also serve root assets folder for any reference photos under /assets
+var projectAssetsRoot = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "assets"));
+if (Directory.Exists(projectAssetsRoot))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(projectAssetsRoot),
+        RequestPath = "/assets",
+        ContentTypeProvider = customContentTypeProvider,
+        OnPrepareResponse = ctx =>
+        {
+            ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=86400");
+            ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+        }
+    });
+}
 
 // Enable Swagger UI only in Development
 if (app.Environment.IsDevelopment())

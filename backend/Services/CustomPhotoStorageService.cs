@@ -53,6 +53,27 @@ namespace VirasatPatola.Api.Services
                 {
                     Directory.CreateDirectory(_frontendPublicDir);
                 }
+
+                // Two-way synchronization between assets and frontend public
+                if (Directory.Exists(_assetsDir) && Directory.Exists(_frontendPublicDir))
+                {
+                    foreach (var file in Directory.GetFiles(_assetsDir))
+                    {
+                        var dest = Path.Combine(_frontendPublicDir, Path.GetFileName(file));
+                        if (!File.Exists(dest))
+                        {
+                            File.Copy(file, dest, true);
+                        }
+                    }
+                    foreach (var file in Directory.GetFiles(_frontendPublicDir))
+                    {
+                        var dest = Path.Combine(_assetsDir, Path.GetFileName(file));
+                        if (!File.Exists(dest))
+                        {
+                            File.Copy(file, dest, true);
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -68,8 +89,58 @@ namespace VirasatPatola.Api.Services
             }
 
             var trimmed = rawPhotoInput.Trim();
-            if (trimmed.Length > 7_000_000) return null;
+            if (trimmed.Length > 25_000_000) return null;
 
+            // Handle multi-part JSON payload (e.g. { saree: { photo, color }, pallu: { photo, color }, border: ..., blouse: ... })
+            if (trimmed.StartsWith("{") && trimmed.EndsWith("}"))
+            {
+                try
+                {
+                    var node = System.Text.Json.Nodes.JsonNode.Parse(trimmed);
+                    if (node is System.Text.Json.Nodes.JsonObject obj)
+                    {
+                        bool modified = false;
+                        foreach (var prop in obj.ToList())
+                        {
+                            if (prop.Value is System.Text.Json.Nodes.JsonObject partObj)
+                            {
+                                if (partObj["photo"] is System.Text.Json.Nodes.JsonValue photoVal && photoVal.TryGetValue<string>(out var photoStr))
+                                {
+                                    var savedUrl = SaveSingleImage(photoStr, $"{identifier}_{prop.Key}");
+                                    partObj["photo"] = savedUrl;
+                                    modified = true;
+                                }
+                            }
+                            else if (prop.Value is System.Text.Json.Nodes.JsonValue val && val.TryGetValue<string>(out var strVal))
+                            {
+                                if (prop.Key.EndsWith("Photo", StringComparison.OrdinalIgnoreCase) || strVal.StartsWith("data:image"))
+                                {
+                                    var savedUrl = SaveSingleImage(strVal, $"{identifier}_{prop.Key}");
+                                    obj[prop.Key] = savedUrl;
+                                    modified = true;
+                                }
+                            }
+                        }
+                        if (modified || obj.Count > 0)
+                        {
+                            return obj.ToJsonString();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to parse multi-part photo JSON payload. Falling back to single image handler.");
+                }
+            }
+
+            return SaveSingleImage(trimmed, identifier);
+        }
+
+        private string? SaveSingleImage(string? rawInput, string? identifier = null)
+        {
+            if (string.IsNullOrWhiteSpace(rawInput)) return null;
+
+            var trimmed = rawInput.Trim();
             // Allow existing local asset paths only; do not persist arbitrary external URLs.
             if (trimmed.StartsWith("/assets/images/", StringComparison.Ordinal) && !trimmed.Contains("..", StringComparison.Ordinal))
                 return trimmed;
@@ -94,7 +165,7 @@ namespace VirasatPatola.Api.Services
                 string base64Payload = base64MarkerIndex >= 0 ? trimmed.Substring(base64MarkerIndex + 7).Trim() : trimmed;
 
                 byte[] imageBytes = Convert.FromBase64String(base64Payload);
-                if (imageBytes.Length == 0 || imageBytes.Length > 5_000_000) return null;
+                if (imageBytes.Length == 0 || imageBytes.Length > 8_000_000) return null;
                 bool validImage = ext switch
                 {
                     ".png" => imageBytes.Length >= 8 && imageBytes[0] == 0x89 && imageBytes[1] == 0x50 && imageBytes[2] == 0x4E && imageBytes[3] == 0x47,
@@ -103,8 +174,8 @@ namespace VirasatPatola.Api.Services
                 };
                 if (!validImage) return null;
 
-                string fileName = $"cst_booking_{Guid.NewGuid():N}{ext}";
-
+                string cleanId = string.IsNullOrWhiteSpace(identifier) ? Guid.NewGuid().ToString("N").Substring(0, 8) : new string(identifier.Where(char.IsLetterOrDigit).ToArray());
+                string fileName = $"cst_booking_{cleanId}_{Guid.NewGuid():N}{ext}";
 
                 // Save to project root assets
                 string path1 = Path.Combine(_assetsDir, fileName);
@@ -125,7 +196,6 @@ namespace VirasatPatola.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to save custom booking photo to disk.");
-                // If writing file fails, do not throw fatal exception
                 return null;
             }
         }

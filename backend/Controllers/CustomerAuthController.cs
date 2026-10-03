@@ -313,5 +313,54 @@ namespace VirasatPatola.Api.Controllers
                 })
             });
         }
+
+        /// <summary>
+        /// Allows a customer to change their password to their preferred custom password.
+        /// </summary>
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] CustomerChangePasswordDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            string? phone = null;
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+            {
+                phone = NormalizePhone(dto.PhoneNumber);
+            }
+            else if (User.Identity?.IsAuthenticated == true)
+            {
+                phone = NormalizePhone(User.FindFirstValue(ClaimTypes.MobilePhone) ?? string.Empty);
+            }
+
+            if (string.IsNullOrWhiteSpace(phone) || phone.Length != 10)
+            {
+                return BadRequest(new { success = false, message = "Valid mobile number is required to change password." });
+            }
+
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == phone);
+            if (customer == null)
+            {
+                return NotFound(new { success = false, message = "Customer account not found." });
+            }
+
+            if (!VerifyPassword(dto.OldPassword, customer.PasswordHash, customer.PasswordSalt))
+            {
+                return BadRequest(new { success = false, message = "Incorrect current password. Please enter the password you received on WhatsApp." });
+            }
+
+            var (newHash, newSalt) = HashPassword(dto.NewPassword);
+            customer.PasswordHash = newHash;
+            customer.PasswordSalt = newSalt;
+            customer.GeneratedPassword = dto.NewPassword;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = "Your password has been changed successfully! You can now login with your new password."
+            });
+        }
     }
 }

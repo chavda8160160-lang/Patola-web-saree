@@ -70,6 +70,50 @@ export default function CustomerAccountModal({
     }
   };
 
+  // Change Password state
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!oldPassword) {
+      setPasswordError('Please enter your current password (received on WhatsApp).');
+      return;
+    }
+    if (newPassword.length < 4) {
+      setPasswordError('New password must be at least 4 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New password and Confirm password do not match.');
+      return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      const res = await ApiService.customerChangePassword(customer.phoneNumber, oldPassword, newPassword);
+      if (res && res.success) {
+        setPasswordSuccess(res.message || 'Password updated successfully! You can now login with your new password.');
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setPasswordError(res?.message || 'Failed to update password.');
+      }
+    } catch (err) {
+      setPasswordError(err.message || 'Failed to update password. Please check your current password.');
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
   if (!isOpen || !customer) return null;
 
   return (
@@ -351,6 +395,95 @@ export default function CustomerAccountModal({
                 {updatingProfile ? 'Saving…' : 'Save Details'}
               </button>
             </form>
+
+            {/* TAB / SECTION: SECURITY & CHANGE PASSWORD */}
+            <div style={{ marginTop: '2rem', paddingTop: '1.6rem', borderTop: '1.5px solid #eee8df' }}>
+              <h4 style={{ margin: '0 0 0.4rem 0', color: '#6b001a', fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>🔐 Security & Change Password / પાસવર્ડ બદલો</span>
+              </h4>
+              <p style={{ margin: '0 0 1rem 0', fontSize: '0.82rem', color: '#666' }}>
+                Set your preferred custom password. You can use this new password for all future logins.
+              </p>
+
+              <form onSubmit={handleChangePassword} style={{ background: '#faf8f5', border: '1px solid #e5dfd5', borderRadius: '8px', padding: '1.2rem' }}>
+                {passwordSuccess && (
+                  <div style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '0.7rem 0.9rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.84rem', fontWeight: 600 }}>
+                    ✓ {passwordSuccess}
+                  </div>
+                )}
+                {passwordError && (
+                  <div style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '0.7rem 0.9rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.84rem' }}>
+                    ⚠ {passwordError}
+                  </div>
+                )}
+
+                <div style={{ marginBottom: '0.9rem' }}>
+                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.82rem', color: '#2a2421', marginBottom: '0.3rem' }}>
+                    Current Password (received on WhatsApp / હાલનો પાસવર્ડ) *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter current password or PIN"
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    style={{ width: '100%', padding: '0.65rem 0.75rem', borderRadius: '6px', border: '1px solid #c9c0b1', fontSize: '0.88rem', boxSizing: 'border-box', outlineColor: '#6b001a', background: '#ffffff' }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1.1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 600, fontSize: '0.82rem', color: '#2a2421', marginBottom: '0.3rem' }}>
+                      New Password (નવો પાસવર્ડ) *
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      minLength={4}
+                      placeholder="Min 4 characters"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      style={{ width: '100%', padding: '0.65rem 0.75rem', borderRadius: '6px', border: '1px solid #c9c0b1', fontSize: '0.88rem', boxSizing: 'border-box', outlineColor: '#6b001a', background: '#ffffff' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 600, fontSize: '0.82rem', color: '#2a2421', marginBottom: '0.3rem' }}>
+                      Confirm New Password *
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      minLength={4}
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      style={{ width: '100%', padding: '0.65rem 0.75rem', borderRadius: '6px', border: '1px solid #c9c0b1', fontSize: '0.88rem', boxSizing: 'border-box', outlineColor: '#6b001a', background: '#ffffff' }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={updatingPassword}
+                  style={{
+                    padding: '0.7rem 1.4rem',
+                    background: '#6b001a',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: 600,
+                    fontSize: '0.88rem',
+                    letterSpacing: '0.5px',
+                    cursor: updatingPassword ? 'not-allowed' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <span>{updatingPassword ? 'Updating Password…' : '🔑 Update Password / પાસવર્ડ બદલો'}</span>
+                </button>
+              </form>
+            </div>
         </div>
       </div>
     </div>

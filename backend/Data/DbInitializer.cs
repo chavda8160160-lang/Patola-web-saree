@@ -107,6 +107,15 @@ namespace VirasatPatola.Api.Data
                             ALTER TABLE [dbo].[DeletedOrders] ALTER COLUMN [DeliveryAddress] NVARCHAR(1000) NULL;
                             ALTER TABLE [dbo].[DeletedOrders] ALTER COLUMN [CustomerName] NVARCHAR(200) NOT NULL;
                         END
+
+                        -- 6. Customers table columns
+                        IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND type in (N'U'))
+                        BEGIN
+                            IF COL_LENGTH('Customers', 'GeneratedPassword') IS NULL
+                            BEGIN
+                                ALTER TABLE [dbo].[Customers] ADD [GeneratedPassword] NVARCHAR(100) NULL;
+                            END
+                        END
                     ");
 
                     // 2. Ensure sp_GetSarees stored procedure

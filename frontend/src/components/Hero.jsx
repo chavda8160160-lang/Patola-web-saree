@@ -94,7 +94,25 @@ export default function Hero({ onOpenBooking, onOpenReviews }) {
           </p>
 
           <div className="hero-cta-group">
-            <a href="#collection" className="btn-primary-gold">
+            <a 
+              href="#collection" 
+              className="btn-primary-gold"
+              onClick={(e) => {
+                e.preventDefault();
+                const elem = document.getElementById('sareeGridArea') || document.querySelector('.saree-grid') || document.getElementById('collection');
+                if (elem) {
+                  const navHeight = 65;
+                  const elementPosition = elem.getBoundingClientRect().top;
+                  const offsetPosition = elementPosition + window.pageYOffset - navHeight;
+                  window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                  });
+                  window.history.pushState(null, '', '#sarees');
+                }
+              }}
+              title="Explore Royal Patola Sarees & Dupattas"
+            >
               <span>Explore Masterpieces</span>
               <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                 <path d="M5 12h14M12 5l7 7-7 7" />

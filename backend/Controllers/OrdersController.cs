@@ -19,8 +19,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Security.Cryptography;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using VirasatPatola.Api.Data;
 using VirasatPatola.Api.DTOs;
 using VirasatPatola.Api.Models;
 using VirasatPatola.Api.Repositories.Interfaces;
@@ -37,13 +42,70 @@ namespace VirasatPatola.Api.Controllers
         private readonly IOrderRepository _orderRepository;
         private readonly PaymentSessionStore _paymentSessions;
         private readonly OrderConfirmationOtpService _confirmationOtp;
+        private readonly VirasatPatolaDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        // Dependency Injection: IOrderRepository is injected
-        public OrdersController(IOrderRepository orderRepository, PaymentSessionStore paymentSessions, OrderConfirmationOtpService confirmationOtp)
+        // Dependency Injection
+        public OrdersController(
+            IOrderRepository orderRepository,
+            PaymentSessionStore paymentSessions,
+            OrderConfirmationOtpService confirmationOtp,
+            VirasatPatolaDbContext context,
+            IConfiguration configuration)
         {
             _orderRepository = orderRepository;
             _paymentSessions = paymentSessions;
             _confirmationOtp = confirmationOtp;
+            _context = context;
+            _configuration = configuration;
+        }
+
+        private static string NormalizePhone(string raw)
+        {
+            var digits = new string((raw ?? string.Empty).Where(char.IsDigit).ToArray());
+            if (digits.Length == 12 && digits.StartsWith("91"))
+                digits = digits.Substring(2);
+            else if (digits.Length > 10)
+                digits = digits.Substring(digits.Length - 10);
+            return digits;
+        }
+
+        private static (string Hash, string Salt) HashPassword(string password)
+        {
+            var saltBytes = RandomNumberGenerator.GetBytes(16);
+            var salt = Convert.ToBase64String(saltBytes);
+            using var sha = SHA256.Create();
+            var combined = Encoding.UTF8.GetBytes(password + salt);
+            var hash = Convert.ToBase64String(sha.ComputeHash(combined));
+            return (hash, salt);
+        }
+
+        private string GenerateCustomerToken(Customer customer)
+        {
+            var secretKey = _configuration["JwtSettings:SecretKey"] ?? "VirasatPatola_RoyalHeritage_SecureSecretKey_2026_Handcrafted_Silk";
+            var issuer = _configuration["JwtSettings:Issuer"] ?? "VirasatPatolaApi";
+            var audience = _configuration["JwtSettings:Audience"] ?? "VirasatPatolaClient";
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(secretKey);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim("CustomerId", customer.Id.ToString()),
+                    new Claim("CustomerName", customer.CustomerName),
+                    new Claim(ClaimTypes.MobilePhone, customer.PhoneNumber),
+                    new Claim(ClaimTypes.Role, "Customer")
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                Issuer = issuer,
+                Audience = audience,
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
         [EnableRateLimiting("OrderOtpSend")]
@@ -306,6 +368,67 @@ namespace VirasatPatola.Api.Controllers
             if (!string.IsNullOrEmpty(reservedOtpToken)) _confirmationOtp.CompleteVerifiedToken(reservedOtpToken);
             var createdOrder = await _orderRepository.GetOrderByReferenceAsync(orderRef);
 
+            // Auto Account & Login generation for Customer in Customers table
+            Customer? customer = null;
+            bool isNewCustomer = false;
+            string? customerPassword = null;
+            string? customerToken = null;
+
+            try
+            {
+                var cleanPhone = NormalizePhone(dto.ContactPhone);
+                if (cleanPhone.Length == 10)
+                {
+                    customer = await _context.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == cleanPhone);
+                    if (customer == null)
+                    {
+                        isNewCustomer = true;
+                        customerPassword = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
+                        var (hash, salt) = HashPassword(customerPassword);
+
+                        customer = new Customer
+                        {
+                            CustomerName = dto.CustomerName.Trim(),
+                            PhoneNumber = cleanPhone,
+                            PasswordHash = hash,
+                            PasswordSalt = salt,
+                            GeneratedPassword = customerPassword,
+                            DeliveryAddress = dto.DeliveryAddress?.Trim(),
+                            City = dto.City?.Trim(),
+                            State = dto.State?.Trim(),
+                            PostalCode = dto.PostalCode?.Trim(),
+                            CreatedAt = DateTime.UtcNow,
+                            LastLoginAt = DateTime.UtcNow
+                        };
+
+                        _context.Customers.Add(customer);
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        // Existing customer: keep or update address details
+                        if (string.IsNullOrWhiteSpace(customer.DeliveryAddress) && !string.IsNullOrWhiteSpace(dto.DeliveryAddress))
+                            customer.DeliveryAddress = dto.DeliveryAddress.Trim();
+                        if (string.IsNullOrWhiteSpace(customer.City) && !string.IsNullOrWhiteSpace(dto.City))
+                            customer.City = dto.City.Trim();
+                        if (string.IsNullOrWhiteSpace(customer.State) && !string.IsNullOrWhiteSpace(dto.State))
+                            customer.State = dto.State.Trim();
+                        if (string.IsNullOrWhiteSpace(customer.PostalCode) && !string.IsNullOrWhiteSpace(dto.PostalCode))
+                            customer.PostalCode = dto.PostalCode.Trim();
+
+                        customerPassword = customer.GeneratedPassword;
+                        customer.LastLoginAt = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
+                    }
+
+                    customerToken = GenerateCustomerToken(customer);
+                }
+            }
+            catch
+            {
+                // Non-blocking fallback
+            }
+
             return Ok(new
             {
                 message = "Order placed successfully via Stored Procedure in SQL Server. Initial OrderStatus = Pending, PaymentStatus = Pending.",
@@ -317,7 +440,15 @@ namespace VirasatPatola.Api.Controllers
                 paymentStatus = createdOrder?.PaymentStatus ?? "Pending",
                 orderConfirmationOtp = createdOrder?.OrderConfirmationOtp ?? confirmationOtp,
                 deliveryOtp = createdOrder?.DeliveryOtp ?? deliveryOtp,
-                status = createdOrder?.OrderStatus ?? "Pending"
+                status = createdOrder?.OrderStatus ?? "Pending",
+                customerAccount = customer != null ? new
+                {
+                    isNewAccount = isNewCustomer,
+                    phoneNumber = customer.PhoneNumber,
+                    customerName = customer.CustomerName,
+                    password = customerPassword,
+                    token = customerToken
+                } : null
             });
         }
 

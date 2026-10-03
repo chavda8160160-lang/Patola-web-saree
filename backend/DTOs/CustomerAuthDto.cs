@@ -47,11 +47,13 @@ namespace VirasatPatola.Api.DTOs
 
     public class CustomerChangePasswordDto
     {
-        [Required]
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Current Password is required.")]
         public string OldPassword { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(100, MinimumLength = 4)]
+        [Required(ErrorMessage = "New Password is required.")]
+        [StringLength(100, MinimumLength = 4, ErrorMessage = "New password must be at least 4 characters.")]
         public string NewPassword { get; set; } = string.Empty;
     }
 }

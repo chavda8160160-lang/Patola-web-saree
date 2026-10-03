@@ -175,6 +175,42 @@ export default function CheckoutModal({
 
     saveOrderDeliveryOtp(orderRef, authoritativeOtp);
 
+    // Save auto-created Customer account to session if returned by API
+    if (result?.customerAccount) {
+      try {
+        if (result.customerAccount.token) {
+          sessionStorage.setItem('patola_customer_token', result.customerAccount.token);
+        }
+        sessionStorage.setItem('patola_current_customer', JSON.stringify({
+          customerName: result.customerAccount.customerName || customerSnapshot.customerName,
+          phoneNumber: result.customerAccount.phoneNumber || customerSnapshot.contactPhone
+        }));
+      } catch (e) {}
+    }
+
+    const cleanPhone = (customerSnapshot.contactPhone || '').replace(/\D/g, '');
+    const waTarget = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+    const customerPasswordDisplay = result?.customerAccount?.password || 'Auto-Generated';
+    const waMessageText = `👑 *Patola Made Vankar - Thank You!*
+
+Dear *${customerSnapshot.customerName || 'Patron'}*,
+
+Your royal handloom order has been placed successfully!
+📦 *Order Reference:* #${orderRef}
+
+Your customer account has been automatically activated:
+📱 *Login Mobile:* +91 ${cleanPhone}
+🔑 *Login Password / PIN:* ${customerPasswordDisplay}
+
+🔗 *Track your order & manage account:*
+${window.location.origin}/#account
+
+💡 *Tip:* You can change your password anytime to your preferred one from "My Account > Change Password".
+
+Thank you for choosing authentic Patola craftsmanship!`;
+
+    const waUrl = `https://api.whatsapp.com/send?phone=${waTarget}&text=${encodeURIComponent(waMessageText)}`;
+
     const isOnlinePayment = formData.paymentMode === 'Full Online Payment';
 
     if (isOnlinePayment) {
@@ -183,7 +219,9 @@ export default function CheckoutModal({
         ...result,
         orderReference: orderRef,
         deliveryOtp: authoritativeOtp,
-        customerSnapshot
+        customerSnapshot,
+        customerAccount: result?.customerAccount,
+        whatsAppUrl: waUrl
       });
       setIsPaymentModalOpen(true);
       return true;
@@ -196,6 +234,11 @@ export default function CheckoutModal({
     try { sessionStorage.removeItem('patola_pending_order_submission'); } catch (e) {}
     handleResetForm();
     onClose();
+
+    // Automatically trigger WhatsApp notification
+    try {
+      window.open(waUrl, '_blank');
+    } catch (e) {}
 
     const isCod = customerSnapshot.paymentMode === 'Cash on Delivery (COD)';
     const fullOrderDetails = {
@@ -218,6 +261,8 @@ export default function CheckoutModal({
       customNotes: customerSnapshot.customNotes,
       totalAmount: totalINR,
       createdAt: new Date().toISOString(),
+      customerAccount: result?.customerAccount,
+      whatsAppUrl: waUrl,
       items: cart.map(item => {
         const effPrice = getItemEffectivePrice(item);
         return {

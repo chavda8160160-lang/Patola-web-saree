@@ -834,6 +834,24 @@ export const ApiService = {
       sessionStorage.setItem('patola_current_customer', JSON.stringify(result.customer));
     }
     return result;
+  },
+
+  /**
+   * Change Customer Password
+   */
+  async customerChangePassword(phoneNumber, oldPassword, newPassword) {
+    const token = sessionStorage.getItem('patola_customer_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_BASE_URL}/customer/change-password`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ phoneNumber, oldPassword, newPassword })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.message || 'Failed to change password.');
+    return result;
   }
 };
 

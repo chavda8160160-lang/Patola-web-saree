@@ -16,6 +16,7 @@ import { createPortal } from 'react-dom';
 import { ApiService } from '../services/api';
 import { getOrderDeliveryOtp, formatDateDDMMYYYY } from '../utils/security';
 import CustomerReviewModal from './CustomerReviewModal';
+import { parseCustomOrderParts, CUSTOM_PARTS_CONFIG } from '../utils/customOrderHelper';
 
 export default function OrderTrackingModal({
   isOpen,
@@ -24,6 +25,7 @@ export default function OrderTrackingModal({
   allOrders = [],
   currentCustomer,
   onOpenCustomerAuth,
+  onOpenCustomerAccount,
   onTrackOtherOrder,
   onOrderUpdated,
   formatPrice
@@ -246,8 +248,29 @@ export default function OrderTrackingModal({
     const bkRef = !isNaN(numId) ? `BK-${numId}` : `BK-${bIdStr}`;
     const allAliases = [ref, cstRef, bkRef, bIdStr].filter(Boolean);
 
+    // Extract Loom Visit
+    let loomVisit = null;
+    const loomMatch = (b.notes || '').match(/\[LOOM_VISIT_BOOKED:\s*([^\]]+)\]/i);
+    if (loomMatch) {
+      loomVisit = loomMatch[1].trim();
+    } else if (b.loomVisit) {
+      loomVisit = typeof b.loomVisit === 'object'
+        ? `${b.loomVisit.typeLabel || 'Loom Visit'} (Date: ${b.loomVisit.visitDate || 'Flexible'}, Slot: ${b.loomVisit.timeSlot || 'Morning'})`
+        : String(b.loomVisit);
+    } else {
+      try {
+        const visitMap = JSON.parse(localStorage.getItem('patola_custom_loom_visits') || '{}');
+        const v = visitMap[ref] || visitMap[bIdStr] || visitMap[String(b.phone)] || visitMap[cleanPhone];
+        if (v && v.requested !== 'none') {
+          loomVisit = `${v.typeLabel || 'Rosewood Loom Visit'} (Date: ${v.visitDate || 'Flexible'}, Slot: ${v.timeSlot || 'Morning'}, Guests: ${v.guestsCount || '1-2'})`;
+        }
+      } catch (e) {}
+    }
+
     let clean = (b.notes || '')
       .replace(/\[BESPOKE CUSTOM PATOLA\]/i, '')
+      .replace(/\[LOOM_VISIT_BOOKED:[^\]]+\]/gi, '')
+      .replace(/\[NO_LOOM_VISIT\]/gi, '')
       .replace(/\[Reference Photo Attached by Customer\]/i, '')
       .replace(/\[No Photo Attached\]/i, '')
       .trim();
@@ -265,29 +288,70 @@ export default function OrderTrackingModal({
     const descMatch = clean.match(/Description:\s*([^.]+)/i);
     if (descMatch) description = descMatch[1].trim();
 
-    // Check if customer uploaded photo is in b.referencePhoto, embedded in notes, or saved in localStorage
+    // Check if customer uploaded photo is multi-part JSON, direct URL, embedded in notes, or saved in localStorage
     let photo = null;
-    if (typeof b.referencePhoto === 'string' && (b.referencePhoto.startsWith('data:image') || b.referencePhoto.startsWith('http') || b.referencePhoto.startsWith('/'))) {
-      photo = b.referencePhoto;
-    } else if (b.notes && typeof b.notes === 'string') {
+    let parsedParts = null;
+
+    if (b.referencePhoto) {
+      if (typeof b.referencePhoto === 'object') {
+        parsedParts = b.referencePhoto;
+        photo = parsedParts?.saree?.photo || parsedParts?.pallu?.photo || parsedParts?.border?.photo || parsedParts?.blouse?.photo || null;
+      } else if (typeof b.referencePhoto === 'string') {
+        const trimmedRef = b.referencePhoto.trim();
+        if (trimmedRef.startsWith('{')) {
+          try {
+            parsedParts = JSON.parse(trimmedRef);
+            photo = parsedParts?.saree?.photo || parsedParts?.pallu?.photo || parsedParts?.border?.photo || parsedParts?.blouse?.photo || null;
+          } catch (e) {}
+        } else if (trimmedRef.startsWith('data:image') || trimmedRef.startsWith('http') || trimmedRef.startsWith('/')) {
+          photo = trimmedRef;
+        }
+      }
+    }
+
+    if (!photo && b.notes && typeof b.notes === 'string') {
       const match = b.notes.match(/\[REF_PHOTO:(data:image\/[^\]]+)\]/) || b.notes.match(/\[PHOTO_DATA:(data:image\/[^\]]+)\]/);
       if (match && match[1]) photo = match[1];
     }
+
     if (!photo) {
       try {
         const photoMap = JSON.parse(localStorage.getItem('patola_custom_order_photos') || '{}');
         const cleanPhone = String(b.phone || '').replace(/\D/g, '');
         const candidates = [
+          photoMap[`parts_${bIdStr}`],
+          photoMap[`parts_${cstRef}`],
+          photoMap[`parts_${ref}`],
+          photoMap[`parts_${String(b.phone)}`],
+          photoMap[`parts_${cleanPhone}`],
           photoMap[bIdStr],
           photoMap[cstRef],
           photoMap[ref],
           photoMap[String(b.phone)],
-          photoMap[cleanPhone]
+          photoMap[cleanPhone],
+          photoMap[`raw_${bIdStr}`],
+          photoMap[`raw_${cstRef}`],
+          photoMap[`raw_${ref}`],
+          photoMap[`raw_${b.phone}`],
+          photoMap[`raw_${cleanPhone}`]
         ];
         for (const cand of candidates) {
-          if (typeof cand === 'string' && cand.length > 3 && (cand.startsWith('data:image') || cand.startsWith('http') || cand.startsWith('/'))) {
-            photo = cand;
-            break;
+          if (!cand) continue;
+          if (typeof cand === 'object') {
+            parsedParts = cand;
+            photo = parsedParts?.saree?.photo || parsedParts?.pallu?.photo || parsedParts?.border?.photo || parsedParts?.blouse?.photo || null;
+            if (photo) break;
+          } else if (typeof cand === 'string' && cand.length > 3) {
+            if (cand.trim().startsWith('{')) {
+              try {
+                parsedParts = JSON.parse(cand);
+                photo = parsedParts?.saree?.photo || parsedParts?.pallu?.photo || parsedParts?.border?.photo || parsedParts?.blouse?.photo || null;
+                if (photo) break;
+              } catch (e) {}
+            } else if (cand.startsWith('data:image') || cand.startsWith('http') || cand.startsWith('/')) {
+              photo = cand;
+              break;
+            }
           }
         }
       } catch (e) {}
@@ -388,19 +452,23 @@ export default function OrderTrackingModal({
       deliveryDateText: '2 to 4 Months (Handcrafted on Traditional Rosewood Loom)',
       deliveryOtp: getOrderDeliveryOtp(b),
       createdAt: b.createdAt || b.preferredDate || new Date().toISOString(),
+      referencePhoto: b.referencePhoto || photo,
+      parts: parsedParts,
       customInfo: {
         motif: b.motifPreference || 'Custom Antique Design',
         colors: colors || 'Handcrafted Silk Palette',
         city: city,
         description: description || clean,
-        referencePhoto: photo
+        referencePhoto: b.referencePhoto || photo,
+        parts: parsedParts,
+        loomVisit
       },
       items: [
         {
           sareeTitle: `Bespoke Patola Saree (${b.motifPreference || 'Custom Motif'})`,
           quantity: 1,
           unitPrice: 185000,
-          image: photo || '/assets/images/patola_drape.jpg',
+          image: parsedParts?.saree?.photo || photo || '/assets/images/patola_drape.jpg',
           weave: 'Authentic Pure Mulberry Silk Double Ikat (Custom Commission)',
           motifName: b.motifPreference || 'Custom Design'
         }
@@ -1275,19 +1343,36 @@ export default function OrderTrackingModal({
           </div>
 
           {/* Quick Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="tracking-search-bar" style={{ margin: '1.5rem 0' }}>
-            <input
-              type="text"
-              className="tracking-search-input"
-              placeholder="Order reference (optional; leave blank for all orders)"
-              value={searchRef}
-              onChange={(e) => setSearchRef(e.target.value)}
-              autoFocus
-            />
-            <input type="tel" className="tracking-search-input" placeholder="Phone number used for this order" value={searchPhone} onChange={(e) => setSearchPhone(e.target.value)} required />
-            <button type="submit" className="btn-track-search">
-              Track Order 🔍
-            </button>
+          <form onSubmit={handleSearchSubmit} className="tracking-search-bar" style={{ margin: '1.2rem 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.2rem' }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#800020', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>🔍</span> Track Any Order by Reference:
+              </span>
+              <span style={{ fontSize: '0.72rem', color: '#736d65' }}>
+                Enter Reference & Mobile
+              </span>
+            </div>
+            <div className="tracking-search-inputs-row">
+              <input
+                type="text"
+                className="tracking-search-input"
+                placeholder="Order Reference (e.g. VP-239187)"
+                value={searchRef}
+                onChange={(e) => setSearchRef(e.target.value)}
+                autoFocus
+              />
+              <input
+                type="tel"
+                className="tracking-search-input"
+                placeholder="Registered Mobile (10 Digits)"
+                value={searchPhone}
+                onChange={(e) => setSearchPhone(e.target.value)}
+                required
+              />
+              <button type="submit" className="btn-track-search">
+                Track Order 🔍
+              </button>
+            </div>
           </form>
 
           {currentCustomer ? (
@@ -1357,6 +1442,90 @@ export default function OrderTrackingModal({
           </p>
         </div>
 
+        {/* WhatsApp & Auto Account Credentials Banner */}
+        {order?.customerAccount && (
+          <div style={{
+            background: 'linear-gradient(135deg, #075E54 0%, #128C7E 100%)',
+            border: '1.5px solid #25D366',
+            borderRadius: '10px',
+            padding: '1rem 1.3rem',
+            margin: '0.8rem 0 1.1rem',
+            color: '#ffffff',
+            boxShadow: '0 4px 16px rgba(7, 94, 84, 0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.9rem'
+          }}>
+            <div style={{ flex: '1 1 280px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '1.2rem' }}>👑</span>
+                <strong style={{ fontSize: '0.96rem', letterSpacing: '0.3px', color: '#ffffff' }}>
+                  Patola Made Vankar • Account Activated
+                </strong>
+              </div>
+              <div style={{ fontSize: '0.82rem', color: '#e0f2fe', lineHeight: 1.45 }}>
+                Login ID: <strong>+91 {order.customerAccount.phoneNumber}</strong> • Password/PIN: <span style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 8px', borderRadius: '4px', color: '#fef08a', fontWeight: 'bold', fontFamily: 'monospace', letterSpacing: '1px' }}>{order.customerAccount.password || 'Auto-Generated'}</span>
+              </div>
+              <div style={{ fontSize: '0.74rem', color: '#bbf7d0', marginTop: '3px' }}>
+                💡 You can change your password anytime under &quot;My Account &gt; Change Password&quot;.
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+              {onOpenCustomerAccount && (
+                <button
+                  type="button"
+                  onClick={onOpenCustomerAccount}
+                  style={{
+                    background: '#ffffff',
+                    color: '#075E54',
+                    border: 'none',
+                    padding: '0.65rem 1.15rem',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    fontSize: '0.86rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                    cursor: 'pointer'
+                  }}
+                  title="Open Customer Account to Change Password"
+                >
+                  <span>🔑 Change Password</span>
+                </button>
+              )}
+
+              {order.whatsAppUrl && (
+                <a
+                  href={order.whatsAppUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    background: '#25D366',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.65rem 1.25rem',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    fontSize: '0.86rem',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <span>💬 Send on WhatsApp</span>
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* If Customer is Authenticated, show their Orders Selector cleanly! */}
         {currentCustomer ? (
           <div style={{
@@ -1390,7 +1559,7 @@ export default function OrderTrackingModal({
 
             {/* Quick Switch Dropdown */}
             {relatedCustomerOrders.length > 1 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', width: '100%', marginTop: '0.35rem' }}>
                 <label htmlFor="customer-order-picker" style={{ fontSize: '0.8rem', color: '#333', fontWeight: 600 }}>
                   Select Order to Track:
                 </label>
@@ -1399,7 +1568,7 @@ export default function OrderTrackingModal({
                   value={order.orderReference}
                   onChange={(e) => handleSelectOrder(e.target.value)}
                   style={{
-                    padding: '0.45rem 0.8rem',
+                    padding: '0.5rem 0.8rem',
                     borderRadius: '6px',
                     border: '1.5px solid #c5a059',
                     background: '#ffffff',
@@ -1407,8 +1576,10 @@ export default function OrderTrackingModal({
                     fontWeight: 700,
                     fontSize: '0.85rem',
                     cursor: 'pointer',
-                    flex: '1 1 260px',
-                    maxWidth: '420px'
+                    width: '100%',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                    boxSizing: 'border-box'
                   }}
                 >
                   {relatedCustomerOrders.map((o) => {
@@ -1467,17 +1638,34 @@ export default function OrderTrackingModal({
 
         {/* Quick Search Bar */}
         <form onSubmit={handleSearchSubmit} className="tracking-search-bar">
-          <input
-            type="text"
-            className="tracking-search-input"
-            placeholder="Order reference (optional; leave blank for all orders)"
-            value={searchRef}
-            onChange={(e) => setSearchRef(e.target.value)}
-          />
-            <input type="tel" className="tracking-search-input" placeholder="Phone number used for this order" value={searchPhone} onChange={(e) => setSearchPhone(e.target.value)} required />
-          <button type="submit" className="btn-track-search">
-            Track Order 🔍
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.2rem' }}>
+            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#800020', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span>🔍</span> Track Another Order / Check Status:
+            </span>
+            <span style={{ fontSize: '0.72rem', color: '#736d65' }}>
+              Enter Reference & Phone
+            </span>
+          </div>
+          <div className="tracking-search-inputs-row">
+            <input
+              type="text"
+              className="tracking-search-input"
+              placeholder="Order Ref (optional)"
+              value={searchRef}
+              onChange={(e) => setSearchRef(e.target.value)}
+            />
+            <input
+              type="tel"
+              className="tracking-search-input"
+              placeholder="Registered Phone (10 Digits)"
+              value={searchPhone}
+              onChange={(e) => setSearchPhone(e.target.value)}
+              required
+            />
+            <button type="submit" className="btn-track-search">
+              Track Order 🔍
+            </button>
+          </div>
         </form>
 
         {/* Order Reference & Gold Insurance Banner */}
@@ -1486,7 +1674,7 @@ export default function OrderTrackingModal({
             <span className="order-ref-label">Order Reference:</span>
             <span className="order-ref-code">{order.orderReference}</span>
             {order.createdAt && (
-              <span style={{ fontSize: '0.8rem', color: '#666', background: '#f5f5f5', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+              <span style={{ fontSize: '0.8rem', color: '#666', background: '#f5f5f5', padding: '2px 8px', borderRadius: '4px', fontWeight: 600, whiteSpace: 'nowrap' }}>
                 📅 {formatDateDDMMYYYY(order.createdAt)}
               </span>
             )}
@@ -1501,23 +1689,26 @@ export default function OrderTrackingModal({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.3rem',
-                border: '1px solid #d4af37'
+                border: '1px solid #d4af37',
+                whiteSpace: 'nowrap'
               }}>
                 🧵 Bespoke Loom Commission
               </span>
             )}
-            <button className="btn-copy-ref" onClick={handleCopyRef}>
-              {copied ? '✓ Copied' : 'Copy'}
-            </button>
-            <button
-              type="button"
-              className="btn-copy-ref"
-              onClick={() => fetchLatestStatus(order.orderReference)}
-              title="Fetch latest updates from Loom & Courier"
-              style={{ background: '#fdf7ee', color: '#800020', border: '1px solid #d4af37' }}
-            >
-              🔄 Refresh Status
-            </button>
+            <div style={{ display: 'inline-flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+              <button className="btn-copy-ref" onClick={handleCopyRef}>
+                {copied ? '✓ Copied' : 'Copy'}
+              </button>
+              <button
+                type="button"
+                className="btn-copy-ref"
+                onClick={() => fetchLatestStatus(order.orderReference)}
+                title="Fetch latest updates from Loom & Courier"
+                style={{ background: '#fdf7ee', color: '#800020', border: '1px solid #d4af37' }}
+              >
+                🔄 Refresh Status
+              </button>
+            </div>
 
             {isCancelled ? (
               <span style={{
@@ -1722,12 +1913,12 @@ export default function OrderTrackingModal({
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, justifyContent: 'flex-end', minWidth: '240px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1 1 200px', width: '100%', minWidth: 0, justifyContent: 'flex-start' }}>
                 <select
                   value={order.orderReference}
                   onChange={(e) => handleSelectOrder(e.target.value)}
                   style={{
-                    padding: '0.45rem 0.8rem',
+                    padding: '0.5rem 0.8rem',
                     borderRadius: '6px',
                     border: '1.5px solid #d4af37',
                     background: '#ffffff',
@@ -1735,8 +1926,10 @@ export default function OrderTrackingModal({
                     fontSize: '0.85rem',
                     color: '#800020',
                     cursor: 'pointer',
-                    maxWidth: '420px',
                     width: '100%',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                    boxSizing: 'border-box',
                     boxShadow: '0 2px 6px rgba(0,0,0,0.05)'
                   }}
                 >
@@ -2240,18 +2433,48 @@ export default function OrderTrackingModal({
                     }}
                   >
                     {item.image ? (
-                      <img
-                        src={item.image}
-                        alt={item.sareeTitle}
-                        style={{
-                          width: '58px',
-                          height: '58px',
-                          objectFit: 'cover',
-                          borderRadius: '6px',
-                          border: itemCanc ? '1.5px solid #f87171' : '1px solid #d4af37',
-                          filter: itemCanc ? 'grayscale(40%)' : 'none'
-                        }}
-                      />
+                      <div
+                        onClick={() => setPreviewCustomPhoto({
+                          img: item.image,
+                          name: item.pieceTitle || item.sareeTitle || 'Ordered Item',
+                          title: `Ordered ${itemType}: ${item.pieceTitle || item.sareeTitle}`,
+                          subtitle: `${item.weave || 'Authentic Double Ikat'} • Motif: ${item.motifName || 'Heritage Patola Design'} (Order #${order.orderReference})`
+                        })}
+                        style={{ position: 'relative', width: '60px', height: '60px', flexShrink: 0, cursor: 'pointer' }}
+                        title="Click to view full photo 🔍"
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.sareeTitle}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '6px',
+                            border: itemCanc ? '1.5px solid #f87171' : '1px solid #d4af37',
+                            filter: itemCanc ? 'grayscale(40%)' : 'none',
+                            boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                          }}
+                        />
+                        <span style={{
+                          position: 'absolute',
+                          top: '-3px',
+                          left: '-3px',
+                          background: '#800020',
+                          color: '#d4af37',
+                          border: '1px solid #d4af37',
+                          fontSize: '0.58rem',
+                          width: '15px',
+                          height: '15px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                        }}>
+                          🔍
+                        </span>
+                      </div>
                     ) : (
                       <div style={{
                         width: '58px',
@@ -2270,9 +2493,57 @@ export default function OrderTrackingModal({
 
                     <div style={{ flex: '1 1 220px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <h6 style={{ margin: '0', fontSize: '0.96rem', color: itemCanc ? '#991b1b' : '#1a1a1a', fontWeight: 700, textDecoration: itemCanc ? 'line-through' : 'none' }}>
+                        <h6
+                          onClick={() => {
+                            if (item.image) {
+                              setPreviewCustomPhoto({
+                                img: item.image,
+                                name: item.pieceTitle || item.sareeTitle || 'Ordered Item',
+                                title: `Ordered ${itemType}: ${item.pieceTitle || item.sareeTitle}`,
+                                subtitle: `${item.weave || 'Authentic Double Ikat'} • Motif: ${item.motifName || 'Heritage Patola Design'} (Order #${order.orderReference})`
+                              });
+                            }
+                          }}
+                          style={{
+                            margin: '0',
+                            fontSize: '0.96rem',
+                            color: itemCanc ? '#991b1b' : '#1a1a1a',
+                            fontWeight: 700,
+                            textDecoration: itemCanc ? 'line-through' : 'none',
+                            cursor: item.image ? 'pointer' : 'default'
+                          }}
+                          title={item.image ? 'Click to view full photo' : undefined}
+                        >
                           {item.pieceTitle || item.sareeTitle || (itemType === 'Dupatta' ? 'Authentic Patola Silk Dupatta' : 'Authentic Double Ikat Patola')}
                         </h6>
+                        {item.image && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewCustomPhoto({
+                              img: item.image,
+                              name: item.pieceTitle || item.sareeTitle || 'Ordered Item',
+                              title: `Ordered ${itemType}: ${item.pieceTitle || item.sareeTitle}`,
+                              subtitle: `${item.weave || 'Authentic Double Ikat'} • Motif: ${item.motifName || 'Heritage Patola Design'} (Order #${order.orderReference})`
+                            })}
+                            style={{
+                              background: '#800020',
+                              color: '#d4af37',
+                              border: '1px solid #d4af37',
+                              padding: '2px 7px',
+                              borderRadius: '4px',
+                              fontSize: '0.68rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                              boxShadow: '0 1px 3px rgba(128,0,32,0.15)'
+                            }}
+                            title="Click to view full saree photo"
+                          >
+                            🔍 View Photo
+                          </button>
+                        )}
                         <span style={{
                           background: itemType === 'Dupatta' ? '#f3e8ff' : '#fef3c7',
                           color: itemType === 'Dupatta' ? '#7e22ce' : '#92400e',
@@ -2422,67 +2693,165 @@ export default function OrderTrackingModal({
           </div>
 
           {/* Custom Saree Specifications for Bespoke Orders */}
-          {order.isCustomOrder && order.customInfo && (
-            <div style={{
-              background: '#fffdf9',
-              border: '1.5px dashed #d4af37',
-              borderRadius: '8px',
-              padding: '0.9rem 1.1rem',
-              marginTop: '0.75rem',
-              fontSize: '0.85rem',
-              color: '#333'
-            }}>
-              <div style={{ fontWeight: 700, color: '#800020', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem' }}>
-                <span>🧵</span> Bespoke Custom Weaving Specifications:
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.6rem', lineHeight: 1.5 }}>
-                <div><strong>Heritage Motif:</strong> <span style={{ color: '#800020', fontWeight: 700 }}>{order.customInfo.motif}</span></div>
-                {order.customInfo.colors && (
-                  <div><strong>Silk Palette:</strong> <span style={{ background: '#fef3c7', padding: '1px 6px', borderRadius: '4px', color: '#92400e', fontWeight: 600 }}>{order.customInfo.colors}</span></div>
-                )}
-                {order.customInfo.city && <div><strong>Destination City:</strong> {order.customInfo.city}</div>}
-                <div><strong>Loom Timeline:</strong> <span style={{ color: '#15803d', fontWeight: 700 }}>2 to 4 Months (Handloom)</span></div>
-              </div>
-              {order.customInfo.description && (
-                <div style={{ marginTop: '0.6rem', background: '#ffffff', padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid #ebdccf', fontStyle: 'italic', color: '#444' }}>
-                  "{order.customInfo.description}"
+          {order.isCustomOrder && order.customInfo && (() => {
+            const customParts = parseCustomOrderParts(order);
+            return (
+              <div style={{
+                background: '#fffdf9',
+                border: '1.5px dashed #d4af37',
+                borderRadius: '10px',
+                padding: '0.9rem 1.1rem',
+                marginTop: '0.75rem',
+                fontSize: '0.85rem',
+                color: '#333'
+              }}>
+                <div style={{ fontWeight: 700, color: '#800020', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem' }}>
+                  <span>🧵</span> Bespoke Custom Weaving Specifications:
                 </div>
-              )}
-              {typeof order.customInfo.referencePhoto === 'string' && order.customInfo.referencePhoto.length > 3 && (
-                <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
-                  <img
-                    src={order.customInfo.referencePhoto}
-                    alt="Reference Saree"
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                    style={{ width: '52px', height: '52px', objectFit: 'cover', borderRadius: '6px', border: '1.5px solid #d4af37', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.1)', background: '#f5efe6' }}
-                    onClick={() => setPreviewCustomPhoto({ img: order.customInfo.referencePhoto, name: order.customerName })}
-                    title="Click to view full size"
-                  />
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => setPreviewCustomPhoto({ img: order.customInfo.referencePhoto, name: order.customerName })}
-                      style={{
-                        background: '#800020',
-                        color: '#d4af37',
-                        border: 'none',
-                        padding: '0.38rem 0.85rem',
-                        borderRadius: '5px',
-                        fontSize: '0.8rem',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      🔍 View Attached Reference Photo
-                    </button>
-                    <div style={{ fontSize: '0.74rem', color: '#777', marginTop: '2px' }}>
-                      Customer uploaded design/vintage saree image
-                    </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.6rem', lineHeight: 1.5 }}>
+                  <div><strong>Heritage Motif:</strong> <span style={{ color: '#800020', fontWeight: 700 }}>{order.customInfo.motif}</span></div>
+                  {order.customInfo.city && <div><strong>Destination City:</strong> {order.customInfo.city}</div>}
+                  <div><strong>Loom Timeline:</strong> <span style={{ color: '#15803d', fontWeight: 700 }}>2 to 4 Months (Handloom)</span></div>
+                </div>
+                {order.customInfo.description && (
+                  <div style={{ marginTop: '0.6rem', background: '#ffffff', padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid #ebdccf', fontStyle: 'italic', color: '#444' }}>
+                    "{order.customInfo.description}"
                   </div>
+                )}
+
+                {/* Live Loom Visit Badge */}
+                {order.customInfo.loomVisit && (
+                  <div style={{
+                    marginTop: '0.65rem',
+                    background: 'linear-gradient(135deg, #fdfbf7 0%, #fffbeb 100%)',
+                    border: '1.5px solid #d4af37',
+                    borderRadius: '8px',
+                    padding: '0.65rem 0.85rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem',
+                    boxShadow: '0 2px 6px rgba(212,175,55,0.15)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.3rem' }}>🏛️</span>
+                      <div>
+                        <div style={{ fontWeight: 800, color: '#800020', fontSize: '0.86rem' }}>
+                          Live Rosewood Loom Visit Confirmed
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: '#92400e', fontWeight: 600, marginTop: '1px' }}>
+                          {order.customInfo.loomVisit}
+                        </div>
+                      </div>
+                    </div>
+                    <span style={{
+                      background: '#800020',
+                      color: '#d4af37',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontSize: '0.72rem',
+                      fontWeight: 800
+                    }}>
+                      ✓ Loom Visit Booked
+                    </span>
+                  </div>
+                )}
+
+                {/* 4 Custom Weave Parts: Saree Body, Pallu, Border, Blouse */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '0.6rem',
+                  marginTop: '0.8rem'
+                }}>
+                  {CUSTOM_PARTS_CONFIG.map((cfg) => {
+                    const part = customParts[cfg.key] || { photo: null, color: cfg.defaultColor };
+                    const partPhoto = part.photo || (cfg.key === 'saree' ? order.customInfo.referencePhoto : null);
+
+                    return (
+                      <div
+                        key={cfg.key}
+                        style={{
+                          background: '#ffffff',
+                          border: '1px solid #ebdccf',
+                          borderRadius: '8px',
+                          padding: '0.6rem',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#800020', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>{cfg.icon}</span> {cfg.label}
+                          </span>
+                          <span style={{
+                            background: '#fef3c7',
+                            color: '#92400e',
+                            border: '1px solid #fde68a',
+                            padding: '1px 6px',
+                            borderRadius: '4px',
+                            fontSize: '0.72rem',
+                            fontWeight: 600
+                          }}>
+                            {part.color}
+                          </span>
+                        </div>
+
+                        {partPhoto ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.4rem' }}>
+                            <img
+                              src={partPhoto}
+                              alt={`${cfg.label} Reference`}
+                              onError={(e) => {
+                                if (!e.target.dataset.triedFallback) {
+                                  e.target.dataset.triedFallback = 'true';
+                                  try {
+                                    const photoMap = JSON.parse(localStorage.getItem('patola_custom_order_photos') || '{}');
+                                    const cleanPhone = String(order.contactPhone || '').replace(/\D/g, '');
+                                    const backup = photoMap[`raw_${order.id}`] || photoMap[`raw_${order.orderReference}`] || photoMap[`raw_${order.contactPhone}`] || photoMap[`raw_${cleanPhone}`];
+                                    if (backup) {
+                                      e.target.src = backup;
+                                      return;
+                                    }
+                                  } catch (err) {}
+                                }
+                                e.target.style.display = 'none';
+                              }}
+                              style={{ width: '46px', height: '46px', objectFit: 'cover', borderRadius: '6px', border: '1.5px solid #d4af37', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', background: '#f5efe6' }}
+                              onClick={() => setPreviewCustomPhoto({ img: partPhoto, name: `${order.customerName} - ${cfg.label} (${part.color})` })}
+                              title="Click to view full size"
+                            />
+                            <div>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewCustomPhoto({ img: partPhoto, name: `${order.customerName} - ${cfg.label} (${part.color})` })}
+                                style={{
+                                  background: '#800020',
+                                  color: '#d4af37',
+                                  border: 'none',
+                                  padding: '0.24rem 0.6rem',
+                                  borderRadius: '4px',
+                                  fontSize: '0.73rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                🔍 View Photo
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: '0.72rem', color: '#999', fontStyle: 'italic', marginTop: '0.3rem' }}>
+                            📷 No photo attached
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Order Details & Summary */}
@@ -3066,10 +3435,10 @@ export default function OrderTrackingModal({
               </button>
 
               <h4 style={{ color: '#800020', fontFamily: 'Cinzel, serif', margin: '0 0 0.4rem 0', fontSize: '1.2rem' }}>
-                ✦ Customer Reference Saree Photo ✦
+                ✦ {previewCustomPhoto.title || `Authentic Saree Photo: ${previewCustomPhoto.name || 'Patola'}`} ✦
               </h4>
               <p style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', color: '#666' }}>
-                {previewCustomPhoto.name ? `Attached by ${previewCustomPhoto.name} for Bespoke Handloom Commission` : 'Authentic Client Design Reference'}
+                {previewCustomPhoto.subtitle || (previewCustomPhoto.name ? `Attached by ${previewCustomPhoto.name} for Bespoke Handloom Commission` : 'Authentic Handloom Patola Drape')}
               </p>
 
               <div style={{

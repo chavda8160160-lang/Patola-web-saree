@@ -1165,6 +1165,7 @@ export default function App() {
         isOpen={true}
         onClose={() => setIsBookingOpen(false)}
         onShowToast={showToast}
+        loggedInCustomer={currentCustomer}
       />}
 
       {/* Bespoke Custom Patola Creation Modal with Photo Upload */}
@@ -1172,6 +1173,7 @@ export default function App() {
         isOpen={true}
         onClose={() => setIsCustomPatolaOpen(false)}
         onShowToast={showToast}
+        loggedInCustomer={currentCustomer}
         onCustomOrderCreated={(customOrder) => {
           setActiveTrackOrder(customOrder);
           setRecentOrders(prev => [customOrder, ...prev.filter(o => o.orderReference !== customOrder.orderReference)]);
@@ -1203,6 +1205,10 @@ export default function App() {
           setIsTrackingOpen(false);
           setOpenTrackingAfterAuth(true);
           setIsCustomerAuthOpen(true);
+        }}
+        onOpenCustomerAccount={() => {
+          setIsTrackingOpen(false);
+          setIsCustomerAccountOpen(true);
         }}
         formatPrice={formatPrice}
         currentCurrency={currentCurrency}

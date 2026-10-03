@@ -67,7 +67,7 @@ export const isHeicFile = async (file) => {
  * @param {Object} options - Compression options
  * @returns {Promise<string>} Compressed Base64 Data URL
  */
-export const compressImageFile = async (file, { maxWidth = 1200, maxHeight = 1200, quality = 0.82 } = {}) => {
+export const compressImageFile = async (file, { maxWidth = 1000, maxHeight = 1000, quality = 0.80, targetMaxKb = 180 } = {}) => {
   if (!file) return null;
 
   let activeBlob = file;
@@ -83,7 +83,7 @@ export const compressImageFile = async (file, { maxWidth = 1200, maxHeight = 120
       const jpegBlob = await heicTo({
         blob: file,
         type: 'image/jpeg',
-        quality: 0.88
+        quality: 0.85
       });
       if (jpegBlob) {
         activeBlob = jpegBlob;
@@ -101,7 +101,7 @@ export const compressImageFile = async (file, { maxWidth = 1200, maxHeight = 120
           const res = await converter({
             blob: file,
             toType: 'image/jpeg',
-            quality: 0.88
+            quality: 0.85
           });
           activeBlob = Array.isArray(res) ? res[0] : res;
           converted = true;
@@ -112,67 +112,135 @@ export const compressImageFile = async (file, { maxWidth = 1200, maxHeight = 120
     }
 
     if (!converted) {
-      throw new Error('Apple iPhone HEIC format could not be decoded. Please select a JPG/PNG or update camera format to Most Compatible.');
+      console.warn('HEIC conversion unsuccessful, attempting direct canvas load.');
     }
   }
 
-  // 2. Scale & compress through HTML5 Canvas
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+  // 2. High-performance, memory-safe image loader (createObjectURL avoids large in-memory strings)
+  const loadImage = (blob) => {
+    return new Promise((resolve, reject) => {
+      let objectUrl = null;
+      try {
+        objectUrl = URL.createObjectURL(blob);
+      } catch (e) {}
 
-    reader.onload = (event) => {
       const img = new Image();
-
       img.onload = () => {
-        let { width, height } = img;
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        resolve(img);
+      };
+      img.onerror = () => {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        // Fallback to FileReader if objectURL failed
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const fallbackImg = new Image();
+          fallbackImg.onload = () => resolve(fallbackImg);
+          fallbackImg.onerror = () => reject(new Error('Browser could not decode the selected image file.'));
+          fallbackImg.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      };
 
-        // Maintain aspect ratio while bounding within maxWidth / maxHeight
-        if (width > maxWidth || height > maxHeight) {
-          if (width > height) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          } else {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
+      if (objectUrl) {
+        img.src = objectUrl;
+      } else {
+        const reader = new FileReader();
+        reader.onload = (e) => { img.src = e.target.result; };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      }
+    });
+  };
+
+  try {
+    const img = await loadImage(activeBlob);
+
+    // 3. Compute optimal bounded dimensions
+    let { width, height } = img;
+    let targetW = width;
+    let targetH = height;
+
+    if (width > maxWidth || height > maxHeight) {
+      if (width > height) {
+        targetH = Math.round((height * maxWidth) / width);
+        targetW = maxWidth;
+      } else {
+        targetW = Math.round((width * maxHeight) / height);
+        targetH = maxHeight;
+      }
+    }
+
+    targetW = Math.max(targetW, 1);
+    targetH = Math.max(targetH, 1);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Canvas 2D context unavailable.');
+    }
+
+    // Fill white background for transparent images
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, targetW, targetH);
+
+    // High quality smoothing
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, targetW, targetH);
+
+    // 4. Initial export with target quality
+    let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+
+    // 5. Smart Adaptive Compression Pass (If customer uploaded a huge dense photo > targetMaxKb)
+    // Approximate base64 length in bytes is (len * 3 / 4)
+    const maxChars = Math.round(targetMaxKb * 1024 * 1.37);
+    if (compressedDataUrl.length > maxChars) {
+      // Second pass: gently step down quality to 0.70
+      let pass2 = canvas.toDataURL('image/jpeg', Math.max(quality - 0.12, 0.65));
+      if (pass2.length < compressedDataUrl.length) {
+        compressedDataUrl = pass2;
+      }
+
+      // If still oversized (e.g. extremely dense pattern), scale down canvas to 800px max
+      if (compressedDataUrl.length > maxChars && (targetW > 800 || targetH > 800)) {
+        const scaleFactor = 800 / Math.max(targetW, targetH);
+        const w2 = Math.max(Math.round(targetW * scaleFactor), 1);
+        const h2 = Math.max(Math.round(targetH * scaleFactor), 1);
+
+        const canvas2 = document.createElement('canvas');
+        canvas2.width = w2;
+        canvas2.height = h2;
+        const ctx2 = canvas2.getContext('2d');
+        if (ctx2) {
+          ctx2.fillStyle = '#FFFFFF';
+          ctx2.fillRect(0, 0, w2, h2);
+          ctx2.imageSmoothingEnabled = true;
+          ctx2.imageSmoothingQuality = 'high';
+          ctx2.drawImage(canvas, 0, 0, w2, h2);
+          const pass3 = canvas2.toDataURL('image/jpeg', 0.72);
+          if (pass3.length < compressedDataUrl.length) {
+            compressedDataUrl = pass3;
           }
         }
+      }
+    }
 
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.max(width, 1);
-        canvas.height = Math.max(height, 1);
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          return reject(new Error('Browser could not create an image canvas for compression.'));
-        }
-
-        // Fill background white in case of transparent images converted to JPEG
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // High quality image smoothing
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        try {
-          const compressed = canvas.toDataURL('image/jpeg', quality);
-          resolve(compressed);
-        } catch (err) {
-          reject(new Error(`Image compression failed: ${err.message || 'canvas export was blocked.'}`));
-        }
-      };
-
-      img.onerror = () => {
-        reject(new Error('Browser was unable to load image into canvas for optimization.'));
-      };
-
-      img.src = event.target.result;
-    };
-
-    reader.onerror = reject;
-    reader.readAsDataURL(activeBlob);
-  });
+    return compressedDataUrl;
+  } catch (err) {
+    console.warn('Canvas auto-compression fallback triggered:', err);
+    // Absolute fallback: read as standard Data URL so user is never blocked
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(activeBlob);
+    });
+  }
 };
 
 /**
@@ -271,3 +339,111 @@ export const cleanupAndCompressStorageSarees = async () => {
     console.warn('Storage saree compression note:', err);
   }
 };
+
+/**
+ * Opens any image (including Base64 Data URLs and server paths) in a new browser tab/page.
+ * Handles browser restrictions on top-level data:image navigation by rendering a rich viewer document.
+ */
+export const openImageInNewTab = (imgSrc, title = 'Patola Reference Photo') => {
+  if (!imgSrc) return false;
+
+  try {
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title} - PATOLA MADE VANKAR</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0f0909;
+      color: #d4af37;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #800020;
+      color: #d4af37;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #d4af37;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+    .title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .btn {
+      background: #d4af37;
+      color: #800020;
+      border: none;
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 0.88rem;
+    }
+    .btn:hover {
+      background: #fef08a;
+    }
+    .view-area {
+      padding: 70px 20px 20px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+    }
+    img {
+      max-width: 95vw;
+      max-height: 85vh;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 2px solid #d4af37;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.85);
+      background: #1a1111;
+    }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <span class="title">👑 PATOLA MADE VANKAR • ${title}</span>
+    <button class="btn" onclick="window.close()">✕ Close Tab</button>
+  </div>
+  <div class="view-area">
+    <img src="${imgSrc}" alt="${title}" />
+  </div>
+</body>
+</html>`);
+      win.document.close();
+      return true;
+    }
+  } catch (err) {
+    console.warn('Could not open image in new window:', err);
+  }
+
+  // Fallback: If window.open was blocked or failed, attempt direct open for server URLs
+  if (imgSrc.startsWith('http') || imgSrc.startsWith('/')) {
+    window.open(imgSrc, '_blank');
+    return true;
+  }
+  return false;
+};
+

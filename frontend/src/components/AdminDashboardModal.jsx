@@ -22,6 +22,7 @@ import { createPortal } from 'react-dom';
 import { ApiService } from '../services/api';
 import { getOrderDeliveryOtp, formatDateDDMMYYYY } from '../utils/security';
 import { compressImageFile, cleanupAndCompressStorageSarees } from '../utils/imageCompressor';
+import { parseCustomOrderParts, CUSTOM_PARTS_CONFIG } from '../utils/customOrderHelper';
 
 const STAGES = [
   { id: 1, name: 'Pending', desc: 'Order Placed (Awaiting Payment / Confirmation)' },
@@ -871,29 +872,62 @@ export default function AdminDashboardModal({
 
   const getCustomOrderPhoto = (b) => {
     if (!b) return null;
-    // 1. Try direct property (clean server file path or URL)
+    // 1. Direct object parts if already attached
+    if (b.referencePhoto && typeof b.referencePhoto === 'object') {
+      const p = b.referencePhoto.saree?.photo || b.referencePhoto.pallu?.photo || b.referencePhoto.border?.photo || b.referencePhoto.blouse?.photo;
+      if (p) return p;
+    }
+    // 2. Try multi-part JSON in b.referencePhoto
+    if (typeof b.referencePhoto === 'string' && b.referencePhoto.trim().startsWith('{')) {
+      try {
+        const parsed = JSON.parse(b.referencePhoto);
+        const p = parsed?.saree?.photo || parsed?.pallu?.photo || parsed?.border?.photo || parsed?.blouse?.photo;
+        if (p) return p;
+      } catch (e) {}
+    }
+    // 3. Try direct property (clean server file path or URL)
     if (typeof b.referencePhoto === 'string' && (b.referencePhoto.startsWith('/') || b.referencePhoto.startsWith('http') || b.referencePhoto.startsWith('data:image'))) {
       return b.referencePhoto;
     }
-    // 2. Try extracting from b.notes if legacy embedded [REF_PHOTO:...] or [PHOTO_DATA:...]
+    // 4. Try extracting from b.notes if legacy embedded [REF_PHOTO:...] or [PHOTO_DATA:...]
     if (b.notes && typeof b.notes === 'string') {
       const match = b.notes.match(/\[REF_PHOTO:([^\]]+)\]/) || b.notes.match(/\[PHOTO_DATA:([^\]]+)\]/);
       if (match && match[1]) return match[1];
     }
-    // 3. Try localStorage photo cache
+    // 5. Try localStorage photo cache (including raw base64 backups)
     try {
       const photoMap = JSON.parse(localStorage.getItem('patola_custom_order_photos') || '{}');
       const cleanPhone = String(b.phone || '').replace(/\D/g, '');
       const candidates = [
+        photoMap[`parts_${b.id}`],
+        photoMap[`parts_CST-${b.id}`],
+        photoMap[`parts_${cleanPhone}`],
         photoMap[String(b.id)],
         photoMap[`CST-${b.id}`],
         photoMap[`VP-CST-${String(b.id).padStart(4, '0')}`],
         photoMap[String(b.phone)],
-        photoMap[cleanPhone]
+        photoMap[cleanPhone],
+        photoMap[`raw_${b.id}`],
+        photoMap[`raw_CST-${b.id}`],
+        photoMap[`raw_VP-CST-${String(b.id).padStart(4, '0')}`],
+        photoMap[`raw_${b.phone}`],
+        photoMap[`raw_${cleanPhone}`]
       ];
       for (const cand of candidates) {
-        if (typeof cand === 'string' && cand.length > 3 && (cand.startsWith('/') || cand.startsWith('http') || cand.startsWith('data:image'))) {
-          return cand;
+        if (!cand) continue;
+        if (typeof cand === 'object') {
+          const p = cand.saree?.photo || cand.pallu?.photo || cand.border?.photo || cand.blouse?.photo;
+          if (p) return p;
+        } else if (typeof cand === 'string' && cand.length > 3) {
+          if (cand.trim().startsWith('{')) {
+            try {
+              const parsed = JSON.parse(cand);
+              const p = parsed?.saree?.photo || parsed?.pallu?.photo || parsed?.border?.photo || parsed?.blouse?.photo;
+              if (p) return p;
+            } catch (err) {}
+          } else if (cand.startsWith('/') || cand.startsWith('http') || cand.startsWith('data:image')) {
+            return cand;
+          }
         }
       }
     } catch (e) {}
@@ -901,10 +935,17 @@ export default function AdminDashboardModal({
   };
 
   const parseCustomNotes = (notes) => {
-    if (!notes) return { colors: '', city: '', description: '', hasPhoto: false };
+    if (!notes) return { colors: '', city: '', description: '', hasPhoto: false, loomVisit: null };
     const hasPhoto = (notes.includes('[Reference Photo Attached') || notes.includes('[REF_PHOTO:') || notes.includes('[PHOTO_DATA:'));
+    
+    // Extract Loom Visit
+    const loomMatch = notes.match(/\[LOOM_VISIT_BOOKED:\s*([^\]]+)\]/i);
+    const loomVisit = loomMatch ? loomMatch[1].trim() : null;
+
     let clean = notes
       .replace(/\[BESPOKE CUSTOM PATOLA\]/gi, '')
+      .replace(/\[LOOM_VISIT_BOOKED:[^\]]+\]/gi, '')
+      .replace(/\[NO_LOOM_VISIT\]/gi, '')
       .replace(/\[Reference Photo Attached by Customer\]/gi, '')
       .replace(/\[No Photo Attached\]/gi, '')
       .replace(/\[REF_PHOTO:[^\]]+\]/gi, '')
@@ -924,7 +965,7 @@ export default function AdminDashboardModal({
     const descMatch = clean.match(/Description:\s*([^.]+)/i);
     if (descMatch) description = descMatch[1].trim();
 
-    return { colors, city, description: description || clean, hasPhoto };
+    return { colors, city, description: description || clean, hasPhoto, loomVisit };
   };
 
   // Helper to read item-level cancellations for an order
@@ -3131,7 +3172,60 @@ export default function AdminDashboardModal({
 
   // Separate Custom Orders from Regular Studio Visits
   const customOrders = bookings.filter(isCustomBooking);
-  const visitBookingsList = bookings.filter(b => !isCustomBooking(b));
+
+  // Visit bookings list includes regular studio/video visits PLUS any custom orders where a Loom Visit was booked
+  const visitBookingsList = useMemo(() => {
+    const list = [];
+    const seenIds = new Set();
+
+    // 1. Regular studio & video visits
+    bookings.forEach(b => {
+      if (!isCustomBooking(b)) {
+        list.push(b);
+        seenIds.add(String(b.id));
+      }
+    });
+
+    // 2. Include any custom orders that booked a live loom visit
+    customOrders.forEach(c => {
+      const notes = c.notes || '';
+      const hasLoomVisit = notes.includes('[LOOM_VISIT_BOOKED:') ||
+        (c.experienceType && c.experienceType.toLowerCase().includes('loom visit'));
+
+      if (hasLoomVisit) {
+        const loomMatch = notes.match(/\[LOOM_VISIT_BOOKED:\s*([^\]]+)\]/i);
+        const loomInfo = loomMatch ? loomMatch[1] : '';
+        const dateMatch = loomInfo.match(/Date:\s*([^|]+)/i);
+        const slotMatch = loomInfo.match(/Slot:\s*([^|]+)/i);
+        const guestsMatch = loomInfo.match(/Guests:\s*([^|]+)/i);
+
+        const parsedDate = (dateMatch && dateMatch[1].trim() && dateMatch[1].trim() !== 'Flexible during weaving')
+          ? dateMatch[1].trim()
+          : (c.preferredDate || c.createdAt);
+
+        const slot = slotMatch ? slotMatch[1].trim() : 'Morning Slot (10:00 AM - 01:00 PM)';
+        const guests = guestsMatch ? guestsMatch[1].trim() : '1 to 2 Persons';
+
+        const visitId = `VISIT-CST-${c.id}`;
+        if (!seenIds.has(visitId) && !seenIds.has(String(c.id))) {
+          list.push({
+            ...c,
+            id: visitId,
+            originalCustomId: c.id,
+            isLinkedCustomOrder: true,
+            experienceType: 'In-Person Rosewood Loom Visit',
+            preferredDate: parsedDate,
+            timeSlot: slot,
+            guestsCount: guests,
+            notes: `[LOOM_VISIT_BOOKED: In-Person Rosewood Loom Visit | Slot: ${slot} | Guests: ${guests}] Linked to Custom Saree Commission #CST-${c.id}. Motif: ${c.motifPreference || 'Bespoke'}.`
+          });
+          seenIds.add(visitId);
+        }
+      }
+    });
+
+    return list;
+  }, [bookings, customOrders]);
 
   // Helpers to detect visit booking statuses cleanly
   const isBookingCancelled = (b) => {
@@ -4570,8 +4664,24 @@ Warm regards,
                                             flexWrap: 'wrap'
                                           }}
                                         >
-                                          {/* Product Thumbnail Image */}
-                                          <div style={{ position: 'relative', width: '64px', height: '64px', flexShrink: 0 }}>
+                                          {/* Product Thumbnail Image (Clickable for Full Lightbox Inspection) */}
+                                          <div
+                                            onClick={() => setPreviewCustomPhoto({
+                                              img: displayImage,
+                                              name: displayTitle,
+                                              title: `Ordered ${isDup ? 'Dupatta' : 'Saree'}: ${displayTitle}`,
+                                              subtitle: `${displayCat} • ${displayWeave} • Motif: ${displayMotif} (Order #${ord.orderReference} • Patron: ${ord.customerName})`
+                                            })}
+                                            style={{
+                                              position: 'relative',
+                                              width: '68px',
+                                              height: '68px',
+                                              flexShrink: 0,
+                                              cursor: 'pointer',
+                                              transition: 'transform 0.15s ease'
+                                            }}
+                                            title={`Click to view full-size photo of ${displayTitle} 🔍`}
+                                          >
                                             <img
                                               src={displayImage}
                                               alt={displayTitle}
@@ -4581,10 +4691,29 @@ Warm regards,
                                                 objectFit: 'cover',
                                                 borderRadius: '6px',
                                                 border: isItemCanc ? '2px solid #f87171' : (isDup ? '2px solid #9333ea' : '2px solid #d4af37'),
-                                                filter: isItemCanc ? 'grayscale(40%)' : 'none'
+                                                filter: isItemCanc ? 'grayscale(40%)' : 'none',
+                                                boxShadow: '0 2px 6px rgba(0,0,0,0.12)'
                                               }}
                                               onError={(e) => { e.target.src = isDup ? '/assets/images/saree_royal_blue.jpg' : DEFAULT_SAREE_IMAGES[0]; }}
                                             />
+                                            <span style={{
+                                              position: 'absolute',
+                                              top: '-4px',
+                                              left: '-4px',
+                                              background: '#800020',
+                                              color: '#d4af37',
+                                              border: '1px solid #d4af37',
+                                              fontSize: '0.62rem',
+                                              width: '16px',
+                                              height: '16px',
+                                              borderRadius: '50%',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              justifyContent: 'center',
+                                              boxShadow: '0 1px 3px rgba(0,0,0,0.35)'
+                                            }} title="Click to inspect full photo">
+                                              🔍
+                                            </span>
                                             <span style={{
                                               position: 'absolute',
                                               bottom: '-4px',
@@ -4594,7 +4723,8 @@ Warm regards,
                                               fontSize: '0.65rem',
                                               padding: '1px 5px',
                                               borderRadius: '4px',
-                                              fontWeight: 700
+                                              fontWeight: 700,
+                                              boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
                                             }}>
                                               {isDup ? '🧣 DUPATTA' : '🥻 SAREE'}
                                             </span>
@@ -4603,9 +4733,50 @@ Warm regards,
                                           {/* Product Full Details */}
                                           <div style={{ flex: 1, minWidth: '220px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                              <span style={{ fontWeight: 800, fontSize: '0.95rem', color: isItemCanc ? '#991b1b' : '#800020', textDecoration: isItemCanc ? 'line-through' : 'none' }}>
+                                              <span
+                                                onClick={() => setPreviewCustomPhoto({
+                                                  img: displayImage,
+                                                  name: displayTitle,
+                                                  title: `Ordered ${isDup ? 'Dupatta' : 'Saree'}: ${displayTitle}`,
+                                                  subtitle: `${displayCat} • ${displayWeave} • Motif: ${displayMotif} (Order #${ord.orderReference} • Patron: ${ord.customerName})`
+                                                })}
+                                                style={{
+                                                  fontWeight: 800,
+                                                  fontSize: '0.95rem',
+                                                  color: isItemCanc ? '#991b1b' : '#800020',
+                                                  textDecoration: isItemCanc ? 'line-through' : 'none',
+                                                  cursor: 'pointer'
+                                                }}
+                                                title="Click to view full photo"
+                                              >
                                                 {displayTitle}
                                               </span>
+                                              <button
+                                                type="button"
+                                                onClick={() => setPreviewCustomPhoto({
+                                                  img: displayImage,
+                                                  name: displayTitle,
+                                                  title: `Ordered ${isDup ? 'Dupatta' : 'Saree'}: ${displayTitle}`,
+                                                  subtitle: `${displayCat} • ${displayWeave} • Motif: ${displayMotif} (Order #${ord.orderReference} • Patron: ${ord.customerName})`
+                                                })}
+                                                style={{
+                                                  background: '#800020',
+                                                  color: '#d4af37',
+                                                  border: '1px solid #d4af37',
+                                                  padding: '2px 7px',
+                                                  borderRadius: '4px',
+                                                  fontSize: '0.7rem',
+                                                  fontWeight: 700,
+                                                  cursor: 'pointer',
+                                                  display: 'inline-flex',
+                                                  alignItems: 'center',
+                                                  gap: '3px',
+                                                  boxShadow: '0 1px 3px rgba(128,0,32,0.18)'
+                                                }}
+                                                title="Click to view full-size photo"
+                                              >
+                                                🔍 View Photo
+                                              </button>
                                               {sId && (
                                                 <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#92400e', padding: '1px 7px', borderRadius: '4px', fontWeight: 700, fontFamily: 'monospace' }}>
                                                   #{sId}
@@ -5581,6 +5752,7 @@ Warm regards,
                     {filteredCustomOrders.map(c => {
                       const notesInfo = parseCustomNotes(c.notes);
                       const photoUrl = getCustomOrderPhoto(c);
+                      const customParts = parseCustomOrderParts(c);
                       const isCancelled = (c.status || '').toLowerCase().includes('cancel');
                       const isCompleted = (c.status || '').toLowerCase() === 'completed';
                       const isWeaving = (c.status || '').toLowerCase().includes('weaving') || (c.status || '').toLowerCase().includes('loom');
@@ -5647,6 +5819,29 @@ Warm regards,
                                   {getOrderDeliveryOtp(c)}
                                 </span>
                               </span>
+
+                              {/* Compact Loom Visit Logo Only */}
+                              {notesInfo.loomVisit && (
+                                <span
+                                  title={`Live Rosewood Loom Visit Booked: ${notesInfo.loomVisit} (Click to open Book Loom Visits)`}
+                                  style={{
+                                    background: '#800020',
+                                    color: '#d4af37',
+                                    border: '1.5px solid #d4af37',
+                                    padding: '0.22rem 0.55rem',
+                                    borderRadius: '6px',
+                                    fontWeight: 800,
+                                    fontSize: '0.92rem',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    boxShadow: '0 1px 3px rgba(128, 0, 32, 0.25)',
+                                    cursor: 'pointer'
+                                  }}
+                                  onClick={() => setActiveTab('visits')}
+                                >
+                                  🏛️
+                                </span>
+                              )}
                             </div>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -5740,7 +5935,7 @@ Warm regards,
 
                               <div style={{ marginTop: '0.8rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                 <a
-                                  href={`https://wa.me/91${c.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Namaste ${c.fullName}, PATOLA MADE VANKAR Master Weaver here regarding your Bespoke Custom Double Ikat Patola inquiry (#CST-${c.id}).`)}`}
+                                  href={`https://wa.me/91${c.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Namaste ${c.fullName}, PATOLA MADE VANKAR Master Weaver here regarding your Bespoke Custom Double Ikat Patola inquiry (#CST-${c.id})${notesInfo.loomVisit ? ` & Live Rosewood Loom Visit (${notesInfo.loomVisit})` : ''}.`)}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   style={{
@@ -5781,75 +5976,120 @@ Warm regards,
                               </div>
                             </div>
 
-                            {/* Column 2: Custom Saree Requirements & Photo */}
+                            {/* Column 2: Custom Saree Requirements & 4-Part Weave Specifications */}
                             <div style={{ background: '#fdfbf7', padding: '1rem', borderRadius: '8px', border: '1px solid #ede3d4' }}>
                               <h5 style={{ margin: '0 0 0.6rem 0', color: '#800020', fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                🧵 Custom Saree Specifications
+                                🧵 Custom Saree Specifications (4 Parts)
                               </h5>
                               <div style={{ fontSize: '0.88rem', lineHeight: '1.6', color: '#333' }}>
                                 <div><strong>Preferred Motif:</strong> <span style={{ color: '#800020', fontWeight: 700 }}>{c.motifPreference}</span></div>
-                                {notesInfo.colors && (
-                                  <div><strong>Silk Color Palette:</strong> <span style={{ background: '#fef3c7', padding: '0.1rem 0.5rem', borderRadius: '4px', fontWeight: 600, color: '#92400e' }}>{notesInfo.colors}</span></div>
-                                )}
-                                <div style={{ marginTop: '0.4rem' }}>
+                                <div style={{ marginTop: '0.3rem' }}>
                                   <strong>Customer Requirements:</strong>
-                                  <p style={{ margin: '0.2rem 0 0 0', color: '#555', fontStyle: 'italic', background: '#fff', padding: '0.5rem 0.7rem', borderRadius: '6px', border: '1px dashed #dcd0bf' }}>
+                                  <p style={{ margin: '0.2rem 0 0 0', color: '#555', fontStyle: 'italic', background: '#fff', padding: '0.4rem 0.6rem', borderRadius: '6px', border: '1px dashed #dcd0bf', fontSize: '0.84rem' }}>
                                     "{notesInfo.description || 'No additional notes provided.'}"
                                   </p>
                                 </div>
                               </div>
 
-                              {/* Customer Uploaded Photo Preview */}
-                              <div style={{ marginTop: '0.8rem' }}>
-                                {photoUrl ? (
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                                    <img
-                                      src={photoUrl}
-                                      alt="Customer Reference"
-                                      onError={(e) => { e.target.style.display = 'none'; }}
-                                      onClick={() => setPreviewCustomPhoto({ img: photoUrl, name: c.fullName })}
+                              {/* 4 Parts Cards: Saree Body, Pallu, Border, Blouse */}
+                              <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+                                gap: '0.6rem',
+                                marginTop: '0.8rem'
+                              }}>
+                                {CUSTOM_PARTS_CONFIG.map((cfg) => {
+                                  const part = customParts[cfg.key] || { photo: null, color: cfg.defaultColor };
+                                  const partPhoto = part.photo || (cfg.key === 'saree' ? photoUrl : null);
+
+                                  return (
+                                    <div
+                                      key={cfg.key}
                                       style={{
-                                        width: '56px',
-                                        height: '56px',
-                                        objectFit: 'cover',
-                                        borderRadius: '6px',
-                                        border: '2px solid #d4af37',
-                                        cursor: 'pointer',
-                                        boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-                                        background: '#f5efe6'
+                                        background: '#ffffff',
+                                        border: '1px solid #e7dac8',
+                                        borderRadius: '8px',
+                                        padding: '0.6rem',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
                                       }}
-                                      title="Click to view full image"
-                                    />
-                                    <div>
-                                      <button
-                                        type="button"
-                                        onClick={() => setPreviewCustomPhoto({ img: photoUrl, name: c.fullName })}
-                                        style={{
-                                          background: '#800020',
-                                          color: '#d4af37',
-                                          border: 'none',
-                                          padding: '0.4rem 0.8rem',
-                                          borderRadius: '6px',
-                                          fontSize: '0.8rem',
-                                          fontWeight: 700,
-                                          cursor: 'pointer',
-                                          display: 'inline-flex',
-                                          alignItems: 'center',
-                                          gap: '0.35rem'
-                                        }}
-                                      >
-                                        🔍 View Customer Photo
-                                      </button>
-                                      <div style={{ fontSize: '0.75rem', color: '#777', marginTop: '0.2rem' }}>
-                                        Uploaded reference saree photo
+                                    >
+                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#800020', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                          <span>{cfg.icon}</span> {cfg.label}
+                                        </span>
+                                        <span style={{
+                                          background: '#fef3c7',
+                                          color: '#92400e',
+                                          border: '1px solid #fde68a',
+                                          padding: '1px 6px',
+                                          borderRadius: '4px',
+                                          fontSize: '0.72rem',
+                                          fontWeight: 600
+                                        }}>
+                                          {part.color}
+                                        </span>
                                       </div>
+
+                                      {partPhoto ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.4rem' }}>
+                                          <img
+                                            src={partPhoto}
+                                            alt={`${cfg.label} Reference`}
+                                            onError={(e) => {
+                                              if (!e.target.dataset.triedFallback) {
+                                                e.target.dataset.triedFallback = 'true';
+                                                try {
+                                                  const photoMap = JSON.parse(localStorage.getItem('patola_custom_order_photos') || '{}');
+                                                  const cleanPhone = String(c.phone || '').replace(/\D/g, '');
+                                                  const backup = photoMap[`raw_${c.id}`] || photoMap[`raw_${cleanPhone}`];
+                                                  if (backup) {
+                                                    e.target.src = backup;
+                                                    return;
+                                                  }
+                                                } catch (err) {}
+                                              }
+                                              e.target.style.display = 'none';
+                                            }}
+                                            onClick={() => setPreviewCustomPhoto({ img: partPhoto, name: `${c.fullName} - ${cfg.label} (${part.color})` })}
+                                            style={{
+                                              width: '46px',
+                                              height: '46px',
+                                              objectFit: 'cover',
+                                              borderRadius: '6px',
+                                              border: '1.5px solid #d4af37',
+                                              cursor: 'pointer',
+                                              boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+                                              background: '#f5efe6'
+                                            }}
+                                            title="Click to view full image"
+                                          />
+                                          <div>
+                                            <button
+                                              type="button"
+                                              onClick={() => setPreviewCustomPhoto({ img: partPhoto, name: `${c.fullName} - ${cfg.label} (${part.color})` })}
+                                              style={{
+                                                background: '#800020',
+                                                color: '#d4af37',
+                                                border: 'none',
+                                                padding: '0.25rem 0.6rem',
+                                                borderRadius: '4px',
+                                                fontSize: '0.74rem',
+                                                fontWeight: 700,
+                                                cursor: 'pointer'
+                                              }}
+                                            >
+                                              🔍 View Photo
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div style={{ fontSize: '0.73rem', color: '#999', fontStyle: 'italic', marginTop: '0.3rem' }}>
+                                          📷 No photo attached
+                                        </div>
+                                      )}
                                     </div>
-                                  </div>
-                                ) : (
-                                  <div style={{ fontSize: '0.8rem', color: '#888', fontStyle: 'italic' }}>
-                                    📷 No reference photo attached with this order
-                                  </div>
-                                )}
+                                  );
+                                })}
                               </div>
                             </div>
                           </div>
@@ -7419,8 +7659,42 @@ Warm regards,
                                 </div>
                               </div>
                               <div style={{ fontSize: '0.78rem', color: '#666', marginTop: '0.2rem' }}>
-                                {isStudio ? '📍 Heritage Loom Studio, Gujarat' : '🌐 1-on-1 Virtual Video Loom Tour'}
+                                {isStudio ? '📍 Heritage Rosewood Loom Studio' : '🌐 1-on-1 Virtual Video Loom Tour'}
                               </div>
+                              {b.timeSlot && (
+                                <div style={{ fontSize: '0.8rem', color: '#800020', fontWeight: 700, marginTop: '0.3rem' }}>
+                                  ⏰ {b.timeSlot}
+                                </div>
+                              )}
+                              {b.guestsCount && (
+                                <div style={{ fontSize: '0.78rem', color: '#92400e', fontWeight: 600 }}>
+                                  👥 {b.guestsCount}
+                                </div>
+                              )}
+                              {b.isLinkedCustomOrder && (
+                                <div style={{ marginTop: '0.4rem' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setCustomSearchQuery(`CST-${b.originalCustomId}`);
+                                      setActiveTab('custom-orders');
+                                    }}
+                                    style={{
+                                      background: '#800020',
+                                      color: '#d4af37',
+                                      border: '1px solid #d4af37',
+                                      padding: '0.25rem 0.65rem',
+                                      borderRadius: '4px',
+                                      fontSize: '0.74rem',
+                                      fontWeight: 800,
+                                      cursor: 'pointer',
+                                      boxShadow: '0 1px 4px rgba(128,0,32,0.2)'
+                                    }}
+                                  >
+                                    👉 Linked Custom Order #CST-{b.originalCustomId}
+                                  </button>
+                                </div>
+                              )}
                             </div>
 
                             {/* Motif Preference Column */}
@@ -10852,10 +11126,10 @@ Warm regards,
                 ✕
               </button>
               <h4 style={{ color: '#800020', fontFamily: 'Cinzel, serif', margin: '0 0 0.4rem 0', fontSize: '1.2rem' }}>
-                ✦ Customer Reference Saree Photo ({previewCustomPhoto.name}) ✦
+                ✦ {previewCustomPhoto.title || `Customer Reference Saree Photo (${previewCustomPhoto.name})`} ✦
               </h4>
               <p style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', color: '#666' }}>
-                Uploaded by customer for bespoke Double Ikat Patola weaving reference
+                {previewCustomPhoto.subtitle || 'Uploaded by customer for bespoke Double Ikat Patola weaving reference'}
               </p>
               <div style={{
                 width: '100%',
