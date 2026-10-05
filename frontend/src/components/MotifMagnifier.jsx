@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { isStandingModelPhoto } from '../utils/imageHelper';
+import { compressImageFile } from '../utils/imageCompressor';
 
 const PHOTO_ANGLES = [
   { key: 'drape', label: '1. Full Drape', shortLabel: 'Drape', subtitle: 'Full Saree Front Silhouette' },
@@ -140,16 +141,6 @@ export default function MotifMagnifier({
         ? selectedSaree.activePhotoIdx
         : (typeof selectedSaree.selectedPhotoIdx === 'number' ? selectedSaree.selectedPhotoIdx : 0);
       setActivePhotoIdx(incomingIdx);
-
-      // Auto-scroll directly to the Interactive Weave Inspector Box (matches screenshot on mobile/tablet/desktop)
-      setTimeout(() => {
-        const target = document.getElementById('interactiveLensBox') || document.querySelector('.weave-inspector-display') || document.querySelector('.motif-interactive-grid') || document.getElementById('motifs');
-        if (target) {
-          const yOffset = -65;
-          const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
-        }
-      }, 70);
     }
   }, [selectedSaree]);
 
@@ -190,17 +181,44 @@ export default function MotifMagnifier({
     // Retain magnification or allow gentle touch release
   };
 
-  const handleFileUpload = (e) => {
+  const handleWheelZoom = (e) => {
+    // Smooth zoom on mouse wheel without jitter or losing focus
+    if (e.deltaY !== 0) {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.35 : -0.35;
+      setZoomScale(prev => Math.max(1, Math.min(8, Math.round((prev + delta) * 10) / 10)));
+      setZoomOrigin(prev => ({ ...prev, zoomed: true }));
+    }
+  };
+
+  const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFileName(file.name);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadedImage(reader.result);
-        setCustomSaree(null);
-        setActivePhotoIdx(0);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Automatically optimize in pristine Ultra-HD 4K (supports iPhone HEIC, 12MP/48MP phone cameras with zero pixelation)
+        const ultraHdUrl = await compressImageFile(file, {
+          maxWidth: 3840,
+          maxHeight: 3840,
+          quality: 0.95,
+          targetMaxKb: 4500,
+          enhanceWeaveClarity: true
+        });
+        if (ultraHdUrl) {
+          setUploadedImage(ultraHdUrl);
+          setCustomSaree(null);
+          setActivePhotoIdx(0);
+        }
+      } catch (err) {
+        console.warn('Ultra-HD compressor fallback to FileReader:', err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setUploadedImage(reader.result);
+          setCustomSaree(null);
+          setActivePhotoIdx(0);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -443,7 +461,8 @@ export default function MotifMagnifier({
                     { scale: 2, label: '2x' },
                     { scale: 2.5, label: '2.5x' },
                     { scale: 3.5, label: '3.5x' },
-                    { scale: 5, label: '5x' }
+                    { scale: 5, label: '5x' },
+                    { scale: 8, label: '8x Ultra' }
                   ].map(({ scale, label }) => (
                     <button
                       key={scale}
@@ -522,14 +541,16 @@ export default function MotifMagnifier({
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onClick={handleTouchToggle}
+              onWheel={handleWheelZoom}
               style={{ touchAction: 'none' }}
-              title="Touch & drag finger or move mouse to magnify double ikat weave threads"
+              title="Touch & drag finger, move mouse, or scroll wheel to magnify double ikat weave threads"
             >
               <div
                 aria-hidden="true"
                 className="inspector-image-backdrop"
                 style={{ backgroundImage: `url("${currentImage}")` }}
               />
+
               <img
                 src={currentImage}
                 alt={currentTitle}
@@ -551,9 +572,20 @@ export default function MotifMagnifier({
                 }}
               />
 
-              {/* Mobile Touch Drag Hint Badge */}
-              <div className="inspector-touch-hint-badge">
-                👆 Drag finger to magnify threads • {zoomScale}x Zoom
+              {/* Mobile Touch Drag Hint Badge with Live Progressive Clarity */}
+              <div className="inspector-touch-hint-badge" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>🔍</span>
+                <span>
+                  {zoomOrigin.zoomed
+                    ? zoomScale <= 2.2
+                      ? `Zoom: ${zoomScale}x • Tier 1: HD Thread Crispness`
+                      : zoomScale <= 3.8
+                      ? `Zoom: ${zoomScale}x • Tier 2: Warp & Weft Separation`
+                      : zoomScale <= 5.8
+                      ? `Zoom: ${zoomScale}x • Tier 3: Ikat Knot Resolution`
+                      : `Zoom: ${zoomScale}x • Tier 4: Ultra-Macro Silk Filaments`
+                    : `👆 Drag finger / Scroll wheel • ${zoomScale}x Ultra-HD Zoom (Clean Weave)`}
+                </span>
               </div>
 
               {/* Quick Left / Right Swapping on Magnifier View */}

@@ -102,8 +102,8 @@ export default function CustomPatolaModal({ isOpen, onClose, onShowToast, onCust
     setCompressingPart(partKey);
 
     try {
-      // Automatically compress any photo of any size (up to 50MB+) down to clean, optimized HD Base64
-      const compressed = await compressImageFile(file, { maxWidth: 1000, maxHeight: 1000, quality: 0.80, targetMaxKb: 180 });
+      // Automatically optimize photo in Ultra-HD 4K (up to 3840px) with crystal clear clarity & zero pixelation
+      const compressed = await compressImageFile(file, { maxWidth: 3840, maxHeight: 3840, quality: 0.94, targetMaxKb: 4000 });
       if (compressed) {
         setParts(prev => ({
           ...prev,
@@ -1019,7 +1019,11 @@ export default function CustomPatolaModal({ isOpen, onClose, onShowToast, onCust
                     maxWidth: '100%',
                     maxHeight: '68vh',
                     objectFit: 'contain',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    imageRendering: '-webkit-optimize-contrast',
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden',
+                    transform: 'translateZ(0)'
                   }}
                   onClick={() => openImageInNewTab(previewZoomImage.img, previewZoomImage.title)}
                   title="Click to view full original size in a dedicated page/tab"

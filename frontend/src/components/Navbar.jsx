@@ -30,7 +30,8 @@ export default function Navbar({
   onOpenSupport,
   currentCustomer = null,
   onOpenCustomerAuth,
-  onOpenCustomerAccount
+  onOpenCustomerAccount,
+  onOpenTrialRoom
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -209,6 +210,26 @@ export default function Navbar({
                 </button>
               )}
 
+              {/* 🪞 FUTURE VIRTUAL TRIAL ROOM (COMMENTED OUT FOR FUTURE USE)
+              <button
+                type="button"
+                className="btn-mobile-drawer-book"
+                onClick={() => {
+                  setMobileOpen(false);
+                  if (onOpenTrialRoom) onOpenTrialRoom();
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #2b0c16 0%, #4a1525 100%)',
+                  color: '#ffd700',
+                  borderColor: '#d4af37',
+                  marginBottom: '0.6rem',
+                  fontWeight: 700
+                }}
+              >
+                <span>🪞 Royal Virtual Trial Room (Live Try-On)</span>
+              </button>
+              */}
+
               <button
                 type="button"
                 className="btn-mobile-drawer-book"
@@ -326,6 +347,28 @@ export default function Navbar({
                 <span className="track-nav-text-mobile">Login</span>
               </button>
             )}
+
+            {/* 🪞 FUTURE VIRTUAL TRIAL ROOM CTA (COMMENTED OUT FOR FUTURE USE)
+            <button
+              id="navbar-trial-btn"
+              className="btn-track-nav"
+              onClick={() => {
+                if (onOpenTrialRoom) onOpenTrialRoom();
+              }}
+              title="Royal Virtual Trial Room (100% Free Live Saree Drape on You)"
+              style={{
+                background: 'linear-gradient(135deg, #300c18 0%, #521427 100%)',
+                color: '#ffd700',
+                border: '1.5px solid #d4af37',
+                fontWeight: 700,
+                boxShadow: '0 2px 8px rgba(212, 175, 55, 0.25)'
+              }}
+            >
+              <span style={{ fontSize: '0.9rem' }}>🪞</span>
+              <span className="track-nav-text-desktop">Virtual Trial</span>
+              <span className="track-nav-text-mobile">Try</span>
+            </button>
+            */}
 
             {/* Track Order Button */}
             <button

@@ -33,6 +33,7 @@ const VirtualDrape3D = lazy(() => import('./components/VirtualDrape3D'));
 const Photo360Viewer = lazy(() => import('./components/Photo360Viewer'));
 const CustomerAuthModal = lazy(() => import('./components/CustomerAuthModal'));
 const CustomerAccountModal = lazy(() => import('./components/CustomerAccountModal'));
+const VirtualTrialRoomModal = lazy(() => import('./components/VirtualTrialRoomModal'));
 import { isStandingModelPhoto } from './utils/imageHelper';
 import { ApiService } from './services/api';
 
@@ -140,7 +141,26 @@ export default function App() {
   const [inspectZoomScale, setInspectZoomScale] = useState(2.5);
   const [inspectZoomOrigin, setInspectZoomOrigin] = useState({ x: 50, y: 50, zoomed: false });
   const [isInspectPortraitModel, setIsInspectPortraitModel] = useState(false);
+  const [isTrialRoomOpen, setIsTrialRoomOpen] = useState(false);
+  const [trialRoomSaree, setTrialRoomSaree] = useState(null);
+  const [catalogSarees, setCatalogSarees] = useState(() => {
+    try {
+      const saved = localStorage.getItem('patola_cached_catalog_page1') || sessionStorage.getItem('patola_cached_catalog_page1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
   const photoAngleBarRef = useRef(null);
+  const inspectScrollPosRef = useRef(null);
+
+  const handleOpenTrialRoom = (saree = null) => {
+    const list = catalogSarees.length > 0 ? catalogSarees : uploadedSarees;
+    setTrialRoomSaree(saree || (list.length > 0 ? list[0] : null));
+    setIsTrialRoomOpen(true);
+  };
 
   // Auto-scroll photo angle selector bar so the next angle comes into view smoothly
   useEffect(() => {
@@ -281,6 +301,9 @@ export default function App() {
   }, []);
 
   const handleInspectSaree = (saree, activePhotoIndex = 0) => {
+    // Record current scroll position so the user stays exactly where they were
+    inspectScrollPosRef.current = window.pageYOffset || document.documentElement.scrollTop;
+
     const photoIdx = typeof activePhotoIndex === 'number' 
       ? activePhotoIndex 
       : (typeof saree?.activePhotoIdx === 'number' ? saree.activePhotoIdx : 0);
@@ -305,16 +328,16 @@ export default function App() {
     setInspectPhotoIdx(photoIdx);
     setInspectZoomOrigin({ x: 50, y: 50, zoomed: false });
     setQuickViewSaree(null);
+  };
 
-    // Smoothly scroll directly to the Interactive Weave Inspector Box in the background
-    setTimeout(() => {
-      const target = document.getElementById('interactiveLensBox') || document.querySelector('.weave-inspector-display') || document.querySelector('.motif-interactive-grid') || document.getElementById('motifs');
-      if (target) {
-        const yOffset = -65;
-        const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
-        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
-      }
-    }, 60);
+  const handleCloseInspectModal = () => {
+    const savedPos = inspectScrollPosRef.current;
+    setInspectModalSaree(null);
+    if (typeof savedPos === 'number') {
+      setTimeout(() => {
+        window.scrollTo({ top: savedPos, behavior: 'instant' });
+      }, 10);
+    }
   };
 
   const showToast = (msg) => {
@@ -504,6 +527,7 @@ export default function App() {
         currentCustomer={currentCustomer}
         onOpenCustomerAuth={() => setIsCustomerAuthOpen(true)}
         onOpenCustomerAccount={() => setIsCustomerAccountOpen(true)}
+        onOpenTrialRoom={handleOpenTrialRoom}
       />
 
       {/* 2. Hero Section */}
@@ -535,6 +559,8 @@ export default function App() {
         }}
         onOpenCustomPatola={() => setIsCustomPatolaOpen(true)}
         onInspectSaree={handleInspectSaree}
+        onOpenTrialRoom={handleOpenTrialRoom}
+        onSareesLoaded={setCatalogSarees}
         wishlist={wishlist}
         onToggleWishlist={handleToggleWishlist}
         catalogVersion={catalogVersion}
@@ -802,13 +828,14 @@ export default function App() {
 
       {/* ✦ 3D WEAVE INSPECTOR MODAL POPUP (EXACT 3D PERSPECTIVE POP-IN) ✦ */}
       {inspectModalSaree && (() => {
+        const mainPhoto = inspectModalSaree.image || '/assets/images/saree_nari_kunjar.jpg';
         const inspectPhotos = Array.isArray(inspectModalSaree.images) && inspectModalSaree.images.length >= 4
           ? inspectModalSaree.images
           : [
-              inspectModalSaree.image || '/assets/images/saree_nari_kunjar.jpg',
-              inspectModalSaree.images?.[1] || '/assets/images/patola_pallu.jpg',
-              inspectModalSaree.images?.[2] || '/assets/images/patola_macro.jpg',
-              inspectModalSaree.images?.[3] || '/assets/images/patola_drape.jpg'
+              inspectModalSaree.images?.[0] || mainPhoto,
+              inspectModalSaree.images?.[1] || mainPhoto,
+              inspectModalSaree.images?.[2] || mainPhoto,
+              inspectModalSaree.images?.[3] || mainPhoto
             ];
         
         const currentInspectImg = inspectPhotos[inspectPhotoIdx] || inspectModalSaree.image;
@@ -827,7 +854,7 @@ export default function App() {
         return (
           <div
             className="modal-backdrop open modal-backdrop-quickview"
-            onClick={() => setInspectModalSaree(null)}
+            onClick={handleCloseInspectModal}
             style={{ zIndex: 1150 }}
           >
             <div
@@ -837,7 +864,7 @@ export default function App() {
             >
               <button
                 className="btn-close-modal"
-                onClick={() => setInspectModalSaree(null)}
+                onClick={handleCloseInspectModal}
                 style={{ zIndex: 20 }}
               >
                 ✕
@@ -887,7 +914,8 @@ export default function App() {
                     { scale: 2, label: '2x' },
                     { scale: 2.5, label: '2.5x' },
                     { scale: 3.5, label: '3.5x' },
-                    { scale: 5, label: '5x' }
+                    { scale: 5, label: '5x' },
+                    { scale: 8, label: '8x Ultra' }
                   ].map(({ scale, label }) => (
                     <button
                       key={scale}
@@ -996,8 +1024,8 @@ export default function App() {
                   }}
                   onMouseMove={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
-                    const x = ((e.clientX - rect.left) / rect.width) * 100;
-                    const y = ((e.clientY - rect.top) / rect.height) * 100;
+                    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+                    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
                     setInspectZoomOrigin({ x, y, zoomed: true });
                   }}
                   onMouseLeave={() => setInspectZoomOrigin(prev => ({ ...prev, zoomed: false }))}
@@ -1019,7 +1047,15 @@ export default function App() {
                   }}
                   onTouchEnd={() => setInspectZoomOrigin(prev => ({ ...prev, zoomed: false }))}
                   onClick={() => setInspectZoomOrigin(prev => ({ ...prev, zoomed: !prev.zoomed }))}
-                  title="Hover mouse or drag finger to inspect individual warp & weft silk threads"
+                  onWheel={(e) => {
+                    if (e.deltaY !== 0) {
+                      e.preventDefault();
+                      const delta = e.deltaY < 0 ? 0.35 : -0.35;
+                      setInspectZoomScale(prev => Math.max(1, Math.min(8, Math.round((prev + delta) * 10) / 10)));
+                      setInspectZoomOrigin(prev => ({ ...prev, zoomed: true }));
+                    }
+                  }}
+                  title="Hover mouse, drag finger, or scroll wheel to inspect individual warp & weft silk threads"
                 >
                   {/* Seamless luxury ambient backdrop - eliminates harsh black letterbox bars */}
                   <div
@@ -1306,6 +1342,20 @@ export default function App() {
         formatPrice={formatPrice}
         showToast={showToast}
       />}
+
+      {/* 🪞 FUTURE VIRTUAL TRIAL ROOM (COMMENTED OUT FOR FUTURE USE)
+      {isTrialRoomOpen && (
+        <VirtualTrialRoomModal
+          isOpen={isTrialRoomOpen}
+          onClose={() => setIsTrialRoomOpen(false)}
+          initialSaree={trialRoomSaree}
+          allSarees={catalogSarees.length > 0 ? catalogSarees : uploadedSarees}
+          formatPrice={formatPrice}
+          onAddToCart={handleAddToCart}
+          showToast={showToast}
+        />
+      )}
+      */}
       </Suspense>
 
       {/* Toast Notification */}

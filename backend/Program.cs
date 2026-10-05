@@ -36,17 +36,17 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 0. Configure Kestrel & Form Limits for Large Image Uploads (up to 250 MB)
+// 0. Configure Kestrel & Form Limits for Large Image Uploads (up to 150 MB)
 // Fixes: Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException: Request body too large
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.Limits.MaxRequestBodySize = 10485760; // 10 MB maximum request size
+    serverOptions.Limits.MaxRequestBodySize = 157286400; // 150 MB maximum request size (supports multiple 4K saree photos)
 });
 
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 10485760; // 10 MB maximum request size
-    options.ValueLengthLimit = 10485760;
+    options.MultipartBodyLengthLimit = 157286400; // 150 MB maximum request size
+    options.ValueLengthLimit = 157286400;
     options.MultipartHeadersLengthLimit = int.MaxValue;
 });
 

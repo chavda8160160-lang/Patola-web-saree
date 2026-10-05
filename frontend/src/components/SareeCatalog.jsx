@@ -22,6 +22,7 @@ function SareeCardItem({
   formatPrice,
   onQuickView,
   onInspectSaree,
+  onOpenTrialRoom,
   onAddToCart,
   onToggleWishlist,
   isWishlisted = false
@@ -272,6 +273,22 @@ function SareeCardItem({
             <span>Quick View</span>
           </button>
 
+          {/* 🪞 FUTURE VIRTUAL TRIAL ROOM (COMMENTED OUT FOR FUTURE USE)
+          <button
+            type="button"
+            className="btn-photo-action-try"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onOpenTrialRoom) {
+                onOpenTrialRoom(saree);
+              }
+            }}
+            title="Try this Saree on yourself in Royal Virtual Trial Room"
+          >
+            <span>🪞 Try on Me</span>
+          </button>
+          */}
+
           <button
             type="button"
             className="btn-photo-action-right"
@@ -501,6 +518,8 @@ export default function SareeCatalog({
   onQuickView,
   onOpenCustomPatola,
   onInspectSaree,
+  onOpenTrialRoom,
+  onSareesLoaded,
   wishlist = [],
   onToggleWishlist,
   catalogVersion = 0,
@@ -517,13 +536,48 @@ export default function SareeCatalog({
     } catch (e) {}
     return [];
   });
-  const [activeCategory, setActiveCategory] = useState('all');
+
+  // Notify parent of loaded sarees
+  useEffect(() => {
+    if (typeof onSareesLoaded === 'function' && sarees.length > 0) {
+      onSareesLoaded(sarees);
+    }
+  }, [sarees, onSareesLoaded]);
+  const [activeCategory, setActiveCategory] = useState('all-saree');
   const [activeMotif, setActiveMotif] = useState('all');
   const [loading, setLoading] = useState(false);
   const [nextCursor, setNextCursor] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const loadMoreRef = useRef(null);
   const loadingMoreRef = useRef(false);
+
+  // Synchronize showcase banner cards width with filter-tab-group width
+  const filterTabGroupRef = useRef(null);
+  const [filterWidth, setFilterWidth] = useState(null);
+
+  useEffect(() => {
+    const el = filterTabGroupRef.current;
+    if (!el) return;
+    const updateWidth = () => {
+      if (el) {
+        setFilterWidth(el.offsetWidth);
+      }
+    };
+    updateWidth();
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target) {
+          setFilterWidth(entry.target.offsetWidth);
+        }
+      }
+    });
+    observer.observe(el);
+    window.addEventListener('resize', updateWidth);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateWidth);
+    };
+  }, []);
 
   // Fetch sarees from database via Stored Procedure 'sp_GetSarees'
   useEffect(() => {
@@ -777,10 +831,140 @@ export default function SareeCatalog({
 
         {/* Filter Controls */}
         <div className="catalog-filter-controls" id="sareeGridArea">
-          <div className="filter-tab-group" role="tablist">
+          <div
+            className="collection-category-showcase"
+            role="region"
+            aria-label="Collection Categories"
+            style={filterWidth ? { width: `${filterWidth}px`, maxWidth: '100%' } : undefined}
+          >
+            {/* Card 1: All Sarees (LEFT) */}
+            <div
+              className={`royal-showcase-card showcase-saree-card ${!activeCategory?.includes('dupatta') ? 'active' : ''}`}
+              onClick={() => {
+                setActiveCategory('all-saree');
+                const el = document.getElementById('sareeGridArea');
+                if (el) {
+                  const navOffset = 80;
+                  const pos = el.getBoundingClientRect().top + window.pageYOffset;
+                  window.scrollTo({ top: pos - navOffset, behavior: 'smooth' });
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setActiveCategory('all-saree');
+                }
+              }}
+              aria-label="View All Sarees Collection"
+            >
+              {/* Info content */}
+              <div className="card-info-panel">
+                <div className="card-tag-pill saree-tag">
+                  <span className="tag-icon">🥻</span>
+                  <span className="tag-txt">SAREES</span>
+                </div>
+                <h3 className="card-title">ALL SAREES</h3>
+                <p className="card-subtitle">Pure Mulberry Silk</p>
+
+                <div className="card-action-wrap">
+                  {!activeCategory?.includes('dupatta') ? (
+                    <span className="card-btn-pill active-pill">
+                      Selected
+                      <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" className="check-icon">
+                        <path d="M13.485 3.515a1 1 0 0 1 0 1.414l-7 7a1 1 0 0 1-1.414 0l-3.5-3.5a1 1 0 1 1 1.414-1.414L6.071 10.1l6-6a1 1 0 0 1 1.414 0z" />
+                      </svg>
+                    </span>
+                  ) : (
+                    <span className="card-btn-pill explore-pill">
+                      Explore →
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Photo Window with Royal Crest */}
+              <div className="card-photo-window">
+                <img
+                  src="/assets/images/showcase_saree_mannequin.jpg"
+                  alt="Royal Patola Saree on Mannequin"
+                  className="card-showcase-photo"
+                  loading="eager"
+                />
+                <div className="photo-shield-crest saree-crest" aria-hidden="true">
+                  <span className="crest-title">SAREE</span>
+                  <span className="crest-motif">❖</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: All Dupattas (RIGHT) */}
+            <div
+              className={`royal-showcase-card showcase-dupatta-card ${activeCategory?.includes('dupatta') ? 'active' : ''}`}
+              onClick={() => {
+                setActiveCategory('all-dupatta');
+                const el = document.getElementById('sareeGridArea');
+                if (el) {
+                  const navOffset = 80;
+                  const pos = el.getBoundingClientRect().top + window.pageYOffset;
+                  window.scrollTo({ top: pos - navOffset, behavior: 'smooth' });
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setActiveCategory('all-dupatta');
+                }
+              }}
+              aria-label="View All Dupattas Collection"
+            >
+              {/* Info content */}
+              <div className="card-info-panel">
+                <div className="card-tag-pill dupatta-tag">
+                  <span className="tag-icon">🧣</span>
+                  <span className="tag-txt">DUPATTAS</span>
+                </div>
+                <h3 className="card-title">ALL DUPATTAS</h3>
+                <p className="card-subtitle">Handloom Silk Pallu</p>
+
+                <div className="card-action-wrap">
+                  {activeCategory?.includes('dupatta') ? (
+                    <span className="card-btn-pill active-pill">
+                      Selected
+                      <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" className="check-icon">
+                        <path d="M13.485 3.515a1 1 0 0 1 0 1.414l-7 7a1 1 0 0 1-1.414 0l-3.5-3.5a1 1 0 1 1 1.414-1.414L6.071 10.1l6-6a1 1 0 0 1 1.414 0z" />
+                      </svg>
+                    </span>
+                  ) : (
+                    <span className="card-btn-pill explore-pill">
+                      Explore →
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Photo Window with Royal Crest */}
+              <div className="card-photo-window">
+                <img
+                  src="/assets/images/showcase_dupatta_chair.jpg"
+                  alt="Royal Handloom Patola Dupatta on Heritage Chair"
+                  className="card-showcase-photo"
+                  loading="eager"
+                />
+                <div className="photo-shield-crest dupatta-crest" aria-hidden="true">
+                  <span className="crest-title">DUPATTA</span>
+                  <span className="crest-motif">❖</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="filter-tab-group" ref={filterTabGroupRef} role="tablist">
             <div className="filter-tab-row saree-tab-row">
               {[
-                { label: 'All Treasures', val: 'all' },
                 { label: '🥻 All Sarees', val: 'all-saree' },
                 { label: 'Double Ikat Sarees', val: 'double-ikat' },
                 { label: 'Single Ikat Sarees', val: 'single-ikat' },
@@ -792,10 +976,6 @@ export default function SareeCatalog({
                   key={tab.val}
                   className={`filter-btn ${activeCategory === tab.val ? 'active' : ''}`}
                   onClick={(e) => {
-                    if (tab.val === 'all') {
-                      handleResetToAllTreasures();
-                      return;
-                    }
                     setActiveCategory(tab.val);
                     const btn = e.currentTarget;
                     const nextBtn = btn.nextElementSibling;
@@ -902,6 +1082,7 @@ export default function SareeCatalog({
                 formatPrice={formatPrice}
                 onQuickView={onQuickView}
                 onInspectSaree={onInspectSaree}
+                onOpenTrialRoom={onOpenTrialRoom}
                 onAddToCart={onAddToCart}
                 onToggleWishlist={onToggleWishlist}
                 isWishlisted={wishlist.some(w => String(w.id) === String(saree.id))}

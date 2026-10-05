@@ -8,7 +8,7 @@ namespace VirasatPatola.Api.Services;
 
 public sealed class ProductImageStorageService : IProductImageStorageService
 {
-    private const int MaxImageBytes = 5 * 1024 * 1024;
+    private const int MaxImageBytes = 15 * 1024 * 1024; // 15 MB per image (supports 4K Ultra-HD photos)
     private readonly VirasatPatolaDbContext _db;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<ProductImageStorageService> _logger;

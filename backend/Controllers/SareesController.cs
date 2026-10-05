@@ -209,7 +209,7 @@ namespace VirasatPatola.Api.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        [RequestSizeLimit(25 * 1024 * 1024)]
+        [RequestSizeLimit(150 * 1024 * 1024)]
         public async Task<ActionResult<Saree>> CreateSaree([FromBody] Saree newSaree)
         {
             if (!ModelState.IsValid)
@@ -236,7 +236,7 @@ namespace VirasatPatola.Api.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        [RequestSizeLimit(25 * 1024 * 1024)]
+        [RequestSizeLimit(150 * 1024 * 1024)]
         public async Task<ActionResult<Saree>> UpdateSaree(string id, [FromBody] Saree updatedSaree)
         {
             if (!ModelState.IsValid)
