@@ -24,6 +24,7 @@ using System.Reflection;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.AspNetCore.ResponseCompression;
 using VirasatPatola.Api.Data;
 using VirasatPatola.Api.Repositories.Implementations;
 using VirasatPatola.Api.Repositories.Interfaces;
@@ -57,6 +58,12 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.WriteIndented = true;
     });
+
+// Compress text-based API and static-file responses with Brotli (and Gzip fallback).
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
 
 // 1.1 In-Memory RAM Caching (Zero-latency RAM cache to eliminate repetitive SQL Database loads)
 builder.Services.AddMemoryCache();
@@ -103,6 +110,17 @@ builder.Services.AddRateLimiter(options =>
         return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(10),
+            QueueLimit = 0
+        });
+    });
+
+    options.AddPolicy("CustomerAuth", httpContext =>
+    {
+        var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+        return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
             Window = TimeSpan.FromMinutes(10),
             QueueLimit = 0
         });
@@ -184,6 +202,7 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<INewsletterRepository, NewsletterRepository>();
 builder.Services.AddSingleton<ICustomPhotoStorageService, CustomPhotoStorageService>();
 builder.Services.AddScoped<IProductImageStorageService, ProductImageStorageService>();
+builder.Services.AddScoped<IVirtualTryOnService, VirtualTryOnService>();
 builder.Services.AddSingleton<PaymentSessionStore>();
 builder.Services.AddSingleton<OrderConfirmationOtpService>();
 builder.Services.AddHttpClient();
@@ -330,6 +349,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 // 7. HTTP Request Pipeline
+
+// Run before static files and endpoints so both can negotiate Brotli compression.
+app.UseResponseCompression();
 
 // Enterprise Security Headers Middleware (Anti-Clickjacking, XSS Protection & Sniffing Defense)
 app.Use(async (context, next) =>

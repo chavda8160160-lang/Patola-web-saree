@@ -14,6 +14,7 @@
  * ==================================================================================================== */
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using VirasatPatola.Api.DTOs;
 using VirasatPatola.Api.Models;
 using VirasatPatola.Api.Repositories.Interfaces;
@@ -46,6 +47,7 @@ namespace VirasatPatola.Api.Controllers
         /// <summary>
         /// Subscribe email via Stored Procedure 'sp_SubscribeNewsletter'
         /// </summary>
+        [EnableRateLimiting("SensitiveLookup")]
         [HttpPost]
         public async Task<ActionResult> Subscribe([FromBody] NewsletterDto dto)
         {

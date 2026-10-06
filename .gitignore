@@ -25,8 +25,8 @@ project.lock.json
 appsettings.Development.json
 appsettings.Production.json
 
-# Uploaded product images are stored on the API host and must be backed up separately.
-backend/wwwroot/uploads/sarees/*
+# Uploaded product images and tryon assets are stored on the API host and backed up separately.
+backend/wwwroot/uploads/
 
 # OS files
 .DS_Store
@@ -38,3 +38,6 @@ patola-copy/
 scratch/
 *.zip
 *.tar.gz
+test_imagen.json
+available_models.json
+video-review.html

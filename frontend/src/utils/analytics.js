@@ -13,11 +13,28 @@ let currentMeasurementId = localStorage.getItem('patola_ga_measurement_id') || '
 export function initGA(measurementId) {
   if (!measurementId || typeof window === 'undefined') return;
 
+  const isLocalHost = Boolean(
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === '[::1]'
+  );
+
   const cleanId = measurementId.trim();
   currentMeasurementId = cleanId;
   localStorage.setItem('patola_ga_measurement_id', cleanId);
 
-  // If gtag script not yet in DOM, inject it
+  // Setup mock gtag for development on localhost to prevent ERR_CONNECTION_CLOSED
+  if (isLocalHost) {
+    window.dataLayer = window.dataLayer || [];
+    if (typeof window.gtag !== 'function') {
+      window.gtag = function() {
+        window.dataLayer.push(arguments);
+      };
+    }
+    return;
+  }
+
+  // If on production and gtag script not yet in DOM, inject it
   if (!document.getElementById('ga-gtag-script')) {
     const script = document.createElement('script');
     script.id = 'ga-gtag-script';
@@ -51,9 +68,8 @@ export function trackGAEvent(eventName, eventParams = {}) {
   if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     try {
       window.gtag('event', eventName, eventParams);
-      console.log(`📊 [GA4 Event] ${eventName}`, eventParams);
     } catch (err) {
-      console.warn('GA4 Event Error:', err);
+      // Quiet fail in dev
     }
   }
 }
@@ -136,6 +152,64 @@ export function trackPurchase(order) {
           quantity: i.quantity || 1
         }))
       : []
+  });
+}
+
+/**
+ * Track Virtual Patola Try-On Events
+ */
+export function trackVirtualTryOn(eventName, params = {}) {
+  trackGAEvent(eventName, {
+    feature: 'virtual_patola_tryon',
+    ...params
+  });
+}
+
+export function trackTryOnOpened(saree) {
+  trackVirtualTryOn('virtual_tryon_opened', {
+    item_id: saree?.id ? String(saree.id) : undefined,
+    item_name: saree?.title || 'Unknown Saree',
+    price: saree?.finalPriceINR || saree?.basePriceINR || 0
+  });
+}
+
+export function trackTryOnPhotoUploaded(fileMeta = {}) {
+  trackVirtualTryOn('virtual_tryon_photo_uploaded', fileMeta);
+}
+
+export function trackTryOnStarted(saree) {
+  trackVirtualTryOn('virtual_tryon_started', {
+    item_id: saree?.id ? String(saree.id) : undefined,
+    item_name: saree?.title || 'Unknown Saree'
+  });
+}
+
+export function trackTryOnCompleted(saree, durationMs = 0) {
+  trackVirtualTryOn('virtual_tryon_completed', {
+    item_id: saree?.id ? String(saree.id) : undefined,
+    item_name: saree?.title || 'Unknown Saree',
+    generation_time_ms: durationMs
+  });
+}
+
+export function trackTryOnFailed(saree, errorMessage = '') {
+  trackVirtualTryOn('virtual_tryon_failed', {
+    item_id: saree?.id ? String(saree.id) : undefined,
+    error_message: errorMessage
+  });
+}
+
+export function trackTryOnAddToCart(saree) {
+  trackVirtualTryOn('virtual_tryon_add_to_cart', {
+    item_id: saree?.id ? String(saree.id) : undefined,
+    item_name: saree?.title || 'Unknown Saree'
+  });
+}
+
+export function trackTryOnBuyNow(saree) {
+  trackVirtualTryOn('virtual_tryon_buy_now', {
+    item_id: saree?.id ? String(saree.id) : undefined,
+    item_name: saree?.title || 'Unknown Saree'
   });
 }
 

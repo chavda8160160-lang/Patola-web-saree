@@ -23,6 +23,7 @@ function SareeCardItem({
   onQuickView,
   onInspectSaree,
   onOpenTrialRoom,
+  onOpenVirtualTryOn,
   onAddToCart,
   onToggleWishlist,
   isWishlisted = false
@@ -60,6 +61,7 @@ function SareeCardItem({
     : Math.round(saree.basePriceINR - (saree.basePriceINR * discountPercent / 100));
 
   const [activeIdx, setActiveIdx] = useState(0);
+  const [showMobileDetails, setShowMobileDetails] = useState(false);
   const touchStartX = useRef(null);
 
   const prevPhoto = (e) => {
@@ -264,7 +266,7 @@ function SareeCardItem({
                 discountPercent
               }, activeIdx);
             }}
-            title="Quick View (4 High-Resolution Photos)"
+            title="Quick View (4 High-Resolution Photos & Try On)"
           >
             <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
               <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -272,22 +274,6 @@ function SareeCardItem({
             </svg>
             <span>Quick View</span>
           </button>
-
-          {/* 🪞 FUTURE VIRTUAL TRIAL ROOM (COMMENTED OUT FOR FUTURE USE)
-          <button
-            type="button"
-            className="btn-photo-action-try"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onOpenTrialRoom) {
-                onOpenTrialRoom(saree);
-              }
-            }}
-            title="Try this Saree on yourself in Royal Virtual Trial Room"
-          >
-            <span>🪞 Try on Me</span>
-          </button>
-          */}
 
           <button
             type="button"
@@ -371,95 +357,115 @@ function SareeCardItem({
           )}
         </div>
 
-        {/* ✦ ELEGANT ROYAL DIMENSION & LENGTH SPECIFICATION (NO GUJARATI TEXT) ✦ */}
-        {(() => {
-          const isDupatta = (saree.category || '').toLowerCase().includes('dupatta') || 
-                            (saree.title || '').toLowerCase().includes('dupatta') || 
-                            (saree.weave || '').toLowerCase().includes('dupatta');
-          
-          let rawLen = saree.length || (isDupatta ? '2.50 Meters (Handloom Silk with Zari Pallu)' : '5.50m Saree + 0.80m Blouse (6.30m Total)');
-          
-          // Thoroughly sanitize any Gujarati text or redundant prefixes
-          const cleanLengthText = String(rawLen)
-            .replace(/\(લંબાઈ\)/gi, '')
-            .replace(/લંબાઈ/gi, '')
-            .replace(/^Length\s*:\s*/gi, '')
-            .trim();
+        {/* ✦ MOBILE TOGGLE BUTTON FOR SPECS (+ MORE DETAILS) ✦ */}
+        <button
+          type="button"
+          className="btn-card-more-details"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowMobileDetails(prev => !prev);
+          }}
+          aria-expanded={showMobileDetails}
+          title="Click to view saree length and color details"
+        >
+          <span style={{ fontWeight: 800, fontSize: '0.82rem', marginRight: '3px' }}>
+            {showMobileDetails ? '−' : '+'}
+          </span>
+          <span>{showMobileDetails ? 'Hide Details' : 'More Details'}</span>
+        </button>
 
-          return (
-            <div className="saree-dimension-badge" style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.8rem',
-              color: '#3d2314',
-              background: 'linear-gradient(135deg, #fffcf7 0%, #fdf5ea 100%)',
-              border: '1px solid rgba(212, 175, 55, 0.35)',
-              borderLeft: '3px solid #800020',
-              padding: '0.38rem 0.75rem',
-              borderRadius: '6px',
-              marginBottom: '0.65rem',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-            }}>
-              <span style={{ color: '#800020', fontSize: '0.85rem' }}>📏</span>
-              <span style={{ letterSpacing: '0.01em', lineHeight: 1.3 }}>
-                <strong style={{ color: '#800020', fontWeight: 700 }}>Length:</strong> {cleanLengthText}
-              </span>
-            </div>
-          );
-        })()}
+        {/* ✦ ELEGANT SPECS CONTAINER (COLLAPSIBLE ON MOBILE, VISIBLE ON DESKTOP) ✦ */}
+        <div className={`saree-card-specs-collapsible ${showMobileDetails ? 'open' : ''}`}>
+          {/* ✦ ELEGANT ROYAL DIMENSION & LENGTH SPECIFICATION ✦ */}
+          {(() => {
+            const isDupatta = (saree.category || '').toLowerCase().includes('dupatta') || 
+                              (saree.title || '').toLowerCase().includes('dupatta') || 
+                              (saree.weave || '').toLowerCase().includes('dupatta');
+            
+            let rawLen = saree.length || (isDupatta ? '2.50 Meters (Handloom Silk with Zari Pallu)' : '5.50m Saree + 0.80m Blouse (6.30m Total)');
+            
+            // Thoroughly sanitize any Gujarati text or redundant prefixes
+            const cleanLengthText = String(rawLen)
+              .replace(/\(લંબાઈ\)/gi, '')
+              .replace(/લંબાઈ/gi, '')
+              .replace(/^Length\s*:\s*/gi, '')
+              .trim();
 
-        {/* ✦ ELEGANT COLOR DETAILS BADGE ✦ */}
-        {(() => {
-          let rawColor = saree.colors || saree.color || '';
-          
-          if (!rawColor || !rawColor.trim()) {
-            const searchStr = `${saree.motif || ''} ${saree.motifName || ''} ${saree.title || ''}`.toLowerCase();
-            if (searchStr.includes('ratan') || searchStr.includes('jewel') || searchStr.includes('rat')) {
-              rawColor = 'Madder Ruby Red & Antique Mustard Gold';
-            } else if (searchStr.includes('chhabdi') || searchStr.includes('emerald') || searchStr.includes('basket')) {
-              rawColor = 'Emerald Green, Vermilion Red & Royal Gold';
-            } else if (searchStr.includes('pan') || searchStr.includes('blue') || searchStr.includes('peacock') || searchStr.includes('leaf')) {
-              rawColor = 'Midnight Peacock Blue & Deep Maroon';
-            } else if (searchStr.includes('nari') || searchStr.includes('maneek') || searchStr.includes('manek') || searchStr.includes('elephant')) {
-              rawColor = 'Deep Crimson Red, Saffron Ochre & Gold';
-            } else if (searchStr.includes('navratna')) {
-              rawColor = 'Nine Sacred Gemstone Hues with Zari Border';
-            } else if (searchStr.includes('shikargah') || searchStr.includes('forest')) {
-              rawColor = 'Forest Olive Green, Rust Red & Golden Thread';
-            } else if (searchStr.includes('sakhiyo')) {
-              rawColor = 'Heritage Maroon & Rich Ochre Yellow';
-            } else {
-              rawColor = 'Deep Crimson Red, Mustard & Golden Zari';
+            return (
+              <div className="saree-dimension-badge" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.8rem',
+                color: '#3d2314',
+                background: 'linear-gradient(135deg, #fffcf7 0%, #fdf5ea 100%)',
+                border: '1px solid rgba(212, 175, 55, 0.35)',
+                borderLeft: '3px solid #800020',
+                padding: '0.38rem 0.75rem',
+                borderRadius: '6px',
+                marginBottom: '0.65rem',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+              }}>
+                <span style={{ color: '#800020', fontSize: '0.85rem' }}>📏</span>
+                <span style={{ letterSpacing: '0.01em', lineHeight: 1.3 }}>
+                  <strong style={{ color: '#800020', fontWeight: 700 }}>Length:</strong> {cleanLengthText}
+                </span>
+              </div>
+            );
+          })()}
+
+          {/* ✦ ELEGANT COLOR DETAILS BADGE ✦ */}
+          {(() => {
+            let rawColor = saree.colors || saree.color || '';
+            
+            if (!rawColor || !rawColor.trim()) {
+              const searchStr = `${saree.motif || ''} ${saree.motifName || ''} ${saree.title || ''}`.toLowerCase();
+              if (searchStr.includes('ratan') || searchStr.includes('jewel') || searchStr.includes('rat')) {
+                rawColor = 'Madder Ruby Red & Antique Mustard Gold';
+              } else if (searchStr.includes('chhabdi') || searchStr.includes('emerald') || searchStr.includes('basket')) {
+                rawColor = 'Emerald Green, Vermilion Red & Royal Gold';
+              } else if (searchStr.includes('pan') || searchStr.includes('blue') || searchStr.includes('peacock') || searchStr.includes('leaf')) {
+                rawColor = 'Midnight Peacock Blue & Deep Maroon';
+              } else if (searchStr.includes('nari') || searchStr.includes('maneek') || searchStr.includes('manek') || searchStr.includes('elephant')) {
+                rawColor = 'Deep Crimson Red, Saffron Ochre & Gold';
+              } else if (searchStr.includes('navratna')) {
+                rawColor = 'Nine Sacred Gemstone Hues with Zari Border';
+              } else if (searchStr.includes('shikargah') || searchStr.includes('forest')) {
+                rawColor = 'Forest Olive Green, Rust Red & Golden Thread';
+              } else if (searchStr.includes('sakhiyo')) {
+                rawColor = 'Heritage Maroon & Rich Ochre Yellow';
+              } else {
+                rawColor = 'Deep Crimson Red, Mustard & Golden Zari';
+              }
             }
-          }
 
-          const cleanColorText = String(rawColor)
-            .replace(/^Colors?\s*:\s*/gi, '')
-            .trim();
+            const cleanColorText = String(rawColor)
+              .replace(/^Colors?\s*:\s*/gi, '')
+              .trim();
 
-          return (
-            <div className="saree-color-badge" style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.8rem',
-              color: '#3d2314',
-              background: 'linear-gradient(135deg, #fffcf7 0%, #fdf5ea 100%)',
-              border: '1px solid rgba(212, 175, 55, 0.35)',
-              borderLeft: '3px solid #800020',
-              padding: '0.38rem 0.75rem',
-              borderRadius: '6px',
-              marginBottom: '0.75rem',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-            }}>
-              <span style={{ color: '#800020', fontSize: '0.85rem' }}>🎨</span>
-              <span style={{ letterSpacing: '0.01em', lineHeight: 1.3 }}>
-                <strong style={{ color: '#800020', fontWeight: 700 }}>Color:</strong> {cleanColorText}
-              </span>
-            </div>
-          );
-        })()}
+            return (
+              <div className="saree-color-badge" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.8rem',
+                color: '#3d2314',
+                background: 'linear-gradient(135deg, #fffcf7 0%, #fdf5ea 100%)',
+                border: '1px solid rgba(212, 175, 55, 0.35)',
+                borderLeft: '3px solid #800020',
+                padding: '0.38rem 0.75rem',
+                borderRadius: '6px',
+                marginBottom: '0.75rem',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+              }}>
+                <span style={{ color: '#800020', fontSize: '0.85rem' }}>🎨</span>
+                <span style={{ letterSpacing: '0.01em', lineHeight: 1.3 }}>
+                  <strong style={{ color: '#800020', fontWeight: 700 }}>Color:</strong> {cleanColorText}
+                </span>
+              </div>
+            );
+          })()}
+        </div>
 
         <div className="saree-card-footer">
           <div className="saree-price-wrap">
@@ -519,6 +525,7 @@ export default function SareeCatalog({
   onOpenCustomPatola,
   onInspectSaree,
   onOpenTrialRoom,
+  onOpenVirtualTryOn,
   onSareesLoaded,
   wishlist = [],
   onToggleWishlist,
@@ -1083,6 +1090,7 @@ export default function SareeCatalog({
                 onQuickView={onQuickView}
                 onInspectSaree={onInspectSaree}
                 onOpenTrialRoom={onOpenTrialRoom}
+                onOpenVirtualTryOn={onOpenVirtualTryOn}
                 onAddToCart={onAddToCart}
                 onToggleWishlist={onToggleWishlist}
                 isWishlisted={wishlist.some(w => String(w.id) === String(saree.id))}

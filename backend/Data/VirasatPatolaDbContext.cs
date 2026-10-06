@@ -27,6 +27,10 @@ namespace VirasatPatola.Api.Data
                 .HasIndex(s => s.Category);
             modelBuilder.Entity<Saree>()
                 .HasIndex(s => s.Motif);
+            modelBuilder.Entity<Saree>()
+                .HasIndex(s => new { s.BasePriceINR, s.Id });
+            modelBuilder.Entity<Saree>()
+                .HasIndex(s => s.CreatedAt);
 
             // Order reference unique index
             modelBuilder.Entity<Order>()
@@ -38,11 +42,21 @@ namespace VirasatPatola.Api.Data
                 .IsUnique()
                 .HasFilter("[CheckoutIdempotencyKey] IS NOT NULL");
 
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => o.CreatedAt);
+
             // Deleted orders index for audit lookups
             modelBuilder.Entity<DeletedOrder>()
                 .HasIndex(d => d.OrderReference);
             modelBuilder.Entity<DeletedOrder>()
                 .HasIndex(d => d.DeletedAt);
+
+            // Customer indexes
+            modelBuilder.Entity<Customer>()
+                .HasIndex(c => c.PhoneNumber)
+                .IsUnique();
+            modelBuilder.Entity<Customer>()
+                .HasIndex(c => c.Email);
 
             // Subscriber unique email index
             modelBuilder.Entity<Subscriber>()

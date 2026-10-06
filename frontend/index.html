@@ -7,7 +7,9 @@
     <meta name="description" content="PATOLA MADE VANKAR - Authentic Handcrafted Double Ikat Patola Silk Sarees & Dupattas directly from master weavers. 100% Pure Mulberry Silk with Silk Mark Certification." />
     <meta name="keywords" content="Patola Saree, Pure Silk Patola, Handwoven Patola, Double Ikat Patola, Single Ikat Patola, Handloom Silk Saree, Patola Made Vankar, Authentic Patola, Gujarat Silk Sarees, Direct From Weaver" />
     <meta name="author" content="Patola Made Vankar" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <link rel="canonical" href="https://patolamadevankar.com/" />
 
     <!-- Open Graph / WhatsApp / Social Media Preview -->
@@ -69,15 +71,28 @@
     </script>
 
     <!-- Google Analytics 4 (GA4) - Official Live Tracking for Patola Made Vankar -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0PJ6S6923D"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-0PJ6S6923D', {
-        send_page_view: true,
-        cookie_flags: 'SameSite=None;Secure'
-      });
+      (function() {
+        var isLocal = Boolean(
+          window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1' ||
+          window.location.hostname === '[::1]'
+        );
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ window.dataLayer.push(arguments); }
+        window.gtag = gtag;
+        if (!isLocal) {
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-0PJ6S6923D';
+          document.head.appendChild(s);
+          gtag('js', new Date());
+          gtag('config', 'G-0PJ6S6923D', {
+            send_page_view: true,
+            cookie_flags: 'SameSite=None;Secure'
+          });
+        }
+      })();
     </script>
 
     <!-- Favicon -->

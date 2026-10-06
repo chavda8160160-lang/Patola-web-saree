@@ -65,9 +65,22 @@ namespace VirasatPatola.Api.Data
                             ALTER TABLE [dbo].[Sarees] ALTER COLUMN [Length] NVARCHAR(250) NULL;
                             ALTER TABLE [dbo].[Sarees] ALTER COLUMN [Weight] NVARCHAR(250) NULL;
                             ALTER TABLE [dbo].[Sarees] ALTER COLUMN [StockStatus] NVARCHAR(250) NOT NULL;
+
+                            -- Indexes for ultra-fast catalog scrolling, filtering, and sorting
+                            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Sarees_CatalogScroll' AND object_id = OBJECT_ID(N'[dbo].[Sarees]'))
+                                CREATE NONCLUSTERED INDEX [IX_Sarees_CatalogScroll] ON [dbo].[Sarees] ([BasePriceINR] DESC, [Id] ASC) INCLUDE ([Category], [Motif]);
+
+                            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Sarees_Category' AND object_id = OBJECT_ID(N'[dbo].[Sarees]'))
+                                CREATE NONCLUSTERED INDEX [IX_Sarees_Category] ON [dbo].[Sarees] ([Category]);
+
+                            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Sarees_Motif' AND object_id = OBJECT_ID(N'[dbo].[Sarees]'))
+                                CREATE NONCLUSTERED INDEX [IX_Sarees_Motif] ON [dbo].[Sarees] ([Motif]);
+
+                            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Sarees_CreatedAt' AND object_id = OBJECT_ID(N'[dbo].[Sarees]'))
+                                CREATE NONCLUSTERED INDEX [IX_Sarees_CreatedAt] ON [dbo].[Sarees] ([CreatedAt] DESC);
                         END
 
-                        -- 2. Orders table columns
+                        -- 2. Orders table columns & indexes
                         IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Orders]') AND type in (N'U'))
                         BEGIN
                             IF COL_LENGTH('dbo.Orders', 'CheckoutIdempotencyKey') IS NULL
@@ -78,6 +91,10 @@ namespace VirasatPatola.Api.Data
                                 ALTER TABLE [dbo].[Orders] ADD [State] NVARCHAR(100) NOT NULL CONSTRAINT [DF_Orders_State] DEFAULT ('');
                             IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Orders_CheckoutIdempotencyKey' AND object_id = OBJECT_ID(N'[dbo].[Orders]'))
                                 CREATE UNIQUE NONCLUSTERED INDEX [IX_Orders_CheckoutIdempotencyKey] ON [dbo].[Orders] ([CheckoutIdempotencyKey]) WHERE [CheckoutIdempotencyKey] IS NOT NULL;
+                            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Orders_OrderReference' AND object_id = OBJECT_ID(N'[dbo].[Orders]'))
+                                CREATE UNIQUE NONCLUSTERED INDEX [IX_Orders_OrderReference] ON [dbo].[Orders] ([OrderReference]);
+                            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Orders_CreatedAt' AND object_id = OBJECT_ID(N'[dbo].[Orders]'))
+                                CREATE NONCLUSTERED INDEX [IX_Orders_CreatedAt] ON [dbo].[Orders] ([CreatedAt] DESC);
                             ALTER TABLE [dbo].[Orders] ALTER COLUMN [OrderStatus] NVARCHAR(250) NULL;
                             ALTER TABLE [dbo].[Orders] ALTER COLUMN [PaymentMode] NVARCHAR(250) NULL;
                             ALTER TABLE [dbo].[Orders] ALTER COLUMN [DeliveryAddress] NVARCHAR(1000) NULL;
@@ -92,23 +109,29 @@ namespace VirasatPatola.Api.Data
                             ALTER TABLE [dbo].[Bookings] ALTER COLUMN [MotifPreference] NVARCHAR(250) NULL;
                         END
 
-                        -- 4. OrderItems table columns
+                        -- 4. OrderItems table columns & indexes
                         IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[OrderItems]') AND type in (N'U'))
                         BEGIN
                             ALTER TABLE [dbo].[OrderItems] ALTER COLUMN [SareeId] NVARCHAR(200) NOT NULL;
                             ALTER TABLE [dbo].[OrderItems] ALTER COLUMN [SareeTitle] NVARCHAR(500) NOT NULL;
+                            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_OrderItems_OrderId' AND object_id = OBJECT_ID(N'[dbo].[OrderItems]'))
+                                CREATE NONCLUSTERED INDEX [IX_OrderItems_OrderId] ON [dbo].[OrderItems] ([OrderId]);
                         END
 
-                        -- 5. DeletedOrders table columns
+                        -- 5. DeletedOrders table columns & indexes
                         IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeletedOrders]') AND type in (N'U'))
                         BEGIN
                             ALTER TABLE [dbo].[DeletedOrders] ALTER COLUMN [LastOrderStatus] NVARCHAR(250) NULL;
                             ALTER TABLE [dbo].[DeletedOrders] ALTER COLUMN [PaymentMode] NVARCHAR(250) NULL;
                             ALTER TABLE [dbo].[DeletedOrders] ALTER COLUMN [DeliveryAddress] NVARCHAR(1000) NULL;
                             ALTER TABLE [dbo].[DeletedOrders] ALTER COLUMN [CustomerName] NVARCHAR(200) NOT NULL;
+                            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_DeletedOrders_OrderReference' AND object_id = OBJECT_ID(N'[dbo].[DeletedOrders]'))
+                                CREATE NONCLUSTERED INDEX [IX_DeletedOrders_OrderReference] ON [dbo].[DeletedOrders] ([OrderReference]);
+                            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_DeletedOrders_DeletedAt' AND object_id = OBJECT_ID(N'[dbo].[DeletedOrders]'))
+                                CREATE NONCLUSTERED INDEX [IX_DeletedOrders_DeletedAt] ON [dbo].[DeletedOrders] ([DeletedAt] DESC);
                         END
 
-                        -- 6. Customers table
+                        -- 6. Customers table & indexes
                         IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND type in (N'U'))
                         BEGIN
                             CREATE TABLE [dbo].[Customers] (
@@ -138,6 +161,19 @@ namespace VirasatPatola.Api.Data
                             BEGIN
                                 ALTER TABLE [dbo].[Customers] ADD [LastLoginAt] DATETIME2 NULL;
                             END
+                        END
+
+                        IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Customers]') AND type in (N'U'))
+                        BEGIN
+                            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Customers_Email' AND object_id = OBJECT_ID(N'[dbo].[Customers]'))
+                                CREATE NONCLUSTERED INDEX [IX_Customers_Email] ON [dbo].[Customers] ([Email]) WHERE [Email] IS NOT NULL;
+                        END
+
+                        -- 7. Subscribers table indexes
+                        IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Subscribers]') AND type in (N'U'))
+                        BEGIN
+                            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Subscribers_Email' AND object_id = OBJECT_ID(N'[dbo].[Subscribers]'))
+                                CREATE UNIQUE NONCLUSTERED INDEX [IX_Subscribers_Email] ON [dbo].[Subscribers] ([Email]);
                         END
                     ");
 

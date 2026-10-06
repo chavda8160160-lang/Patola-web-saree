@@ -147,30 +147,23 @@ export default function AdminDashboardModal({
   onSareeUpdated,
   onSareeDeleted,
   onStockUpdated,
-  activeLocalOrders = [],
-  autoUnlock = false
+  activeLocalOrders = []
 }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    try {
-      return autoUnlock || sessionStorage.getItem('patola_admin_authed') === 'true';
-    } catch (e) {
-      return autoUnlock;
-    }
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'dupatta-orders' | 'inventory' | 'dupatta-inventory' | 'visits' | 'custom-orders' | 'upload' | 'upload-dupatta'
 
   useEffect(() => {
-    if (isOpen) {
-      try {
-        if (autoUnlock || sessionStorage.getItem('patola_admin_authed') === 'true') {
-          setIsAuthenticated(true);
-        }
-      } catch (e) {}
-    }
-  }, [autoUnlock, isOpen]);
+    // Always require fresh password entry whenever portal is opened
+    setIsAuthenticated(false);
+    setPin('');
+    setPinError(false);
+    try {
+      sessionStorage.removeItem('patola_admin_authed');
+    } catch (e) {}
+  }, [isOpen]);
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);

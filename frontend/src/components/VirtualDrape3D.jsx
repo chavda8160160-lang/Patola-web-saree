@@ -30,18 +30,7 @@ export default function VirtualDrape3D({
   const [autoRotate, setAutoRotate] = useState(!isCard);
   const [zoomLevel, setZoomLevel] = useState(1);
   const imgRef = useRef(null);
-  const [objectFit, setObjectFit] = useState(() => 
-    isStandingModelPhoto(imageUrl, 0, 0, photoIndex) ? 'contain' : 'cover'
-  );
-
-  useEffect(() => {
-    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth) {
-      const fit = isStandingModelPhoto(imageUrl, imgRef.current.naturalWidth, imgRef.current.naturalHeight, photoIndex) ? 'contain' : 'cover';
-      setObjectFit(fit);
-    } else {
-      setObjectFit(isStandingModelPhoto(imageUrl, 0, 0, photoIndex) ? 'contain' : 'cover');
-    }
-  }, [imageUrl, photoIndex]);
+  const [objectFit, setObjectFit] = useState('contain');
   // Subtle royal silk sheen: reduced, soft luster on hover without harsh glare
   const [sheenIntensity, setSheenIntensity] = useState(isCard ? 0.12 : 0.18);
 

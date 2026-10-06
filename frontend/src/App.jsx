@@ -34,6 +34,8 @@ const Photo360Viewer = lazy(() => import('./components/Photo360Viewer'));
 const CustomerAuthModal = lazy(() => import('./components/CustomerAuthModal'));
 const CustomerAccountModal = lazy(() => import('./components/CustomerAccountModal'));
 const VirtualTrialRoomModal = lazy(() => import('./components/VirtualTrialRoomModal'));
+const VirtualTryOnModal = lazy(() => import('./components/VirtualTryOn/VirtualTryOnModal'));
+import TryOnButton from './components/VirtualTryOn/TryOnButton';
 import { isStandingModelPhoto } from './utils/imageHelper';
 import { ApiService } from './services/api';
 
@@ -120,7 +122,6 @@ export default function App() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAllReviewsOpen, setIsAllReviewsOpen] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
-  const [adminAutoUnlock, setAdminAutoUnlock] = useState(false);
 
   // Customer Authentication state (Session-based: auto logouts when browser closes!)
   const [currentCustomer, setCurrentCustomer] = useState(() => ApiService.getCurrentCustomer());
@@ -138,11 +139,14 @@ export default function App() {
   const [inspectorSaree, setInspectorSaree] = useState(null);
   const [inspectModalSaree, setInspectModalSaree] = useState(null);
   const [inspectPhotoIdx, setInspectPhotoIdx] = useState(0);
-  const [inspectZoomScale, setInspectZoomScale] = useState(2.5);
+  const [inspectZoomScale, setInspectZoomScale] = useState(1);
   const [inspectZoomOrigin, setInspectZoomOrigin] = useState({ x: 50, y: 50, zoomed: false });
   const [isInspectPortraitModel, setIsInspectPortraitModel] = useState(false);
+  const [inspectBgColor, setInspectBgColor] = useState(null);
   const [isTrialRoomOpen, setIsTrialRoomOpen] = useState(false);
   const [trialRoomSaree, setTrialRoomSaree] = useState(null);
+  const [isVirtualTryOnOpen, setIsVirtualTryOnOpen] = useState(false);
+  const [virtualTryOnSaree, setVirtualTryOnSaree] = useState(null);
   const [catalogSarees, setCatalogSarees] = useState(() => {
     try {
       const saved = localStorage.getItem('patola_cached_catalog_page1') || sessionStorage.getItem('patola_cached_catalog_page1');
@@ -155,11 +159,47 @@ export default function App() {
   });
   const photoAngleBarRef = useRef(null);
   const inspectScrollPosRef = useRef(null);
+  const inspectViewerBoxRef = useRef(null);
+
+  // Non-passive wheel listener for inspect modal to prevent page scrolling while zooming
+  useEffect(() => {
+    const el = inspectViewerBoxRef.current;
+    if (!el) return;
+
+    const handleWheel = (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        const delta = e.deltaY < 0 ? 0.35 : -0.35;
+        setInspectZoomScale(prev => Math.max(1, Math.min(8, Math.round((prev + delta) * 10) / 10)));
+        setInspectZoomOrigin(prev => ({ ...prev, zoomed: true }));
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', handleWheel);
+    };
+  }, [inspectModalSaree]);
 
   const handleOpenTrialRoom = (saree = null) => {
     const list = catalogSarees.length > 0 ? catalogSarees : uploadedSarees;
     setTrialRoomSaree(saree || (list.length > 0 ? list[0] : null));
     setIsTrialRoomOpen(true);
+  };
+
+  const handleOpenVirtualTryOn = (saree = null) => {
+    const list = catalogSarees.length > 0 ? catalogSarees : uploadedSarees;
+    const target = saree || quickViewSaree || (list.length > 0 ? list[0] : null);
+    setVirtualTryOnSaree(target);
+    setIsVirtualTryOnOpen(true);
+  };
+
+  const handleBuyNowFromTryOn = (saree) => {
+    handleAddToCart(saree);
+    setIsVirtualTryOnOpen(false);
+    setIsCartOpen(false);
+    setIsCheckoutOpen(true);
   };
 
   // Auto-scroll photo angle selector bar so the next angle comes into view smoothly
@@ -239,9 +279,11 @@ export default function App() {
           normalized.includes('patola3868')
         ) {
           lastAdminUrlRef.current = combined;
-          setAdminAutoUnlock(true);
+          try {
+            sessionStorage.removeItem('patola_admin_authed');
+          } catch (e) {}
           setIsAdminOpen(true);
-          showToast('👑 Welcome Admin! Secret Admin Portal Unlocked (Patola@3868).');
+          showToast('🔒 Store Admin Portal - Please enter your password to unlock.');
           try {
             window.history.replaceState(null, '', '/');
           } catch (e) {}
@@ -301,7 +343,7 @@ export default function App() {
   }, []);
 
   const handleInspectSaree = (saree, activePhotoIndex = 0) => {
-    // Record current scroll position so the user stays exactly where they were
+    // Record current scroll position so the user can return anytime via 'Return to Saree'
     inspectScrollPosRef.current = window.pageYOffset || document.documentElement.scrollTop;
 
     const photoIdx = typeof activePhotoIndex === 'number' 
@@ -315,29 +357,65 @@ export default function App() {
       ...saree,
       activePhotoIdx: photoIdx,
       selectedPhotoIdx: photoIdx,
-      image: activeImg
+      image: activeImg,
+      _inspectTimestamp: Date.now()
     });
 
-    // Open the Interactive Weave Inspector Popup Modal
+    // Open the Interactive Weave Inspector Popup Modal (Photo 2)
     setInspectModalSaree({
       ...saree,
       activePhotoIdx: photoIdx,
       selectedPhotoIdx: photoIdx,
       image: activeImg
     });
+
     setInspectPhotoIdx(photoIdx);
+    setInspectZoomScale(1);
     setInspectZoomOrigin({ x: 50, y: 50, zoomed: false });
     setQuickViewSaree(null);
   };
 
   const handleCloseInspectModal = () => {
-    const savedPos = inspectScrollPosRef.current;
-    setInspectModalSaree(null);
-    if (typeof savedPos === 'number') {
-      setTimeout(() => {
-        window.scrollTo({ top: savedPos, behavior: 'instant' });
-      }, 10);
+    // Sync current photo angle to inspectorSaree so the on-page inspector displays the exact same photo
+    if (inspectModalSaree) {
+      setInspectorSaree(prev => ({
+        ...(prev || inspectModalSaree),
+        activePhotoIdx: inspectPhotoIdx,
+        selectedPhotoIdx: inspectPhotoIdx,
+        image: (inspectModalSaree.images && inspectModalSaree.images[inspectPhotoIdx]) || inspectModalSaree.image,
+        _inspectTimestamp: Date.now()
+      }));
     }
+    setInspectModalSaree(null);
+
+    // Smoothly scroll and redirect to the on-page Weave Inspector section (Image 2) on desktop & mobile
+    const scrollToInspector = () => {
+      const backBtn = document.getElementById('btnBackToViewSaree');
+      const target = document.getElementById('interactiveLensBox')
+                  || document.querySelector('.weave-inspector-display')
+                  || document.getElementById('motifs')
+                  || document.querySelector('.motif-spotlight-section');
+
+      if (backBtn && window.innerWidth <= 768) {
+        const rect = backBtn.getBoundingClientRect();
+        const currentY = window.pageYOffset || document.documentElement.scrollTop;
+        // Position so that 'Return to Saree' button is comfortably visible ~55px above the bottom of the mobile screen
+        const targetScrollY = currentY + (rect.bottom - (window.innerHeight - 55));
+        window.scrollTo({ top: Math.max(0, targetScrollY), behavior: 'smooth' });
+      } else if (target) {
+        const mainNav = document.querySelector('.main-navbar') || document.querySelector('header');
+        const navHeight = mainNav ? mainNav.offsetHeight : (window.innerWidth <= 768 ? 75 : 80);
+        const offset = window.innerWidth <= 768 ? 6 : 14;
+        const targetY = target.getBoundingClientRect().top + window.pageYOffset - (navHeight + offset);
+        window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+      }
+    };
+
+    // Staggered triggers to account for React modal unmount & mobile viewport reflow
+    requestAnimationFrame(() => {
+      setTimeout(scrollToInspector, 60);
+      setTimeout(scrollToInspector, 200);
+    });
   };
 
   const showToast = (msg) => {
@@ -559,7 +637,8 @@ export default function App() {
         }}
         onOpenCustomPatola={() => setIsCustomPatolaOpen(true)}
         onInspectSaree={handleInspectSaree}
-        onOpenTrialRoom={handleOpenTrialRoom}
+        onOpenTrialRoom={handleOpenVirtualTryOn}
+        onOpenVirtualTryOn={handleOpenVirtualTryOn}
         onSareesLoaded={setCatalogSarees}
         wishlist={wishlist}
         onToggleWishlist={handleToggleWishlist}
@@ -643,7 +722,7 @@ export default function App() {
                   >
                     {/* ✦ PHOTO 1: NORMAL 2D | PHOTOS 2 TO 4: 3D VIRTUAL SAREE DRAPE | PHOTO 5: 360° ANGLE VIEW ✦ */}
                     {quickViewPhotoIdx === 4 ? (
-                      <Suspense fallback={<img src={modalPhotos[quickViewPhotoIdx]} alt="Loading view" className="saree-image" style={{ objectFit: isStandingModelPhoto(modalPhotos[quickViewPhotoIdx], 0, 0, quickViewPhotoIdx) ? 'contain' : 'cover' }} />}>
+                      <Suspense fallback={<img src={modalPhotos[quickViewPhotoIdx]} alt="Loading view" className="saree-image" style={{ objectFit: 'contain' }} />}>
                         <Photo360Viewer
                           imageUrl={modalPhotos[quickViewPhotoIdx]}
                           title={`${quickViewSaree.title} - 360° Angle View`}
@@ -652,7 +731,7 @@ export default function App() {
                         />
                       </Suspense>
                     ) : quickViewPhotoIdx >= 1 && quickViewPhotoIdx <= 3 ? (
-                      <Suspense fallback={<img src={modalPhotos[quickViewPhotoIdx]} alt="Loading view" className="saree-image" style={{ objectFit: isStandingModelPhoto(modalPhotos[quickViewPhotoIdx], 0, 0, quickViewPhotoIdx) ? 'contain' : 'cover' }} />}>
+                      <Suspense fallback={<img src={modalPhotos[quickViewPhotoIdx]} alt="Loading view" className="saree-image" style={{ objectFit: 'contain' }} />}>
                         <VirtualDrape3D
                           imageUrl={modalPhotos[quickViewPhotoIdx]}
                           title={`${quickViewSaree.title} - View ${quickViewPhotoIdx + 1}`}
@@ -673,15 +752,7 @@ export default function App() {
                           alt={`${quickViewSaree.title} - Photo ${quickViewPhotoIdx + 1}`}
                           className="modal-gallery-main-img"
                           style={{
-                            objectFit: isStandingModelPhoto(modalPhotos[quickViewPhotoIdx], 0, 0, quickViewPhotoIdx) ? 'contain' : 'cover'
-                          }}
-                          onLoad={(event) => {
-                            const image = event.currentTarget;
-                            const { naturalWidth, naturalHeight } = image;
-                            if (naturalWidth && naturalHeight) {
-                              const fit = isStandingModelPhoto(modalPhotos[quickViewPhotoIdx], naturalWidth, naturalHeight, quickViewPhotoIdx) ? 'contain' : 'cover';
-                              image.style.objectFit = fit;
-                            }
+                            objectFit: 'contain'
                           }}
                         />
                       </>
@@ -792,6 +863,14 @@ export default function App() {
                     >
                       Add to Bag
                     </button>
+
+                    <TryOnButton
+                      onClick={() => {
+                        handleOpenVirtualTryOn(quickViewSaree);
+                      }}
+                      label="✨ Try on Me"
+                      style={{ flex: 1, minWidth: '140px' }}
+                    />
 
                     <button
                       className="btn-outline-gold btn-wishlist-modal-act"
@@ -907,7 +986,7 @@ export default function App() {
                 </div>
 
                 {/* Zoom Level Selectors */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginRight: '2.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginRight: '2.5rem', flexWrap: 'wrap' }}>
                   <span style={{ fontSize: '0.72rem', color: '#fef3c7', fontWeight: 700 }}>Zoom:</span>
                   {[
                     { scale: 1, label: '1x' },
@@ -922,7 +1001,7 @@ export default function App() {
                       type="button"
                       onClick={() => {
                         setInspectZoomScale(scale);
-                        setInspectZoomOrigin(prev => ({ ...prev, zoomed: true }));
+                        setInspectZoomOrigin({ x: 50, y: 50, zoomed: scale > 1 });
                       }}
                       style={{
                         padding: '0.22rem 0.55rem',
@@ -1008,19 +1087,23 @@ export default function App() {
               {/* Main Magnifier View */}
               <div style={{ padding: '1rem 1.4rem' }}>
                 <div
+                  ref={inspectViewerBoxRef}
                   style={{
                     position: 'relative',
                     width: '100%',
-                    height: '52vh',
-                    minHeight: '320px',
-                    maxHeight: '520px',
+                    height: '56vh',
+                    minHeight: '340px',
+                    maxHeight: '560px',
                     borderRadius: '10px',
                     overflow: 'hidden',
-                    background: 'radial-gradient(ellipse at center, #fdfbf7 0%, #f5efe6 55%, #eae0d0 100%)',
+                    background: inspectBgColor 
+                      ? `radial-gradient(ellipse at center, ${inspectBgColor.replace('rgb', 'rgba').replace(')', ', 0.35)')} 0%, rgba(254, 251, 246, 0.92) 70%, #f3eae0 100%)`
+                      : 'radial-gradient(ellipse at center, #ffffff 0%, #fbf6ee 65%, #f1e6d7 100%)',
+                    transition: 'background 0.5s ease',
                     cursor: 'crosshair',
                     touchAction: 'none',
                     border: '1.5px solid rgba(212, 175, 55, 0.45)',
-                    boxShadow: 'inset 0 0 24px rgba(180, 140, 90, 0.12), 0 6px 20px rgba(0, 0, 0, 0.05)'
+                    boxShadow: 'inset 0 0 24px rgba(180, 140, 90, 0.08), 0 6px 20px rgba(0, 0, 0, 0.04)'
                   }}
                   onMouseMove={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
@@ -1047,30 +1130,23 @@ export default function App() {
                   }}
                   onTouchEnd={() => setInspectZoomOrigin(prev => ({ ...prev, zoomed: false }))}
                   onClick={() => setInspectZoomOrigin(prev => ({ ...prev, zoomed: !prev.zoomed }))}
-                  onWheel={(e) => {
-                    if (e.deltaY !== 0) {
-                      e.preventDefault();
-                      const delta = e.deltaY < 0 ? 0.35 : -0.35;
-                      setInspectZoomScale(prev => Math.max(1, Math.min(8, Math.round((prev + delta) * 10) / 10)));
-                      setInspectZoomOrigin(prev => ({ ...prev, zoomed: true }));
-                    }
-                  }}
                   title="Hover mouse, drag finger, or scroll wheel to inspect individual warp & weft silk threads"
                 >
-                  {/* Seamless luxury ambient backdrop - eliminates harsh black letterbox bars */}
+                  {/* Photo-adaptive dynamic light ambient backdrop - soft, airy, illuminated */}
                   <div
                     aria-hidden="true"
                     style={{
                       position: 'absolute',
-                      inset: '-20px',
+                      inset: '-30px',
                       backgroundImage: `url("${currentInspectImg}")`,
                       backgroundPosition: 'center',
                       backgroundSize: 'cover',
-                      filter: 'blur(32px) saturate(1.15)',
-                      opacity: 0.28,
-                      transform: 'scale(1.15)',
+                      filter: 'blur(50px) saturate(1.2) brightness(1.25)',
+                      opacity: 0.42,
+                      transform: 'scale(1.2)',
                       pointerEvents: 'none',
-                      zIndex: 0
+                      zIndex: 0,
+                      transition: 'background-image 0.4s ease, opacity 0.4s ease'
                     }}
                   />
 
@@ -1082,10 +1158,10 @@ export default function App() {
                       zIndex: 1,
                       width: '100%',
                       height: '100%',
-                      objectFit: isInspectPortraitModel ? 'contain' : 'cover',
+                      objectFit: 'contain',
                       objectPosition: 'center',
                       transformOrigin: `${inspectZoomOrigin.x}% ${inspectZoomOrigin.y}%`,
-                      transform: inspectZoomOrigin.zoomed ? `scale(${inspectZoomScale})` : 'scale(1)',
+                      transform: (inspectZoomOrigin.zoomed && inspectZoomScale > 1) ? `scale(${inspectZoomScale})` : 'scale(1)',
                       transition: inspectZoomOrigin.zoomed ? 'none' : 'transform 0.25s ease-out',
                       userSelect: 'none',
                       pointerEvents: 'none'
@@ -1094,6 +1170,27 @@ export default function App() {
                       const { naturalWidth, naturalHeight } = e.currentTarget;
                       if (naturalWidth && naturalHeight) {
                         setIsInspectPortraitModel(isStandingModelPhoto(currentInspectImg, naturalWidth, naturalHeight, inspectPhotoIdx));
+                        // Automatically extract dominant background color from the photo
+                        try {
+                          const canvas = document.createElement('canvas');
+                          canvas.width = 16;
+                          canvas.height = 16;
+                          const ctx = canvas.getContext('2d');
+                          if (ctx) {
+                            ctx.drawImage(e.currentTarget, 0, 0, 16, 16);
+                            const imgData = ctx.getImageData(0, 0, 16, 16).data;
+                            let r = 0, g = 0, b = 0, count = 0;
+                            for (let i = 0; i < imgData.length; i += 4) {
+                              r += imgData[i];
+                              g += imgData[i + 1];
+                              b += imgData[i + 2];
+                              count++;
+                            }
+                            if (count > 0) {
+                              setInspectBgColor(`rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`);
+                            }
+                          }
+                        } catch (err) {}
                       }
                     }}
                   />
@@ -1267,7 +1364,7 @@ export default function App() {
         isOpen={true}
         onClose={() => {
           setIsAdminOpen(false);
-          setAdminAutoUnlock(false);
+          try { sessionStorage.removeItem('patola_admin_authed'); } catch (e) {}
           // If URL contained secret admin path, hash or query, reset back to clean '/'
           try {
             const currentPath = decodeURIComponent(window.location.pathname || '').toLowerCase();
@@ -1278,7 +1375,6 @@ export default function App() {
             }
           } catch (e) {}
         }}
-        autoUnlock={adminAutoUnlock}
         onShowToast={showToast}
         activeLocalOrders={recentOrders}
         onSareeAdded={(newSaree) => {
@@ -1343,19 +1439,19 @@ export default function App() {
         showToast={showToast}
       />}
 
-      {/* 🪞 FUTURE VIRTUAL TRIAL ROOM (COMMENTED OUT FOR FUTURE USE)
-      {isTrialRoomOpen && (
-        <VirtualTrialRoomModal
-          isOpen={isTrialRoomOpen}
-          onClose={() => setIsTrialRoomOpen(false)}
-          initialSaree={trialRoomSaree}
+      {/* ✨ AI VIRTUAL PATOLA TRY-ON MODAL ✨ */}
+      {isVirtualTryOnOpen && (
+        <VirtualTryOnModal
+          isOpen={isVirtualTryOnOpen}
+          onClose={() => setIsVirtualTryOnOpen(false)}
+          saree={virtualTryOnSaree}
           allSarees={catalogSarees.length > 0 ? catalogSarees : uploadedSarees}
           formatPrice={formatPrice}
           onAddToCart={handleAddToCart}
+          onBuyNow={handleBuyNowFromTryOn}
           showToast={showToast}
         />
       )}
-      */}
       </Suspense>
 
       {/* Toast Notification */}

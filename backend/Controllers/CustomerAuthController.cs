@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using VirasatPatola.Api.Data;
@@ -91,6 +92,7 @@ namespace VirasatPatola.Api.Controllers
         /// <summary>
         /// Registers a new customer with Mobile Number and Password
         /// </summary>
+        [EnableRateLimiting("CustomerAuth")]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] CustomerRegisterDto dto)
         {
@@ -151,6 +153,7 @@ namespace VirasatPatola.Api.Controllers
         /// <summary>
         /// Customer Login using Mobile Number and Password
         /// </summary>
+        [EnableRateLimiting("CustomerAuth")]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] CustomerLoginDto dto)
         {
@@ -199,6 +202,7 @@ namespace VirasatPatola.Api.Controllers
         /// <summary>
         /// Get Profile for Customer by phone or token
         /// </summary>
+        [EnableRateLimiting("SensitiveLookup")]
         [HttpGet("profile/{phone}")]
         public async Task<IActionResult> GetProfile(string phone)
         {
@@ -265,6 +269,7 @@ namespace VirasatPatola.Api.Controllers
         /// <summary>
         /// Fetch all orders matching this Customer's mobile number
         /// </summary>
+        [EnableRateLimiting("SensitiveLookup")]
         [HttpGet("orders/{phone}")]
         public async Task<IActionResult> GetCustomerOrders(string phone)
         {
@@ -317,6 +322,7 @@ namespace VirasatPatola.Api.Controllers
         /// <summary>
         /// Allows a customer to change their password to their preferred custom password.
         /// </summary>
+        [EnableRateLimiting("CustomerAuth")]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] CustomerChangePasswordDto dto)
         {

@@ -128,9 +128,10 @@ export default function MotifMagnifier({
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [uploadedFileName, setUploadedFileName] = useState('');
-  const [zoomScale, setZoomScale] = useState(2.4);
+  const [zoomScale, setZoomScale] = useState(1);
   const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50, zoomed: false });
   const [isPortraitModel, setIsPortraitModel] = useState(false);
+  const [magnifierBgColor, setMagnifierBgColor] = useState(null);
 
   // If a saree was clicked from catalog above, load it and sync active photo
   useEffect(() => {
@@ -141,6 +142,8 @@ export default function MotifMagnifier({
         ? selectedSaree.activePhotoIdx
         : (typeof selectedSaree.selectedPhotoIdx === 'number' ? selectedSaree.selectedPhotoIdx : 0);
       setActivePhotoIdx(incomingIdx);
+      setZoomScale(1);
+      setZoomOrigin({ x: 50, y: 50, zoomed: false });
     }
   }, [selectedSaree]);
 
@@ -179,16 +182,6 @@ export default function MotifMagnifier({
 
   const handleTouchEnd = () => {
     // Retain magnification or allow gentle touch release
-  };
-
-  const handleWheelZoom = (e) => {
-    // Smooth zoom on mouse wheel without jitter or losing focus
-    if (e.deltaY !== 0) {
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? 0.35 : -0.35;
-      setZoomScale(prev => Math.max(1, Math.min(8, Math.round((prev + delta) * 10) / 10)));
-      setZoomOrigin(prev => ({ ...prev, zoomed: true }));
-    }
   };
 
   const handleFileUpload = async (e) => {
@@ -290,6 +283,28 @@ export default function MotifMagnifier({
   }, [currentImage, safeIdx]);
 
   const photoPillGridRef = useRef(null);
+  const viewerBoxRef = useRef(null);
+
+  // Non-passive native wheel listener to zoom without scrolling the parent webpage
+  useEffect(() => {
+    const el = viewerBoxRef.current;
+    if (!el) return;
+
+    const handleWheel = (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        const delta = e.deltaY < 0 ? 0.35 : -0.35;
+        setZoomScale(prev => Math.max(1, Math.min(8, Math.round((prev + delta) * 10) / 10)));
+        setZoomOrigin(prev => ({ ...prev, zoomed: true }));
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
 
   // Auto-scroll photo angle pills so the next angle comes into view smoothly
   useEffect(() => {
@@ -313,6 +328,9 @@ export default function MotifMagnifier({
   let currentDesc = activeMotifObj.desc;
   let currentFact = activeMotifObj.fact;
 
+  let currentLength = null;
+  let currentColor = null;
+
   if (uploadedImage) {
     currentTitle = uploadedFileName ? `Custom Saree: ${uploadedFileName}` : 'Customer Uploaded Saree';
     currentTag = 'Bespoke Saree Weave Inspection (Uploaded from Device)';
@@ -323,6 +341,31 @@ export default function MotifMagnifier({
     currentTag = `${customSaree.weave || 'Double Ikat Handloom'} • ${customSaree.motifName || 'Sacred Motif'}`;
     currentDesc = customSaree.description || 'Authentic pure mulberry silk handloom with mathematically resist-dyed threads.';
     currentFact = `⏳ Handcrafted on loom: ${customSaree.timeToWeave || '9 Months'} • Fabric: ${customSaree.fabric || 'Pure Mulberry Silk'}`;
+
+    const isDupatta = (customSaree.category || '').toLowerCase().includes('dupatta') || 
+                      (customSaree.title || '').toLowerCase().includes('dupatta') || 
+                      (customSaree.weave || '').toLowerCase().includes('dupatta');
+    let rawLen = customSaree.length || (isDupatta ? '2.50 Meters (Handloom Silk with Zari Pallu)' : '5.50m Saree + 0.80m Blouse (6.30m Total)');
+    currentLength = String(rawLen).replace(/\(લંબાઈ\)/gi, '').replace(/લંબાઈ/gi, '').replace(/^Length\s*:\s*/gi, '').trim();
+
+    let rawColor = customSaree.colors || customSaree.color || '';
+    if (!rawColor || !rawColor.trim()) {
+      const searchStr = `${customSaree.motif || ''} ${customSaree.motifName || ''} ${customSaree.title || ''}`.toLowerCase();
+      if (searchStr.includes('ratan') || searchStr.includes('jewel') || searchStr.includes('rat')) {
+        rawColor = 'Madder Ruby Red & Antique Mustard Gold';
+      } else if (searchStr.includes('chhabdi') || searchStr.includes('emerald') || searchStr.includes('basket')) {
+        rawColor = 'Emerald Green, Vermilion Red & Royal Gold';
+      } else if (searchStr.includes('pan') || searchStr.includes('blue') || searchStr.includes('peacock') || searchStr.includes('leaf')) {
+        rawColor = 'Midnight Peacock Blue & Deep Maroon';
+      } else if (searchStr.includes('nari') || searchStr.includes('maneek') || searchStr.includes('manek') || searchStr.includes('elephant')) {
+        rawColor = 'Deep Crimson Red, Saffron Ochre & Gold';
+      } else if (searchStr.includes('navratna')) {
+        rawColor = 'Nine Sacred Gemstone Hues with Zari Border';
+      } else {
+        rawColor = 'Deep Crimson Red, Mustard & Golden Zari';
+      }
+    }
+    currentColor = String(rawColor).replace(/^Colors?\s*:\s*/gi, '').trim();
   }
 
   return (
@@ -469,7 +512,7 @@ export default function MotifMagnifier({
                       type="button"
                       onClick={() => {
                         setZoomScale(scale);
-                        setZoomOrigin(prev => ({ ...prev, zoomed: true }));
+                        setZoomOrigin({ x: 50, y: 50, zoomed: scale > 1 });
                       }}
                       style={{
                         padding: '0.22rem 0.55rem',
@@ -534,21 +577,32 @@ export default function MotifMagnifier({
 
             <div
               className="inspector-magnifier-view"
-              id="motifPhotoViewerBox"
+              ref={viewerBoxRef}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onClick={handleTouchToggle}
-              onWheel={handleWheelZoom}
-              style={{ touchAction: 'none' }}
+              style={{ 
+                touchAction: 'none',
+                background: magnifierBgColor 
+                  ? `radial-gradient(ellipse at center, ${magnifierBgColor.replace('rgb', 'rgba').replace(')', ', 0.35)')} 0%, rgba(254, 251, 246, 0.92) 70%, #f3eae0 100%)`
+                  : 'radial-gradient(ellipse at center, #ffffff 0%, #fbf6ee 65%, #f1e6d7 100%)',
+                transition: 'background 0.5s ease'
+              }}
               title="Touch & drag finger, move mouse, or scroll wheel to magnify double ikat weave threads"
             >
               <div
                 aria-hidden="true"
                 className="inspector-image-backdrop"
-                style={{ backgroundImage: `url("${currentImage}")` }}
+                style={{ 
+                  backgroundImage: `url("${currentImage}")`,
+                  filter: 'blur(50px) saturate(1.2) brightness(1.25)',
+                  opacity: 0.42,
+                  transform: 'scale(1.2)',
+                  transition: 'background-image 0.4s ease, opacity 0.4s ease'
+                }}
               />
 
               <img
@@ -556,10 +610,10 @@ export default function MotifMagnifier({
                 alt={currentTitle}
                 className={isPortraitModel ? 'is-tall-model' : 'is-saree-fill'}
                 style={{
-                  objectFit: isPortraitModel ? 'contain' : 'cover',
+                  objectFit: 'contain',
                   objectPosition: 'center',
                   transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`,
-                  transform: zoomOrigin.zoomed ? `scale(${zoomScale})` : 'scale(1)',
+                  transform: (zoomOrigin.zoomed && zoomScale > 1) ? `scale(${zoomScale})` : 'scale(1)',
                   transition: zoomOrigin.zoomed ? 'none' : 'transform 0.3s ease',
                   userSelect: 'none',
                   pointerEvents: 'none'
@@ -568,6 +622,27 @@ export default function MotifMagnifier({
                   const { naturalWidth, naturalHeight } = e.currentTarget;
                   if (naturalWidth && naturalHeight) {
                     setIsPortraitModel(isStandingModelPhoto(currentImage, naturalWidth, naturalHeight, safeIdx));
+                    // Automatically extract dominant background color from the photo
+                    try {
+                      const canvas = document.createElement('canvas');
+                      canvas.width = 16;
+                      canvas.height = 16;
+                      const ctx = canvas.getContext('2d');
+                      if (ctx) {
+                        ctx.drawImage(e.currentTarget, 0, 0, 16, 16);
+                        const imgData = ctx.getImageData(0, 0, 16, 16).data;
+                        let r = 0, g = 0, b = 0, count = 0;
+                        for (let i = 0; i < imgData.length; i += 4) {
+                          r += imgData[i];
+                          g += imgData[i + 1];
+                          b += imgData[i + 2];
+                          count++;
+                        }
+                        if (count > 0) {
+                          setMagnifierBgColor(`rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`);
+                        }
+                      }
+                    } catch (err) {}
                   }
                 }}
               />
@@ -678,10 +753,61 @@ export default function MotifMagnifier({
                 </div>
               </div>
 
-              <div className="inspector-caption-desc">{currentDesc}</div>
               <div style={{ marginTop: '0.6rem', fontSize: '0.75rem', color: 'var(--color-gold-light)', fontWeight: 600 }}>
                 ✦ {currentFact}
               </div>
+
+              {/* Length & Color Specifications inside Weave Inspector */}
+              {(currentLength || currentColor) && (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '0.6rem',
+                  marginTop: '0.85rem',
+                  paddingTop: '0.75rem',
+                  borderTop: '1px solid rgba(212, 175, 55, 0.25)'
+                }}>
+                  {currentLength && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      fontSize: '0.78rem',
+                      color: '#fef3c7',
+                      background: 'rgba(212, 175, 55, 0.1)',
+                      border: '1px solid rgba(212, 175, 55, 0.35)',
+                      borderLeft: '3px solid #d4af37',
+                      padding: '0.38rem 0.65rem',
+                      borderRadius: '6px'
+                    }}>
+                      <span style={{ fontSize: '0.85rem' }}>📏</span>
+                      <span style={{ lineHeight: 1.3 }}>
+                        <strong style={{ color: '#ffd700' }}>Length:</strong> {currentLength}
+                      </span>
+                    </div>
+                  )}
+
+                  {currentColor && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      fontSize: '0.78rem',
+                      color: '#fef3c7',
+                      background: 'rgba(212, 175, 55, 0.1)',
+                      border: '1px solid rgba(212, 175, 55, 0.35)',
+                      borderLeft: '3px solid #d4af37',
+                      padding: '0.38rem 0.65rem',
+                      borderRadius: '6px'
+                    }}>
+                      <span style={{ fontSize: '0.85rem' }}>🎨</span>
+                      <span style={{ lineHeight: 1.3 }}>
+                        <strong style={{ color: '#ffd700' }}>Color:</strong> {currentColor}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
