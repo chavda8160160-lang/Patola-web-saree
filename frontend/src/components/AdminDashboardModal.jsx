@@ -401,6 +401,7 @@ export default function AdminDashboardModal({
     motifName: 'Nari Kunjar (Elephant & Dancing Maiden)',
     timeToWeave: '3 to 5 Months Handcrafted',
     fabric: '100% Pure Mulberry Silk & Natural Dyes',
+    colors: '',
     length: '2.50 Meters (Handloom Silk with Zari Pallu)',
     lengthNumber: '2.50',
     lengthUnit: 'Meter',
@@ -2754,7 +2755,8 @@ export default function AdminDashboardModal({
       motif: dupattaForm.motif,
       motifName: dupattaForm.motifName,
       timeToWeave: dupattaForm.timeToWeave,
-      fabric: dupattaForm.fabric,
+      fabric: dupattaForm.fabric || '100% Pure Mulberry Silk & Natural Dyes',
+      colors: dupattaForm.colors ? dupattaForm.colors.trim() : '',
       badge: dupattaForm.badge || 'Double Ikat Dupatta',
       description: dupattaForm.description.trim() || `Authentic handwoven ${dupattaForm.weave} featuring sacred ${dupattaForm.motifName} geometry. (Length: 2.50 Meters).`,
       image: dupattaImages[0] || DEFAULT_SAREE_IMAGES[0],
@@ -2795,7 +2797,10 @@ export default function AdminDashboardModal({
       motifName: 'Nari Kunjar (Elephant & Dancing Maiden)',
       timeToWeave: '3 to 5 Months Handcrafted',
       fabric: '100% Pure Mulberry Silk & Natural Dyes',
+      colors: '',
       length: '2.50 Meters (Handloom Silk with Zari Pallu)',
+      lengthNumber: '2.50',
+      lengthUnit: 'Meter',
       badge: 'Double Ikat Dupatta',
       description: '',
       image: DEFAULT_SAREE_IMAGES[0],
@@ -7970,9 +7975,9 @@ Warm regards,
                         />
                       </div>
 
-                      {/* Stock Quantity */}
+                      {/* Initial Vault Stock Quantity */}
                       <div>
-                        <label className="form-label" style={{ fontWeight: 700 }}>Vault Stock Quantity *</label>
+                        <label className="form-label" style={{ fontWeight: 700 }}>Initial Vault Stock Quantity *</label>
                         <input
                           type="number"
                           className="form-input"
@@ -7983,7 +7988,7 @@ Warm regards,
                           onChange={(e) => setEditDupattaForm(prev => ({ ...prev, stockQuantity: e.target.value }))}
                         />
                         <span style={{ fontSize: '0.78rem', color: '#666' }}>
-                          0 = Out of Stock. 1+ = In Stock for immediate booking.
+                          Default 50 dupattas. Automatically becomes Out of Stock when all 50 pieces are sold.
                         </span>
                       </div>
 
@@ -8089,63 +8094,62 @@ Warm regards,
                         </select>
                       </div>
 
-                      {/* Motif */}
+                      {/* Sacred Motif */}
                       <div>
-                        <label className="form-label" style={{ fontWeight: 700 }}>Motif Type</label>
+                        <label className="form-label" style={{ fontWeight: 700 }}>Sacred Motif</label>
                         <select
                           className="form-input"
                           value={editDupattaForm.motif}
-                          onChange={(e) => setEditDupattaForm(prev => ({ ...prev, motif: e.target.value }))}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            let mName = 'Nari Kunjar (Elephant & Dancing Maiden)';
+                            if (val === 'ratanchowk') mName = 'Ratanchowk Bhat (Sacred Jewel Square)';
+                            if (val === 'chhabdi') mName = 'Chhabdi Bhat (Floral Auspicious Basket)';
+                            if (val === 'pan-bhat') mName = 'Navratna Pan Bhat (Nine Gems)';
+                            if (val === 'shikargah') mName = 'Shikargah (Royal Wildlife Motifs)';
+                            if (val === 'Navratna') mName = 'Navratna (Jems Geometric)';
+                            if (val === 'Sakhiyo') mName = 'Sakhiyo (Figurative / Human)';
+                            setEditDupattaForm(prev => ({ ...prev, motif: val, motifName: mName }));
+                          }}
                         >
-                          <option value="nari-kunjar">🐘 Nari Kunjar (Elephant, Parrot, Dancing Doll)</option>
-                          <option value="ratanchowk">💎 Ratanchowk (Jewel Square Geometric)</option>
-                          <option value="chhabdi">🧺 Chhabdi Bhat (Royal Floral Basket)</option>
-                          <option value="pan-bhat">🍃 Pan Bhat (Sacred Pipal / Heart Leaf)</option>
-                          <option value="shikargah">🐅 Shikargah (Royal Hunting Forest Motif)</option>
-                          <option value="Navratna">✨ Navratna (Nine Sacred Gems Grid)</option>
-                          <option value="Sakhiyo">卐 Sakhiyo (Swastika Heritage Auspicious Weave)</option>
+                          <option value="nari-kunjar">Nari Kunjar (Elephant & Maiden)</option>
+                          <option value="ratanchowk">Ratanchowk (Jewel Square)</option>
+                          <option value="chhabdi">Chhabdi Bhat (Floral Basket)</option>
+                          <option value="pan-bhat">Navratna Pan Bhat</option>
+                          <option value="shikargah">Shikargah Royal Forest</option>
+                          <option value="Navratna">Navratna (Jems Geometric)</option>
+                          <option value="Sakhiyo">Sakhiyo (Figurative / Human)</option>
                         </select>
                       </div>
 
-                      {/* Motif Custom Name */}
+                      {/* Loom Handcraft Timeline */}
                       <div>
-                        <label className="form-label" style={{ fontWeight: 700 }}>Motif Display Name</label>
-                        <input
-                          type="text"
+                        <label className="form-label" style={{ fontWeight: 700 }}>Loom Handcraft Timeline</label>
+                        <select
                           className="form-input"
-                          placeholder="e.g. Royal Nari Kunjar Bhat"
-                          value={editDupattaForm.motifName}
-                          onChange={(e) => setEditDupattaForm(prev => ({ ...prev, motifName: e.target.value }))}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem', marginTop: '1rem' }}>
-                      {/* Weaving Time */}
-                      <div>
-                        <label className="form-label">Weaving Time</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="e.g. 3 to 5 Months Handcrafted"
                           value={editDupattaForm.timeToWeave}
                           onChange={(e) => setEditDupattaForm(prev => ({ ...prev, timeToWeave: e.target.value }))}
-                        />
+                        >
+                          <option value="2 to 4 Months Handcrafted">2 to 4 Months Handcrafted</option>
+                          <option value="3 to 5 Months Handcrafted">3 to 5 Months Handcrafted</option>
+                          <option value="6 Months Handcrafted">6 Months Handcrafted</option>
+                          <option value="9 Months Handcrafted">9 Months Handcrafted</option>
+                        </select>
                       </div>
 
-                      {/* Fabric */}
+                      {/* Color Palette & Natural Dyes */}
                       <div>
-                        <label className="form-label">Fabric / Silk Grade</label>
+                        <label className="form-label" style={{ fontWeight: 700 }}>Color Palette & Natural Dyes</label>
                         <input
                           type="text"
                           className="form-input"
-                          placeholder="e.g. 100% Pure Mulberry Silk & Natural Dyes"
-                          value={editDupattaForm.fabric}
-                          onChange={(e) => setEditDupattaForm(prev => ({ ...prev, fabric: e.target.value }))}
+                          placeholder="e.g. Deep Crimson Red, Saffron Ochre & Gold"
+                          value={editDupattaForm.colors || ''}
+                          onChange={(e) => setEditDupattaForm(prev => ({ ...prev, colors: e.target.value }))}
                         />
                       </div>
 
-                      {/* Length (Pure number with Meter / CM dropdown) */}
+                      {/* Dupatta Length (Pure number with Meter / CM dropdown) */}
                       {(() => {
                         const parsed = parseLengthValue(editDupattaForm.length || '2.50 Meters (Handloom Silk with Zari Pallu)', '2.50');
                         const currentNum = editDupattaForm.lengthNumber !== undefined ? editDupattaForm.lengthNumber : parsed.number;
@@ -8272,56 +8276,6 @@ Warm regards,
                           </div>
                         );
                       })()}
-
-                      {/* Weight */}
-                      <div>
-                        <label className="form-label">Weight</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="e.g. Approx. 350 grams"
-                          value={editDupattaForm.weight}
-                          onChange={(e) => setEditDupattaForm(prev => ({ ...prev, weight: e.target.value }))}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem', marginTop: '1rem' }}>
-                      {/* Colors */}
-                      <div>
-                        <label className="form-label">Color Palette & Natural Dyes</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="e.g. Crimson Red & Royal Gold Border (Natural Manjistha Dyes)"
-                          value={editDupattaForm.colors}
-                          onChange={(e) => setEditDupattaForm(prev => ({ ...prev, colors: e.target.value }))}
-                        />
-                      </div>
-
-                      {/* Certification */}
-                      <div>
-                        <label className="form-label">Certification</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="e.g. Silk Mark Certified Handloom"
-                          value={editDupattaForm.certification}
-                          onChange={(e) => setEditDupattaForm(prev => ({ ...prev, certification: e.target.value }))}
-                        />
-                      </div>
-
-                      {/* Badge */}
-                      <div>
-                        <label className="form-label">Badge</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="e.g. Double Ikat Dupatta"
-                          value={editDupattaForm.badge}
-                          onChange={(e) => setEditDupattaForm(prev => ({ ...prev, badge: e.target.value }))}
-                        />
-                      </div>
                     </div>
 
                     {/* 4 Photo Showcase Upload Section for Edit */}
@@ -8582,20 +8536,21 @@ Warm regards,
                         />
                       </div>
 
-                      {/* Stock Quantity */}
+                      {/* Initial Vault Stock Quantity */}
                       <div>
-                        <label className="form-label" style={{ fontWeight: 700 }}>Vault Stock Quantity *</label>
+                        <label className="form-label" style={{ fontWeight: 700 }}>Initial Vault Stock Quantity *</label>
                         <input
                           type="number"
                           className="form-input"
                           required
                           min="0"
                           max="9999"
+                          placeholder="50"
                           value={dupattaForm.stockQuantity}
                           onChange={(e) => setDupattaForm({ ...dupattaForm, stockQuantity: e.target.value })}
                         />
                         <span style={{ fontSize: '0.78rem', color: '#666' }}>
-                          0 = Out of Stock. 1+ = In Stock for immediate booking.
+                          Default 50 dupattas. Automatically becomes Out of Stock when all 50 pieces are sold.
                         </span>
                       </div>
 
@@ -8701,63 +8656,62 @@ Warm regards,
                         </select>
                       </div>
 
-                      {/* Motif */}
+                      {/* Sacred Motif */}
                       <div>
-                        <label className="form-label" style={{ fontWeight: 700 }}>Motif Type</label>
+                        <label className="form-label" style={{ fontWeight: 700 }}>Sacred Motif</label>
                         <select
                           className="form-input"
                           value={dupattaForm.motif}
-                          onChange={(e) => setDupattaForm({ ...dupattaForm, motif: e.target.value })}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            let mName = 'Nari Kunjar (Elephant & Dancing Maiden)';
+                            if (val === 'ratanchowk') mName = 'Ratanchowk Bhat (Sacred Jewel Square)';
+                            if (val === 'chhabdi') mName = 'Chhabdi Bhat (Floral Auspicious Basket)';
+                            if (val === 'pan-bhat') mName = 'Navratna Pan Bhat (Nine Gems)';
+                            if (val === 'shikargah') mName = 'Shikargah (Royal Wildlife Motifs)';
+                            if (val === 'Navratna') mName = 'Navratna (Jems Geometric)';
+                            if (val === 'Sakhiyo') mName = 'Sakhiyo (Figurative / Human)';
+                            setDupattaForm({ ...dupattaForm, motif: val, motifName: mName });
+                          }}
                         >
-                          <option value="nari-kunjar">🐘 Nari Kunjar (Elephant, Parrot, Dancing Doll)</option>
-                          <option value="ratanchowk">💎 Ratanchowk (Jewel Square Geometric)</option>
-                          <option value="chhabdi">🧺 Chhabdi Bhat (Royal Floral Basket)</option>
-                          <option value="pan-bhat">🍃 Pan Bhat (Sacred Pipal / Heart Leaf)</option>
-                          <option value="shikargah">🐅 Shikargah (Royal Hunting Forest Motif)</option>
-                          <option value="Navratna">✨ Navratna (Nine Sacred Gems Grid)</option>
-                          <option value="Sakhiyo">卐 Sakhiyo (Swastika Heritage Auspicious Weave)</option>
+                          <option value="nari-kunjar">Nari Kunjar (Elephant & Maiden)</option>
+                          <option value="ratanchowk">Ratanchowk (Jewel Square)</option>
+                          <option value="chhabdi">Chhabdi Bhat (Floral Basket)</option>
+                          <option value="pan-bhat">Navratna Pan Bhat</option>
+                          <option value="shikargah">Shikargah Royal Forest</option>
+                          <option value="Navratna">Navratna (Jems Geometric)</option>
+                          <option value="Sakhiyo">Sakhiyo (Figurative / Human)</option>
                         </select>
                       </div>
 
-                      {/* Motif Custom Name */}
+                      {/* Loom Handcraft Timeline */}
                       <div>
-                        <label className="form-label" style={{ fontWeight: 700 }}>Motif Display Name</label>
-                        <input
-                          type="text"
+                        <label className="form-label" style={{ fontWeight: 700 }}>Loom Handcraft Timeline</label>
+                        <select
                           className="form-input"
-                          placeholder="e.g. Royal Nari Kunjar Bhat"
-                          value={dupattaForm.motifName}
-                          onChange={(e) => setDupattaForm({ ...dupattaForm, motifName: e.target.value })}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem', marginTop: '1rem' }}>
-                      {/* Weaving Time */}
-                      <div>
-                        <label className="form-label">Weaving Time</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="e.g. 3 to 5 Months Handcrafted"
                           value={dupattaForm.timeToWeave}
                           onChange={(e) => setDupattaForm({ ...dupattaForm, timeToWeave: e.target.value })}
-                        />
+                        >
+                          <option value="2 to 4 Months Handcrafted">2 to 4 Months Handcrafted</option>
+                          <option value="3 to 5 Months Handcrafted">3 to 5 Months Handcrafted</option>
+                          <option value="6 Months Handcrafted">6 Months Handcrafted</option>
+                          <option value="9 Months Handcrafted">9 Months Handcrafted</option>
+                        </select>
                       </div>
 
-                      {/* Fabric */}
+                      {/* Color Palette & Natural Dyes */}
                       <div>
-                        <label className="form-label">Fabric / Silk Grade</label>
+                        <label className="form-label" style={{ fontWeight: 700 }}>Color Palette & Natural Dyes</label>
                         <input
                           type="text"
                           className="form-input"
-                          placeholder="e.g. 100% Pure Mulberry Silk & Natural Dyes"
-                          value={dupattaForm.fabric}
-                          onChange={(e) => setDupattaForm({ ...dupattaForm, fabric: e.target.value })}
+                          placeholder="e.g. Deep Crimson Red, Saffron Ochre & Gold"
+                          value={dupattaForm.colors || ''}
+                          onChange={(e) => setDupattaForm({ ...dupattaForm, colors: e.target.value })}
                         />
                       </div>
 
-                      {/* Length (Pure number with Meter / CM dropdown) */}
+                      {/* Dupatta Length (Pure number with Meter / CM dropdown) */}
                       {(() => {
                         const parsed = parseLengthValue(dupattaForm.length || '2.50 Meters (Handloom Silk with Zari Pallu)', '2.50');
                         const currentNum = dupattaForm.lengthNumber !== undefined ? dupattaForm.lengthNumber : parsed.number;
@@ -8884,56 +8838,6 @@ Warm regards,
                           </div>
                         );
                       })()}
-
-                      {/* Weight */}
-                      <div>
-                        <label className="form-label">Weight</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="e.g. Approx. 350 grams"
-                          value={dupattaForm.weight}
-                          onChange={(e) => setDupattaForm({ ...dupattaForm, weight: e.target.value })}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem', marginTop: '1rem' }}>
-                      {/* Colors */}
-                      <div>
-                        <label className="form-label">Color Palette & Natural Dyes</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="e.g. Crimson Red & Royal Gold Border (Natural Manjistha Dyes)"
-                          value={dupattaForm.colors}
-                          onChange={(e) => setDupattaForm({ ...dupattaForm, colors: e.target.value })}
-                        />
-                      </div>
-
-                      {/* Certification */}
-                      <div>
-                        <label className="form-label">Certification</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="e.g. Silk Mark Certified Handloom"
-                          value={dupattaForm.certification}
-                          onChange={(e) => setDupattaForm({ ...dupattaForm, certification: e.target.value })}
-                        />
-                      </div>
-
-                      {/* Badge */}
-                      <div>
-                        <label className="form-label">Badge</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="e.g. Double Ikat Dupatta"
-                          value={dupattaForm.badge}
-                          onChange={(e) => setDupattaForm({ ...dupattaForm, badge: e.target.value })}
-                        />
-                      </div>
                     </div>
 
                     {/* 4 Photo Showcase Upload Section */}

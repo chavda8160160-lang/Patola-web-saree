@@ -17,6 +17,7 @@ import WeavingTimeline from './components/WeavingTimeline';
 import ArtisanStory from './components/ArtisanStory';
 import CartDrawer from './components/CartDrawer';
 import Footer from './components/Footer';
+import MobileStickyBar from './components/MobileStickyBar';
 import { initAppSecurity } from './utils/security';
 import { initGA, trackPageView, trackViewItem, trackAddToCart } from './utils/analytics';
 import { cleanupAndCompressStorageSarees } from './utils/imageCompressor';
@@ -396,13 +397,7 @@ export default function App() {
                   || document.getElementById('motifs')
                   || document.querySelector('.motif-spotlight-section');
 
-      if (backBtn && window.innerWidth <= 768) {
-        const rect = backBtn.getBoundingClientRect();
-        const currentY = window.pageYOffset || document.documentElement.scrollTop;
-        // Position so that 'Return to Saree' button is comfortably visible ~55px above the bottom of the mobile screen
-        const targetScrollY = currentY + (rect.bottom - (window.innerHeight - 55));
-        window.scrollTo({ top: Math.max(0, targetScrollY), behavior: 'smooth' });
-      } else if (target) {
+      if (target) {
         const mainNav = document.querySelector('.main-navbar') || document.querySelector('header');
         const navHeight = mainNav ? mainNav.offsetHeight : (window.innerWidth <= 768 ? 75 : 80);
         const offset = window.innerWidth <= 768 ? 6 : 14;
@@ -580,6 +575,24 @@ export default function App() {
     showToast(`🎉 Order Placed! Reference #${orderObj.orderReference} - OTP: ${orderObj.deliveryOtp}`);
   };
 
+  const isAnyModalOpen = Boolean(
+    isCartOpen ||
+    isBookingOpen ||
+    isCustomPatolaOpen ||
+    isCheckoutOpen ||
+    isTrackingOpen ||
+    isAdminOpen ||
+    isAllReviewsOpen ||
+    isSupportOpen ||
+    isCustomerAuthOpen ||
+    isCustomerAccountOpen ||
+    isTrialRoomOpen ||
+    isVirtualTryOnOpen ||
+    isWishlistOpen ||
+    quickViewSaree ||
+    inspectModalSaree
+  );
+
   return (
     <div>
       {/* 1. Navigation Header */}
@@ -709,14 +722,23 @@ export default function App() {
                   <div
                     className="modal-gallery-main-wrapper"
                     onTouchStart={(e) => {
+                      if (!e.touches || !e.touches[0]) return;
                       window._modalTouchStartX = e.touches[0].clientX;
+                      window._modalTouchStartY = e.touches[0].clientY;
                     }}
                     onTouchEnd={(e) => {
                       if (window._modalTouchStartX !== undefined) {
-                        const delta = e.changedTouches[0].clientX - window._modalTouchStartX;
-                        if (delta > 35) prevPhoto();
-                        else if (delta < -35) nextPhoto();
+                        const touch = e.changedTouches ? e.changedTouches[0] : null;
+                        if (touch) {
+                          const deltaX = touch.clientX - window._modalTouchStartX;
+                          const deltaY = touch.clientY - (window._modalTouchStartY || touch.clientY);
+                          if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 25) {
+                            if (deltaX > 0) prevPhoto();
+                            else nextPhoto();
+                          }
+                        }
                         window._modalTouchStartX = undefined;
+                        window._modalTouchStartY = undefined;
                       }
                     }}
                   >
@@ -1492,6 +1514,14 @@ export default function App() {
           }}
         />
       )}
+
+      {/* ✦ LUXURY MOBILE-FIRST STICKY ACTION BAR (Instant WhatsApp Enquiry & Price) ✦ */}
+      <MobileStickyBar
+        onOpenBooking={() => setIsBookingOpen(true)}
+        formatPrice={formatPrice}
+        currency={currentCurrency}
+        isHidden={isAnyModalOpen}
+      />
 
       {toastMessage && (
         <div className="toast-container">

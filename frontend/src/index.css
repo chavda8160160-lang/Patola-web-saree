@@ -235,11 +235,11 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 88px;
+  height: clamp(74px, 5.5vw, 88px);
   width: 100%;
   max-width: 100%;
-  padding: 0 clamp(1rem, 2.5vw, 2.5rem);
-  gap: clamp(0.5rem, 1.5vw, 1.8rem);
+  padding: 0 clamp(0.75rem, 2vw, 2rem);
+  gap: clamp(0.4rem, 1.2vw, 1.5rem);
   box-sizing: border-box;
 }
 
@@ -374,9 +374,9 @@ body {
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: clamp(0.35rem, 0.6vw, 0.65rem);
   flex-shrink: 0;
-  margin-right: clamp(2rem, 4.5vw, 5.5rem);
+  margin-right: 0;
 }
 
 .btn-icon {
@@ -1245,6 +1245,9 @@ body {
   aspect-ratio: 4/5;
   overflow: hidden;
   background: radial-gradient(ellipse at center, #fdfbf7 0%, #f4ede3 55%, #eae0cf 100%);
+  touch-action: pan-y !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
 .saree-image {
@@ -1254,7 +1257,9 @@ body {
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  transition: opacity 0.22s ease-in-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  will-change: opacity, transform;
+  -webkit-user-drag: none;
 }
 
 .saree-card:hover .saree-image {
@@ -3191,63 +3196,98 @@ body {
    RESPONSIVE MEDIA QUERIES & MULTI-DEVICE NAVBAR ADAPTATION
    ========================================================================== */
 
-/* 1. LAPTOP & MEDIUM SCREEN DISPLAY (1101px to 1340px)
-   Prevents navbar right-side items from cutting off on 1280px / 1366px laptops */
-@media (max-width: 1340px) and (min-width: 1101px) {
+/* 1. LAPTOP & MEDIUM SCREEN DISPLAY (1101px to 1536px)
+   Prevents navbar right-side items from cutting off on 1280px / 1366px / 1440px / 1536px laptops */
+@media (max-width: 1536px) and (min-width: 1101px) {
   .navbar-container {
-    height: 80px;
-    padding: 0 1rem;
-    gap: 0.5rem;
+    height: 78px;
+    padding: 0 clamp(0.6rem, 1.2vw, 1.2rem);
+    gap: clamp(0.35rem, 0.8vw, 0.85rem);
   }
   .brand-logo-link {
-    gap: 0.65rem;
+    gap: 0.55rem;
   }
   .brand-insignia {
-    width: 58px;
-    height: 58px;
+    width: 52px;
+    height: 52px;
   }
   .brand-insignia svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
   .brand-name {
-    font-size: 1.65rem;
-    letter-spacing: 0.1em;
+    font-size: 1.55rem;
+    letter-spacing: 0.08em;
   }
   .brand-tagline {
-    font-size: 0.72rem;
-    letter-spacing: 0.22em;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
   }
   .nav-menu {
-    gap: 0.65rem;
+    gap: clamp(0.4rem, 0.7vw, 0.85rem);
   }
   .nav-link {
-    font-size: 0.73rem;
+    font-size: 0.72rem;
     letter-spacing: 0.03em;
     padding: 4px 0;
   }
   .nav-actions {
-    gap: 0.4rem;
+    gap: 0.38rem;
+    margin-right: 0 !important;
   }
   .btn-consult-nav {
-    padding: 0.42rem 0.85rem;
+    padding: 0.38rem 0.78rem;
     font-size: 0.72rem;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .btn-track-nav {
-    padding: 0.44rem 0.72rem;
-    font-size: 0.76rem;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.74rem;
     gap: 0.3rem;
+    flex-shrink: 0;
   }
   .btn-navbar-reviews {
-    padding: 0.44rem 0.72rem;
-    font-size: 0.76rem;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.74rem;
+    flex-shrink: 0;
   }
   .btn-icon {
     width: 36px;
     height: 36px;
+    flex-shrink: 0;
+  }
+  .btn-icon svg {
+    width: 20px;
+    height: 20px;
   }
 }
+
+/* Compact text helper for 1101px - 1280px smaller laptop screens */
+@media (max-width: 1280px) and (min-width: 1101px) {
+  .track-nav-text-desktop {
+    display: none !important;
+  }
+  .track-nav-text-mobile {
+    display: inline !important;
+  }
+  .btn-track-nav {
+    padding: 0.36rem 0.55rem;
+  }
+  .btn-consult-nav {
+    padding: 0.36rem 0.68rem;
+    font-size: 0.7rem;
+  }
+  .nav-menu {
+    gap: 0.4rem;
+  }
+  .nav-link {
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+  }
+}
+
 
 /* 2. TABLET & RESPONSIVE MOBILE DRAWER (<= 1100px)
    Automatically collapses links into royal slide-down drawer before any overflow can happen */
@@ -6620,6 +6660,61 @@ body {
   color: #ffd700;
   font-weight: bold;
 }
+
+.inspector-return-saree-btn {
+  grid-column: 4;
+  justify-self: end;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  background: linear-gradient(135deg, #800020 0%, #4a0013 100%);
+  color: #ffd700;
+  border: 1.5px solid #d4af37;
+  padding: 0.45rem 1rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(128, 0, 32, 0.4), 0 0 10px rgba(212, 175, 55, 0.2);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.inspector-return-saree-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.5), 0 2px 8px rgba(128, 0, 32, 0.6);
+  background: linear-gradient(135deg, #990026 0%, #5c0018 100%);
+  border-color: #ffd700;
+  color: #ffffff;
+}
+
+.inspector-return-saree-btn:active {
+  transform: translateY(0);
+}
+
+.inspector-return-saree-btn .return-arrow {
+  font-size: 0.92rem;
+  font-weight: 900;
+  transition: transform 0.2s ease;
+}
+
+.inspector-return-saree-btn:hover .return-arrow {
+  transform: translateX(-3px);
+}
+
+@media (max-width: 640px) {
+  .inspector-return-saree-btn {
+    grid-column: 2;
+    justify-self: end;
+    padding: 0.38rem 0.8rem;
+    font-size: 0.74rem;
+  }
+}
+
 
 .inspector-nav-arrow {
   position: absolute;
@@ -10324,5 +10419,200 @@ body {
   object-fit: cover;
   border-radius: 8px;
 }
+
+/* ==========================================================================
+   MOBILE-FIRST LUXURY STICKY ACTION BAR
+   "Instant WhatsApp Enquiry | ₹ Starting Price"
+   Visible only on screens <= 768px, hidden when any modal is open
+   ========================================================================== */
+.mobile-sticky-action-bar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Give space at the bottom of the page so content is not obscured */
+  body {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .mobile-sticky-action-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 998;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 0.95rem;
+    padding-bottom: max(0.55rem, env(safe-area-inset-bottom, 0.55rem));
+    background: rgba(18, 7, 10, 0.96);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1.5px solid rgba(212, 175, 55, 0.45);
+    box-shadow: 0 -8px 26px rgba(0, 0, 0, 0.55), 0 0 16px rgba(212, 175, 55, 0.12);
+    animation: slideUpMobileBar 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideUpMobileBar {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Left: Price Pane */
+  .mobile-bar-price-pane {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding-left: 0.2rem;
+    min-width: 0;
+    flex-shrink: 0;
+  }
+
+  .mobile-bar-price-label {
+    font-size: 0.62rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #d4af37;
+    line-height: 1.1;
+  }
+
+  .mobile-bar-price-val {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+  }
+
+  .mobile-bar-price-num {
+    font-family: var(--font-royal, serif);
+    font-size: 1.12rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  .mobile-bar-tagline {
+    font-size: 0.58rem;
+    color: rgba(243, 229, 171, 0.75);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* Right: Actions */
+  .mobile-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  /* WhatsApp Button */
+  .mobile-bar-whatsapp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    color: #ffffff !important;
+    text-decoration: none !important;
+    padding: 0.52rem 0.85rem;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 3px 12px rgba(37, 211, 102, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .mobile-bar-whatsapp-btn:active {
+    transform: scale(0.96);
+    filter: brightness(0.95);
+  }
+
+  .mobile-bar-wa-icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .mobile-wa-pulse {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: rgba(37, 211, 102, 0.45);
+    animation: waPulseAnim 2s infinite ease-out;
+    pointer-events: none;
+  }
+
+  @keyframes waPulseAnim {
+    0% { transform: scale(0.8); opacity: 0.9; }
+    70% { transform: scale(1.6); opacity: 0; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+
+  .mobile-bar-wa-text-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.1;
+  }
+
+  .mobile-bar-wa-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #ffffff;
+  }
+
+  .mobile-bar-wa-subtitle {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #e0f9e8;
+    letter-spacing: 0.04em;
+    opacity: 0.9;
+  }
+
+  /* Visit Loom Quick Button */
+  .mobile-bar-loom-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    color: #f3e5ab;
+    padding: 0.38rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    line-height: 1;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-bar-loom-btn:active {
+    background: rgba(212, 175, 55, 0.25);
+    transform: scale(0.95);
+  }
+}
+
 
 

@@ -241,9 +241,15 @@ export default function MotifMagnifier({
     }
 
     if (!targetCard) {
-      targetCard = document.getElementById('sareeGridArea') 
-        || document.getElementById('collection') 
-        || document.querySelector('.saree-grid');
+      if (isDupatta) {
+        targetCard = document.querySelector('.showcase-dupatta-card')
+          || document.getElementById('sareeGridArea')
+          || document.getElementById('collection');
+      } else {
+        targetCard = document.getElementById('sareeGridArea') 
+          || document.getElementById('collection') 
+          || document.querySelector('.saree-grid');
+      }
     }
 
     if (targetCard) {
@@ -328,6 +334,34 @@ export default function MotifMagnifier({
   let currentDesc = activeMotifObj.desc;
   let currentFact = activeMotifObj.fact;
 
+  // Determine if active item or active catalog view is Dupatta
+  const isDupattaItem = Boolean(
+    (customSaree && (
+      String(customSaree.category || '').toLowerCase().includes('dupatta') || 
+      String(customSaree.title || '').toLowerCase().includes('dupatta') || 
+      String(customSaree.weave || '').toLowerCase().includes('dupatta') ||
+      String(customSaree.badge || '').toLowerCase().includes('dupatta') ||
+      String(customSaree.id || '').toLowerCase().includes('dupatta') ||
+      String(customSaree.length || '').toLowerCase().includes('dupatta')
+    )) ||
+    (selectedSaree && (
+      String(selectedSaree.category || '').toLowerCase().includes('dupatta') || 
+      String(selectedSaree.title || '').toLowerCase().includes('dupatta') || 
+      String(selectedSaree.weave || '').toLowerCase().includes('dupatta') ||
+      String(selectedSaree.badge || '').toLowerCase().includes('dupatta') ||
+      String(selectedSaree.id || '').toLowerCase().includes('dupatta') ||
+      String(selectedSaree.length || '').toLowerCase().includes('dupatta')
+    ))
+  );
+
+  const isCatalogDupattaActive = typeof document !== 'undefined' && Boolean(
+    document.querySelector('.showcase-dupatta-card.active') ||
+    document.querySelector('.royal-showcase-card[data-category*="dupatta"].active') ||
+    document.querySelector('.filter-btn.active[data-category*="dupatta"]')
+  );
+
+  const isDupatta = isDupattaItem || (!customSaree && !selectedSaree && isCatalogDupattaActive);
+
   let currentLength = null;
   let currentColor = null;
 
@@ -342,9 +376,6 @@ export default function MotifMagnifier({
     currentDesc = customSaree.description || 'Authentic pure mulberry silk handloom with mathematically resist-dyed threads.';
     currentFact = `⏳ Handcrafted on loom: ${customSaree.timeToWeave || '9 Months'} • Fabric: ${customSaree.fabric || 'Pure Mulberry Silk'}`;
 
-    const isDupatta = (customSaree.category || '').toLowerCase().includes('dupatta') || 
-                      (customSaree.title || '').toLowerCase().includes('dupatta') || 
-                      (customSaree.weave || '').toLowerCase().includes('dupatta');
     let rawLen = customSaree.length || (isDupatta ? '2.50 Meters (Handloom Silk with Zari Pallu)' : '5.50m Saree + 0.80m Blouse (6.30m Total)');
     currentLength = String(rawLen).replace(/\(લંબાઈ\)/gi, '').replace(/લંબાઈ/gi, '').replace(/^Length\s*:\s*/gi, '').trim();
 
@@ -566,11 +597,28 @@ export default function MotifMagnifier({
                       <img src={pUrl} alt="" className="pill-mini-thumb" />
                       <div className="pill-text-col">
                         <span className="pill-title">{PHOTO_ANGLES[idx]?.label || `Photo ${idx + 1}`}</span>
-                        <span className="pill-subtitle">{PHOTO_ANGLES[idx]?.subtitle || ''}</span>
+                        <span className="pill-subtitle">
+                          {idx === 0 
+                            ? (isDupatta ? 'Full Dupatta Silhouette' : (PHOTO_ANGLES[idx]?.subtitle || 'Full Saree Front Silhouette'))
+                            : (PHOTO_ANGLES[idx]?.subtitle || '')}
+                        </span>
                       </div>
                       {safeIdx === idx && <span className="pill-active-check">✓</span>}
                     </button>
                   ))}
+
+                  {/* Dynamic Return to Saree / Back to Dupatta Button */}
+                  <button
+                    type="button"
+                    id="btnBackToViewSaree"
+                    className="inspector-return-saree-btn"
+                    onClick={handleBackToViewSaree}
+                    title={isDupatta ? 'Return directly back up to this dupatta in the catalog' : 'Return directly back up to this saree in the catalog'}
+                    aria-label={isDupatta ? 'Back to Dupatta' : 'Return to Saree'}
+                  >
+                    <span className="return-arrow">←</span>
+                    <span>{isDupatta ? 'Back to Dupatta' : 'Return to Saree'}</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -713,43 +761,6 @@ export default function MotifMagnifier({
                       🔍 Magnifying: {PHOTO_ANGLES[safeIdx]?.label}
                     </span>
                   )}
-                  {/* Return to Saree Button - Compact & Sleek */}
-                  <button
-                    type="button"
-                    id="btnBackToViewSaree"
-                    onClick={handleBackToViewSaree}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                      background: 'linear-gradient(135deg, #800020 0%, #4a0013 100%)',
-                      color: '#ffd700',
-                      border: '1px solid #d4af37',
-                      padding: '0.22rem 0.65rem',
-                      borderRadius: '14px',
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      boxShadow: '0 2px 6px rgba(128, 0, 32, 0.35)',
-                      transition: 'all 0.2s ease',
-                      whiteSpace: 'nowrap',
-                      lineHeight: 1.2
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                      e.currentTarget.style.boxShadow = '0 3px 10px rgba(212, 175, 55, 0.45)';
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #990026 0%, #5c0018 100%)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'none';
-                      e.currentTarget.style.boxShadow = '0 2px 6px rgba(128, 0, 32, 0.35)';
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #800020 0%, #4a0013 100%)';
-                    }}
-                    title="Return directly back up to this saree in the catalog"
-                    aria-label="Return to Saree"
-                  >
-                    <span style={{ fontSize: '0.85rem', fontWeight: 900 }}>←</span> Return to Saree
-                  </button>
                 </div>
               </div>
 

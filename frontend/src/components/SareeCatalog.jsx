@@ -63,30 +63,52 @@ function SareeCardItem({
   const [activeIdx, setActiveIdx] = useState(0);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+
+  // Preload adjacent images for butter-smooth swipe with 0ms delay
+  useEffect(() => {
+    if (!Array.isArray(sareeImages) || sareeImages.length <= 1) return;
+    const nextIdx = (activeIdx + 1) % sareeImages.length;
+    const prevIdx = (activeIdx - 1 + sareeImages.length) % sareeImages.length;
+    const nextImg = new Image();
+    nextImg.src = sareeImages[nextIdx];
+    const prevImg = new Image();
+    prevImg.src = sareeImages[prevIdx];
+  }, [activeIdx, sareeImages]);
 
   const prevPhoto = (e) => {
-    if (e) e.stopPropagation();
+    if (e && e.stopPropagation) e.stopPropagation();
     setActiveIdx((prev) => (prev === 0 ? sareeImages.length - 1 : prev - 1));
   };
 
   const nextPhoto = (e) => {
-    if (e) e.stopPropagation();
+    if (e && e.stopPropagation) e.stopPropagation();
     setActiveIdx((prev) => (prev === sareeImages.length - 1 ? 0 : prev + 1));
   };
 
   const handleTouchStart = (e) => {
+    if (!e.touches || !e.touches[0]) return;
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
   };
 
   const handleTouchEnd = (e) => {
     if (touchStartX.current === null) return;
-    const diff = e.changedTouches[0].clientX - touchStartX.current;
-    if (diff > 35) {
-      prevPhoto();
-    } else if (diff < -35) {
-      nextPhoto();
+    const touch = e.changedTouches ? e.changedTouches[0] : null;
+    if (!touch) return;
+    const diffX = touch.clientX - touchStartX.current;
+    const diffY = touch.clientY - (touchStartY.current !== null ? touchStartY.current : touch.clientY);
+    
+    // Only swipe if movement is predominantly horizontal (avoids accidental flips during vertical scroll)
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 25) {
+      if (diffX > 0) {
+        prevPhoto();
+      } else {
+        nextPhoto();
+      }
     }
     touchStartX.current = null;
+    touchStartY.current = null;
   };
 
   const currentImg = sareeImages[activeIdx] || saree.image;
