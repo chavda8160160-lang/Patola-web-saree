@@ -1462,7 +1462,7 @@ export default function OrderTrackingModal({
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                 <span style={{ fontSize: '1.2rem' }}>👑</span>
                 <strong style={{ fontSize: '0.96rem', letterSpacing: '0.3px', color: '#ffffff' }}>
-                  Patola Made Vankar • Account Activated
+                  PATOLA (Handmade by Vankar) • Account Activated
                 </strong>
               </div>
               <div style={{ fontSize: '0.82rem', color: '#e0f2fe', lineHeight: 1.45 }}>
@@ -1804,7 +1804,7 @@ export default function OrderTrackingModal({
 
               <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <a
-                  href={`https://wa.me/918160160750?text=${encodeURIComponent(`🙏 Namaste PATOLA MADE VANKAR, I am inquiring regarding my cancelled order #${order.orderReference}. Reason: ${cancellationInfo?.reason || 'Cancelled'}. Please guide me on refund / re-ordering.`)}`}
+                  href={`https://wa.me/918160160750?text=${encodeURIComponent(`🙏 Namaste PATOLA (Handmade by Vankar), I am inquiring regarding my cancelled order #${order.orderReference}. Reason: ${cancellationInfo?.reason || 'Cancelled'}. Please guide me on refund / re-ordering.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -2110,7 +2110,7 @@ export default function OrderTrackingModal({
             </p>
             <div className="bank-grid">
               <div><span>Bank Name:</span> <strong>HDFC Bank Ltd.</strong></div>
-              <div><span>A/C Name:</span> <strong>Patola Made Vankar Heritage LLP</strong></div>
+              <div><span>A/C Name:</span> <strong>PATOLA Handmade by Vankar Heritage LLP</strong></div>
               <div><span>A/C Number:</span> <strong>50200084920194</strong></div>
               <div><span>IFSC Code:</span> <strong>HDFC0001429</strong></div>
               <div><span>Account Type:</span> <strong>Current Heritage Account</strong></div>
@@ -3230,7 +3230,7 @@ export default function OrderTrackingModal({
                     lineHeight: 1.45,
                     marginBottom: '1.2rem'
                   }}>
-                    <strong>✦ Patola Made Vankar Guarantee (100% Refund Protection): </strong>
+                    <strong>✦ PATOLA (Handmade by Vankar) Guarantee (100% Refund Protection): </strong>
                     {order.paymentMode === 'Cash on Delivery (COD)'
                       ? 'This is a Cash on Delivery order and will be updated instantly without any charge.'
                       : `Your 100% refund for cancelled items will be credited back to your original payment method in 2 to 4 business days.`}

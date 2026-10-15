@@ -121,6 +121,28 @@ export default function Hero({ onOpenBooking, onOpenReviews }) {
             <button className="btn-secondary-outline" onClick={onOpenBooking}>
               <span>Private Loom Consultation</span>
             </button>
+            <a
+              href="#artisans"
+              className="btn-live-loom-cta"
+              onClick={(e) => {
+                e.preventDefault();
+                const elem = document.getElementById('artisans');
+                if (elem) {
+                  const navHeight = 65;
+                  const elementPosition = elem.getBoundingClientRect().top;
+                  const offsetPosition = elementPosition + window.pageYOffset - navHeight;
+                  window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                  });
+                  window.history.pushState(null, '', '#artisans');
+                }
+              }}
+              title="Watch Authentic Handloom Weaving Video"
+            >
+              <span className="live-loom-dot" />
+              <span>🎬 Watch Loom Weaving</span>
+            </a>
           </div>
 
           {/* Hero Highlights */}

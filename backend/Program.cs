@@ -274,9 +274,9 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Virasat Patola API (Repository Pattern & Stored Procedures)",
+        Title = "PATOLA - Handmade by Vankar API",
         Version = "v1",
-        Description = "Enterprise .NET Core Web API with JWT Authentication & Microsoft SQL Server Stored Procedures."
+        Description = "Enterprise .NET Core Web API with JWT Authentication & Microsoft SQL Server Stored Procedures for PATOLA (Handmade by Vankar)."
     });
 
     var securityScheme = new OpenApiSecurityScheme

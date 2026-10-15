@@ -816,6 +816,40 @@ GO
 -- ====================================================================================================
 -- 10. SEED INITIAL SAREES & DUPATTAS CATALOG
 -- ====================================================================================================
+IF NOT EXISTS (SELECT 1 FROM [dbo].[Sarees] WHERE [Id] = 'patola-crimson-ratanchowk')
+BEGIN
+    INSERT INTO [dbo].[Sarees] (
+        [Id], [Title], [Weave], [Category], [Motif], [MotifName], [BasePriceINR], [DiscountPercent], [FinalPriceINR],
+        [TimeToWeave], [Image], [ImagesJson], [Badge], [Description], [Fabric], [Length], [Weight], [Colors], [Certification],
+        [IsOutOfStock], [StockStatus], [StockQuantity]
+    ) VALUES 
+    (
+        'patola-crimson-ratanchowk',
+        N'Imperial Crimson Ratanchowk & Kalash Double Ikat Patola',
+        N'Double Ikat Handloom',
+        'royal-heirloom',
+        'ratanchowk',
+        N'Ratanchowk with Kalash & Floral Medallions',
+        225000.00,
+        0,
+        225000.00,
+        N'10 to 12 Months Handcrafted',
+        N'/assets/images/saree_crimson_ratanchowk_1_full.jpg',
+        N'["/assets/images/saree_crimson_ratanchowk_1_full.jpg","/assets/images/saree_crimson_ratanchowk_2_pallu.jpg","/assets/images/saree_crimson_ratanchowk_3_macro.jpg","/assets/images/saree_crimson_ratanchowk_4_drape.jpg","/assets/images/saree_crimson_ratanchowk_5_fold.jpg"]',
+        N'Masterpiece Double Ikat',
+        N'Authentic Patan Double Ikat handwoven saree in crimson red and maroon with geometric Ratanchowk diamond weave, intricate Kalash & floral vase medallion pallu, and pure gold zari borders. 100% reversible with identical clarity on both sides.',
+        N'100% Pure Mulberry Silk & Natural Dyes',
+        N'6.30 Meters (Includes Matching Blouse Piece)',
+        N'Approx. 880 grams',
+        N'Crimson Red, Maroon, Mustard Gold & Zari',
+        N'Silk Mark Certified Handloom & Craft Mark',
+        0,
+        N'In Stock',
+        10
+    );
+END
+GO
+
 IF NOT EXISTS (SELECT 1 FROM [dbo].[Sarees] WHERE [Id] = 'patola-01')
 BEGIN
     INSERT INTO [dbo].[Sarees] (

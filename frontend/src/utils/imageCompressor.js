@@ -387,7 +387,7 @@ export const openImageInNewTab = (imgSrc, title = 'Patola Reference Photo') => {
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} - PATOLA MADE VANKAR</title>
+  <title>${title} - PATOLA - Handmade by Vankar</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -456,7 +456,7 @@ export const openImageInNewTab = (imgSrc, title = 'Patola Reference Photo') => {
 </head>
 <body>
   <div class="bar">
-    <span class="title">👑 PATOLA MADE VANKAR • ${title}</span>
+    <span class="title">👑 PATOLA - Handmade by Vankar • ${title}</span>
     <button class="btn" onclick="window.close()">✕ Close Tab</button>
   </div>
   <div class="view-area">

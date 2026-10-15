@@ -101,7 +101,7 @@ export default function WeddingWishlistModal({
     if (wishlist.length === 0) return;
 
     const shareUrl = generateShareUrl();
-    let text = `🥻 *PATOLA MADE VANKAR - Wedding Trousseau Wishlist* 🥻\n\n`;
+    let text = `🥻 *PATOLA (Handmade by Vankar) - Wedding Trousseau Wishlist* 🥻\n\n`;
     text += `Hello! Here are the handloom Patola sarees shortlisted for our wedding celebrations. Please share your thoughts & blessings:\n\n`;
 
     wishlist.forEach((item, idx) => {

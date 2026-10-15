@@ -1,5 +1,5 @@
 export const SUPPORT_CONFIG = {
-  brandName: 'PATOLA MADE VANKAR',
+  brandName: 'PATOLA - Handmade by Vankar',
   whatsapp: '+91 98250 12345',
   whatsappRaw: '919825012345',
   email: 'patolamadevankar.support@gmail.com',

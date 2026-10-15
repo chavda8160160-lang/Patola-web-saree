@@ -163,7 +163,7 @@ export function initAppSecurity() {
   try {
     const bannerStyle = 'color: #ef4444; font-size: 26px; font-weight: 900; -webkit-text-stroke: 1px black;';
     const subStyle = 'color: #d4af37; font-size: 14px; font-weight: 700; background: #1a0b12; padding: 6px 12px; border-radius: 6px;';
-    console.log('%c🛑 STOP! PATOLA MADE VANKAR SECURITY SHIELD ACTIVATED', bannerStyle);
+    console.log('%c🛑 STOP! PATOLA - Handmade by Vankar SECURITY SHIELD ACTIVATED', bannerStyle);
     console.log('%c🔒 This browser feature is protected. Pasting unauthorized code or attempting to tamper with order APIs will result in immediate IP blocking.', subStyle);
   } catch (e) {}
 
@@ -174,7 +174,7 @@ export function initAppSecurity() {
     if (tag === 'input' || tag === 'textarea') return;
     
     e.preventDefault();
-    showSecurityToast('🔒 Content Protected: PATOLA MADE VANKAR authentic handwoven designs and craft are protected.');
+    showSecurityToast('🔒 Content Protected: PATOLA - Handmade by Vankar authentic handwoven designs and craft are protected.');
   }, { passive: false });
 
   // 3. Intercept & Block Developer Inspection Key Shortcuts

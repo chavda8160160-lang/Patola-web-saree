@@ -1063,7 +1063,7 @@ export default function AdminDashboardModal({
     const cancelData = getOrderItemCancelData(ord.orderReference, item, idx);
     const reason = cancelData?.reason || 'Patron request';
 
-    const text = `🙏 Namaste ${ord.customerName || 'Patron'},\n\nRegarding your Patola Order #${ord.orderReference}:\nAs requested, the item "${title}" has been cancelled.\n\n💳 100% Refund Amount: ₹${itemPrice.toLocaleString('en-IN')}\nReason: ${reason}\n\n✦ Note: Your remaining items in Order #${ord.orderReference} will continue to be handcrafted on our traditional rosewood looms and delivered on schedule.\n\nWarm regards,\nPATOLA MADE VANKAR HERITAGE`;
+    const text = `🙏 Namaste ${ord.customerName || 'Patron'},\n\nRegarding your Patola Order #${ord.orderReference}:\nAs requested, the item "${title}" has been cancelled.\n\n💳 100% Refund Amount: ₹${itemPrice.toLocaleString('en-IN')}\nReason: ${reason}\n\n✦ Note: Your remaining items in Order #${ord.orderReference} will continue to be handcrafted on our traditional rosewood looms and delivered on schedule.\n\nWarm regards,\nPATOLA - Handmade by Vankar HERITAGE`;
     return `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(text)}`;
   };
 
@@ -3288,7 +3288,7 @@ export default function AdminDashboardModal({
       actionDetails = 'This order has been cancelled upon customer request.';
     }
 
-    const message = `👑 *Greetings ${c.fullName || 'Valued Patron'}!*\n\nLive status update for your Custom Double Ikat Patola Order *#CST-${c.id}*:\n\n📌 *Current Status:* ${st}\n🧵 *Saree Motif:* ${c.motifPreference || 'Bespoke Design'}${notesInfo.colors ? `\n🎨 *Colors:* ${notesInfo.colors}` : ''}\n🔐 *Delivery Handover OTP:* ${getOrderDeliveryOtp(c)}\n\n🏛️ *Details:* ${actionDetails}\n\n🔍 *Track Order Live:*\n${trackLink}\n\nWarm regards,\n*PATOLA MADE VANKAR (Authentic Handloom Weavers)*\n📞 Helpline: +91 8160160750`;
+    const message = `👑 *Greetings ${c.fullName || 'Valued Patron'}!*\n\nLive status update for your Custom Double Ikat Patola Order *#CST-${c.id}*:\n\n📌 *Current Status:* ${st}\n🧵 *Saree Motif:* ${c.motifPreference || 'Bespoke Design'}${notesInfo.colors ? `\n🎨 *Colors:* ${notesInfo.colors}` : ''}\n🔐 *Delivery Handover OTP:* ${getOrderDeliveryOtp(c)}\n\n🏛️ *Details:* ${actionDetails}\n\n🔍 *Track Order Live:*\n${trackLink}\n\nWarm regards,\n*PATOLA - Handmade by Vankar (Authentic Handloom Weavers)*\n📞 Helpline: +91 8160160750`;
 
     return `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(message)}`;
   };
@@ -3308,10 +3308,10 @@ export default function AdminDashboardModal({
     if (stageNum === 2) stageDesc = 'Pure silk quality check and royal velvet presentation box packing in progress.';
     if (stageNum === 3) stageDesc = `Order dispatched! Courier Partner: ${courier}, Tracking AWB: ${awb}.`;
     if (stageNum === 4) stageDesc = 'Order has reached your local delivery hub and will be delivered shortly.';
-    if (stageNum === 5) stageDesc = 'Order delivered successfully. Thank you for commissioning a PATOLA MADE VANKAR heirloom!';
+    if (stageNum === 5) stageDesc = 'Order delivered successfully. Thank you for commissioning a PATOLA - Handmade by Vankar heirloom!';
     if (isCancelled) stageDesc = 'Order has been cancelled upon customer request.';
 
-    const message = `👑 *Greetings ${ord.customerName || 'Valued Patron'}!*\n\nLive status for your PATOLA MADE VANKAR Order *#${ord.orderReference}*:\n\n📌 *Status:* ${isCancelled ? '🚫 Cancelled' : `Stage ${stageNum}/5 - ${ord.orderStatus || 'In Progress'}`}\n📦 *Delivery Estimate:* ${deliveryText}\n${stageNum >= 3 ? `🚚 *Courier:* ${courier} (AWB: ${awb})\n` : ''}\n🏛️ *Details:* ${stageDesc}\n\n🔍 *Track Order Live:*\n${trackLink}\n\nWarm regards,\n*PATOLA MADE VANKAR*\n📞 Helpline: +91 8160160750`;
+    const message = `👑 *Greetings ${ord.customerName || 'Valued Patron'}!*\n\nLive status for your PATOLA - Handmade by Vankar Order *#${ord.orderReference}*:\n\n📌 *Status:* ${isCancelled ? '🚫 Cancelled' : `Stage ${stageNum}/5 - ${ord.orderStatus || 'In Progress'}`}\n📦 *Delivery Estimate:* ${deliveryText}\n${stageNum >= 3 ? `🚚 *Courier:* ${courier} (AWB: ${awb})\n` : ''}\n🏛️ *Details:* ${stageDesc}\n\n🔍 *Track Order Live:*\n${trackLink}\n\nWarm regards,\n*PATOLA - Handmade by Vankar*\n📞 Helpline: +91 8160160750`;
 
     return `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(message)}`;
   };
@@ -3346,7 +3346,7 @@ export default function AdminDashboardModal({
 
     const message = `🙏 *Namaste ${ord.customerName || ord.fullName || 'Valued Patron'},*
 
-We sincerely apologize, but your PATOLA MADE VANKAR Order *#${ord.orderReference || ord.id}* has been cancelled.
+We sincerely apologize, but your PATOLA - Handmade by Vankar Order *#${ord.orderReference || ord.id}* has been cancelled.
 
 📝 *Reason for Cancellation:* ${reason}
 🛍️ *Saree Ordered:* ${itemNames}
@@ -3360,7 +3360,7 @@ ${trackLink}
 📞 *Direct Artisan Helpline:* +91 8160160750
 
 Warm regards,
-*PATOLA MADE VANKAR (Authentic Handloom Weavers)*`;
+*PATOLA - Handmade by Vankar (Authentic Handloom Weavers)*`;
 
     return `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(message)}`;
   };
@@ -3404,7 +3404,7 @@ We are truly sorry for having to cancel your appointment. Our master weavers wou
 💬 *Reply directly to this WhatsApp or Call us:* +91 8160160750
 
 Warm regards,
-*PATOLA MADE VANKAR (Authentic Handloom Weavers)*`;
+*PATOLA - Handmade by Vankar (Authentic Handloom Weavers)*`;
 
     return `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(message)}`;
   };
@@ -3445,7 +3445,7 @@ ${trackLink}
 📞 *Direct Master Weaver Helpline:* +91 8160160750
 
 Warm regards,
-*PATOLA MADE VANKAR (Authentic Handloom Weavers)*`;
+*PATOLA - Handmade by Vankar (Authentic Handloom Weavers)*`;
 
     return `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(message)}`;
   };
@@ -5933,7 +5933,7 @@ Warm regards,
 
                               <div style={{ marginTop: '0.8rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                 <a
-                                  href={`https://wa.me/91${c.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Namaste ${c.fullName}, PATOLA MADE VANKAR Master Weaver here regarding your Bespoke Custom Double Ikat Patola inquiry (#CST-${c.id})${notesInfo.loomVisit ? ` & Live Rosewood Loom Visit (${notesInfo.loomVisit})` : ''}.`)}`}
+                                  href={`https://wa.me/91${c.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Namaste ${c.fullName}, PATOLA - Handmade by Vankar Master Weaver here regarding your Bespoke Custom Double Ikat Patola inquiry (#CST-${c.id})${notesInfo.loomVisit ? ` & Live Rosewood Loom Visit (${notesInfo.loomVisit})` : ''}.`)}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   style={{
@@ -7480,7 +7480,7 @@ Warm regards,
 
                       const cleanPhone = (b.phone || '').replace(/[^0-9]/g, '');
                       const waPhone = cleanPhone.length === 10 ? ('91' + cleanPhone) : cleanPhone;
-                      const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(`Namaste ${b.fullName || 'Patron'}, this is PATOLA MADE VANKAR. Regarding your royal loom appointment scheduled for ${b.preferredDate ? formatDateDDMMYYYY(b.preferredDate) : 'upcoming date'}...`)}`;
+                      const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(`Namaste ${b.fullName || 'Patron'}, this is PATOLA - Handmade by Vankar. Regarding your royal loom appointment scheduled for ${b.preferredDate ? formatDateDDMMYYYY(b.preferredDate) : 'upcoming date'}...`)}`;
 
                       let dateDisplay = 'Not Specified';
                       if (b.preferredDate) {

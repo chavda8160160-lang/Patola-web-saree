@@ -26,7 +26,7 @@ export default function MobileStickyBar({
   const formattedPrice = formatPrice ? formatPrice(startingPriceINR) : '₹85,000+';
 
   const whatsappMessage = encodeURIComponent(
-    `Namaste! 🙏 I am exploring Patola Made Vankar handloom master drapes on your website and would like to enquire about available authentic Double Ikat sarees & dupattas.`
+    `Namaste! 🙏 I am exploring PATOLA (Handmade by Vankar) handloom master drapes on your website and would like to enquire about available authentic Double Ikat sarees & dupattas.`
   );
   const whatsappUrl = `https://wa.me/${SUPPORT_CONFIG.whatsappRaw}?text=${whatsappMessage}`;
 

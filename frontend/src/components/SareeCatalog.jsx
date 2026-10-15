@@ -13,6 +13,7 @@
 import React, { Suspense, lazy, useState, useEffect, useRef, useCallback } from 'react';
 import { ApiService } from '../services/api';
 import { isStandingModelPhoto } from '../utils/imageHelper';
+import { DEFAULT_SAREES } from '../data/defaultSarees';
 
 const VirtualDrape3D = lazy(() => import('./VirtualDrape3D'));
 const Photo360Viewer = lazy(() => import('./Photo360Viewer'));
@@ -560,10 +561,13 @@ export default function SareeCatalog({
       const saved = localStorage.getItem('patola_cached_catalog_page1') || sessionStorage.getItem('patola_cached_catalog_page1');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed.slice(0, 24);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const hasNew = parsed.some(s => s.id === 'patola-crimson-ratanchowk');
+          return hasNew ? parsed.slice(0, 24) : [DEFAULT_SAREES[0], ...parsed].slice(0, 24);
+        }
       }
     } catch (e) {}
-    return [];
+    return DEFAULT_SAREES;
   });
 
   // Notify parent of loaded sarees
@@ -682,10 +686,11 @@ export default function SareeCatalog({
       };
 
       if (data && Array.isArray(data.items)) {
-        // Merge with any freshly uploaded sarees in local session if not returned yet
+        // Merge with DEFAULT_SAREES (including our newly added masterpiece) and any freshly uploaded sarees
         const existingIds = new Set(data.items.map(s => s.id));
+        const missingDefaults = DEFAULT_SAREES.filter(s => !existingIds.has(s.id) && !deletedSet.has(s.id));
         const missingUploaded = uploadedSarees.filter(s => !existingIds.has(s.id) && !deletedSet.has(s.id));
-        let allMerged = [...missingUploaded, ...data.items].filter(s => !deletedSet.has(s.id));
+        let allMerged = [...missingDefaults, ...missingUploaded, ...data.items].filter(s => !deletedSet.has(s.id));
         try {
           const editedMap = JSON.parse(localStorage.getItem('patola_edited_sarees') || '{}');
           allMerged = allMerged.map(s => editedMap[s.id] ? { ...s, ...editedMap[s.id] } : s);
@@ -707,13 +712,15 @@ export default function SareeCatalog({
       } else {
         // If API returned null/empty, PRESERVE existing displayed sarees so data NEVER disappears!
         setSarees(prev => {
-          if (prev && prev.length > 0) return prev;
-          let allList = [...uploadedSarees].filter(s => !deletedSet.has(s.id));
+          let allList = [...uploadedSarees, ...DEFAULT_SAREES].filter(s => !deletedSet.has(s.id));
           try {
             const saved = localStorage.getItem('patola_cached_catalog_page1');
             if (saved) {
               const parsed = JSON.parse(saved);
-              if (Array.isArray(parsed) && parsed.length > 0) allList = parsed;
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                const hasNew = parsed.some(s => s.id === 'patola-crimson-ratanchowk');
+                allList = hasNew ? parsed : [DEFAULT_SAREES[0], ...parsed];
+              }
             }
             const editedMap = JSON.parse(localStorage.getItem('patola_edited_sarees') || '{}');
             allList = allList.map(s => editedMap[s.id] ? { ...s, ...editedMap[s.id] } : s);

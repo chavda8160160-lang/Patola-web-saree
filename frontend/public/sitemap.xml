@@ -1,33 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+
+  <!-- Homepage -->
   <url>
     <loc>https://patolamadevankar.com/</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://patolamadevankar.com/assets/images/hero.jpg</image:loc>
+      <image:title>Authentic Patan Patola Handwoven Double Ikat Silk Saree</image:title>
+      <image:caption>Royal Patola silk saree on loom – Patola Made Vankar, Patan Gujarat</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://patolamadevankar.com/assets/images/saree_nari_kunjar.jpg</image:loc>
+      <image:title>Nari Kunjar Patola Saree – Traditional Elephant and Woman Motif</image:title>
+      <image:caption>Authentic double ikat Nari Kunjar Patola saree by master weaver, Patan Gujarat</image:caption>
+    </image:image>
+    <video:video>
+      <video:thumbnail_loc>https://patolamadevankar.com/assets/images/artisan_loom_real.jpg</video:thumbnail_loc>
+      <video:title>Authentic Patan Patola Double Ikat Handloom Weaving – Live Artisan Video</video:title>
+      <video:description>Watch master artisans weave an authentic Patan Patola double ikat silk saree using traditional handloom techniques in Gujarat, India.</video:description>
+      <video:content_loc>https://patolamadevankar.com/assets/videos/loom_artisan_pure.mp4</video:content_loc>
+      <video:duration>150</video:duration>
+      <video:publication_date>2026-10-01</video:publication_date>
+    </video:video>
   </url>
+
+  <!-- Saree Collection -->
   <url>
     <loc>https://patolamadevankar.com/#sarees</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
   </url>
+
+  <!-- Dupatta Collection -->
   <url>
     <loc>https://patolamadevankar.com/#dupattas</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
+
+  <!-- Motif Magnifier / Heritage Patterns -->
   <url>
     <loc>https://patolamadevankar.com/#motifs</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.75</priority>
   </url>
+
+  <!-- 8-Step Weaving Ritual / Craftsmanship -->
   <url>
-    <loc>https://patolamadevankar.com/#craft</loc>
-    <lastmod>2026-09-21</lastmod>
+    <loc>https://patolamadevankar.com/#craftsmanship</loc>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.70</priority>
   </url>
+
+  <!-- Artisan Heritage Story -->
+  <url>
+    <loc>https://patolamadevankar.com/#artisans</loc>
+    <lastmod>2026-10-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+
 </urlset>

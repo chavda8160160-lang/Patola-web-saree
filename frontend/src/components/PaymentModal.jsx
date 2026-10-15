@@ -206,7 +206,7 @@ export default function PaymentModal({
         order_id: paymentSession.razorpayOrderId,
         amount: paymentSession.amountInPaise,
         currency: paymentSession.currency || 'INR',
-        name: 'PATOLA MADE VANKAR',
+        name: 'PATOLA - Handmade by Vankar',
         description: `Handcrafted Patola Order (${paymentSession?.orderReference || 'VP-Order'})`,
         image: 'https://cdn-icons-png.flaticon.com/512/3081/3081840.png',
         handler: function (response) {
@@ -323,7 +323,7 @@ export default function PaymentModal({
               </strong>
             </div>
             <p style={{ margin: 0, fontSize: '0.82rem', color: '#cbd5e1' }}>
-              PATOLA MADE VANKAR • Armored Transit Protection
+              PATOLA - Handmade by Vankar • Armored Transit Protection
             </p>
           </div>
 

@@ -659,7 +659,7 @@ export const ApiService = {
     } catch (error) {
       return {
         keyId: '',
-        merchantName: 'PATOLA MADE VANKAR',
+        merchantName: 'PATOLA - Handmade by Vankar',
         testMode: false,
         supportedCurrencies: 'INR'
       };

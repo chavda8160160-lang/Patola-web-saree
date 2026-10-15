@@ -42,7 +42,7 @@ export default function Footer({ onShowToast, onOpenAdmin, onOpenSupport }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.8rem' }}>
               <img 
                 src="/assets/images/charkha-logo.png" 
-                alt="PATOLA MADE VANKAR Logo" 
+                alt="PATOLA - Handmade by Vankar Logo" 
                 style={{ width: '44px', height: '44px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))' }} 
               />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -70,7 +70,7 @@ export default function Footer({ onShowToast, onOpenAdmin, onOpenSupport }) {
                   textAlign: 'center',
                   marginTop: '1px'
                 }}>
-                  MADE VANKAR
+                  HANDMADE BY VANKAR
                 </span>
               </div>
             </div>
@@ -217,7 +217,7 @@ export default function Footer({ onShowToast, onOpenAdmin, onOpenSupport }) {
 
         <div className="footer-bottom-bar">
           <div>
-            © 2026 PATOLA MADE VANKAR. All Rights Reserved. Pure Handloom Double Ikat.
+            © 2026 PATOLA - Handmade by Vankar. All Rights Reserved. Pure Handloom Double Ikat.
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', flexWrap: 'wrap' }}>
             <span>Silk Mark Organisation of India Certified Handloom</span>

@@ -191,7 +191,7 @@ export default function CheckoutModal({
     const cleanPhone = (customerSnapshot.contactPhone || '').replace(/\D/g, '');
     const waTarget = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
     const customerPasswordDisplay = result?.customerAccount?.password || 'Auto-Generated';
-    const waMessageText = `👑 *Patola Made Vankar - Thank You!*
+    const waMessageText = `👑 *PATOLA (Handmade by Vankar) - Thank You!*
 
 Dear *${customerSnapshot.customerName || 'Patron'}*,
 

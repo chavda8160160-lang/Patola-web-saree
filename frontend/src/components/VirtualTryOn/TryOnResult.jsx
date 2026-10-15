@@ -73,7 +73,7 @@ export default function TryOnResult({
 
   // Share Look via Web Share or WhatsApp
   const handleShare = async () => {
-    const shareText = `See how I look draped in the royal ${sareeTitle} by Patola Made Vankar!`;
+    const shareText = `See how I look draped in the royal ${sareeTitle} by PATOLA (Handmade by Vankar)!`;
     const shareUrl = window.location.href;
 
     if (navigator.share) {

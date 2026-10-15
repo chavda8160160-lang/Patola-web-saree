@@ -115,11 +115,11 @@ export default function Navbar({
       {/* Main Glass Navbar */}
       <header className={`main-navbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="navbar-container">
-          <a href="#hero" className="brand-logo-link" aria-label="PATOLA MADE VANKAR Home">
+          <a href="#hero" className="brand-logo-link" aria-label="PATOLA - Handmade by Vankar Home">
             <div className="brand-insignia">
               <img 
                 src="/assets/images/charkha-logo.png" 
-                alt="PATOLA MADE VANKAR Logo" 
+                alt="PATOLA - Handmade by Vankar Logo" 
                 className="brand-emblem-img" 
               />
             </div>
@@ -129,7 +129,7 @@ export default function Navbar({
                 PATOLA
                 <span className="brand-diamond-motif">❖</span>
               </span>
-              <span className="brand-tagline">MADE VANKAR</span>
+              <span className="brand-tagline">HANDMADE BY VANKAR</span>
             </div>
           </a>
 

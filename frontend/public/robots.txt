@@ -1,6 +1,32 @@
+# Patola Made Vankar – robots.txt
+# https://patolamadevankar.com
+
+# Allow all major search engine crawlers
 User-agent: *
 Allow: /
+Allow: /assets/images/
+Allow: /assets/videos/
+
+# Block admin and sensitive paths
 Disallow: /admin3868
 Disallow: /chavda3868
+Disallow: /api/
+Disallow: /src/
+Disallow: /*.jsx$
+Disallow: /*.json$
 
+# Crawl delay hint (optional, respected by some bots)
+Crawl-delay: 2
+
+# Google Image crawler
+User-agent: Googlebot-Image
+Allow: /assets/images/
+Allow: /assets/videos/
+
+# Bing / MSN crawler
+User-agent: bingbot
+Allow: /
+Crawl-delay: 2
+
+# Sitemap location
 Sitemap: https://patolamadevankar.com/sitemap.xml

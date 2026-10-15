@@ -17,7 +17,6 @@ import WeavingTimeline from './components/WeavingTimeline';
 import ArtisanStory from './components/ArtisanStory';
 import CartDrawer from './components/CartDrawer';
 import Footer from './components/Footer';
-import MobileStickyBar from './components/MobileStickyBar';
 import { initAppSecurity } from './utils/security';
 import { initGA, trackPageView, trackViewItem, trackAddToCart } from './utils/analytics';
 import { cleanupAndCompressStorageSarees } from './utils/imageCompressor';
@@ -47,7 +46,7 @@ const CURRENCY_CONFIG = {
   GBP: { symbol: '£', name: 'British Pound (£ GBP)', rate: 0.0095, format: (val) => '£' + Math.round(val * 0.0095).toLocaleString('en-US') }
 };
 
-const DEFAULT_SAREES = [];
+import { DEFAULT_SAREES } from './data/defaultSarees';
 
 // Automatic Regional Currency Detection by Timezone & Locale
 const detectRegionalCurrency = () => {
@@ -321,7 +320,7 @@ export default function App() {
   useEffect(() => {
     initAppSecurity();
     initGA();
-    trackPageView('PATOLA MADE VANKAR - Home');
+    trackPageView('PATOLA - Handmade by Vankar - Home');
     cleanupAndCompressStorageSarees();
     // Load customer's session orders and local orders reliably
     try {
@@ -1515,13 +1514,6 @@ export default function App() {
         />
       )}
 
-      {/* ✦ LUXURY MOBILE-FIRST STICKY ACTION BAR (Instant WhatsApp Enquiry & Price) ✦ */}
-      <MobileStickyBar
-        onOpenBooking={() => setIsBookingOpen(true)}
-        formatPrice={formatPrice}
-        currency={currentCurrency}
-        isHidden={isAnyModalOpen}
-      />
 
       {toastMessage && (
         <div className="toast-container">

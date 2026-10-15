@@ -165,7 +165,7 @@ export default function CustomerAuthModal({
             fontWeight: 600,
             marginBottom: '0.35rem'
           }}>
-           PATOLA MADE VANKAR
+           PATOLA • HANDMADE BY VANKAR
           </span>
           <h3 style={{
             margin: 0,

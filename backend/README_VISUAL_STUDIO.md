@@ -1,4 +1,4 @@
-# Virasat Patola - Visual Studio, SQL Server & Stored Procedures Guide
+# PATOLA - Handmade by Vankar (Visual Studio, SQL Server & Stored Procedures Guide)
 
 This guide explains how to run the **.NET Core Web API**, execute the **SQL Server Stored Procedures (SPs)**, connect the **Frontend & Backend**, and test all APIs interactively in **Swagger UI**.
 
