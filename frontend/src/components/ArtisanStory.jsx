@@ -11,16 +11,47 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 export default function ArtisanStory({ onOpenBooking }) {
+  const containerRef = useRef(null);
   const videoRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true); // By default sound is muted (Off)
+  const [isVideoVisible, setIsVideoVisible] = useState(false);
+
+  // Lazy load video only when user scrolls near the section to prevent page load slowdown
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          setIsVideoVisible(true);
+          if (videoRef.current && videoRef.current.paused) {
+            videoRef.current.play().catch(() => {});
+          }
+        } else {
+          // Pause when off-screen to save user's CPU, GPU and battery
+          if (videoRef.current && !videoRef.current.paused) {
+            videoRef.current.pause();
+          }
+        }
+      },
+      { rootMargin: '250px 0px', threshold: 0.1 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   // Strictly enforce muted state on mount
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = true;
     }
-  }, []);
+  }, [isVideoVisible]);
 
   const togglePlay = () => {
     if (!videoRef.current) return;
@@ -56,13 +87,13 @@ export default function ArtisanStory({ onOpenBooking }) {
       <div className="container">
         <div className="artisan-split-grid">
           <div className="artisan-media-composition">
-            {/* Live Handloom Weaving Video Player */}
-            <div className="artisan-video-frame">
+            {/* Live Handloom Weaving Video Player with Lazy-Load & Optimization */}
+            <div className="artisan-video-frame" ref={containerRef}>
               <video
                 ref={videoRef}
-                src="/assets/videos/loom_artisan_pure.mp4?v=3"
+                src={isVideoVisible ? "/assets/videos/loom_artisan_pure.mp4?v=4" : undefined}
                 poster="/assets/images/artisan_loom_real.jpg"
-                autoPlay
+                preload="none"
                 loop
                 playsInline
                 muted
