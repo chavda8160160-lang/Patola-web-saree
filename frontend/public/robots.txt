@@ -1,11 +1,12 @@
-# Patola Made Vankar – robots.txt
-# https://patolamadevankar.com
+# PATOLA - Handmade by Vankar – robots.txt
+# https://patolahandmadevankar.com
 
 # Allow all major search engine crawlers
 User-agent: *
 Allow: /
 Allow: /assets/images/
 Allow: /assets/videos/
+Allow: /googlecf2755c11bfd62e1.html
 
 # AI Search Crawlers (ChatGPT, Perplexity, Google Gemini, Claude)
 User-agent: GPTBot
@@ -50,5 +51,7 @@ User-agent: bingbot
 Allow: /
 Crawl-delay: 2
 
-# Sitemap location
-Sitemap: https://patolamadevankar.com/sitemap.xml
+# Sitemap & Product Feed locations
+Sitemap: https://patolahandmadevankar.com/sitemap.xml
+# Google Merchant Center Product Feed: https://patolahandmadevankar.com/google-shopping-feed.xml
+

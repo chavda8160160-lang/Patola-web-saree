@@ -533,32 +533,25 @@ export default function CustomPatolaModal({ isOpen, onClose, onShowToast, onCust
           </div>
 
           {/* 4-PART CUSTOM DESIGN & PHOTO UPLOAD SECTION */}
-          <div style={{
-            background: 'linear-gradient(135deg, #fffcf7 0%, #faf3e8 100%)',
-            border: '1.5px solid #d4af37',
-            borderRadius: '12px',
-            padding: '1.2rem',
-            marginBottom: '1.4rem',
-            boxShadow: '0 3px 12px rgba(128,0,32,0.06)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1rem', borderBottom: '1px solid #ebdccf', paddingBottom: '0.6rem' }}>
+          <div className="custom-specifications-container">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.2rem', borderBottom: '1px solid rgba(212, 175, 55, 0.35)', paddingBottom: '0.85rem' }}>
               <div>
-                <h4 style={{ margin: 0, color: '#800020', fontFamily: 'Cinzel, serif', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span>🎨</span> Custom Specifications: Saree, Pallu, Border & Blouse
+                <h4 style={{ margin: 0, color: '#5c0b10', fontFamily: 'Cinzel, serif', fontSize: '1.12rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.55rem', letterSpacing: '0.02em' }}>
+                  <span style={{ fontSize: '1.25rem' }}>🎨</span> Custom Specifications: Saree, Pallu, Border & Blouse
                 </h4>
-                <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', color: '#666' }}>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.82rem', color: '#6b6359', lineHeight: 1.4 }}>
                   Upload reference photos & select silk color palette for each individual component (optional to upload all 4).
                 </p>
               </div>
-              <span style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.74rem', fontWeight: 700 }}>
-                4 Distinct Weave Sections
+              <span className="custom-spec-header-badge">
+                <span>✨</span> 4 Distinct Weave Sections
               </span>
             </div>
 
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '1rem'
+              gap: '1.15rem'
             }}>
               {CUSTOM_PARTS_CONFIG.map((cfg) => {
                 const part = parts[cfg.key];
@@ -567,142 +560,132 @@ export default function CustomPatolaModal({ isOpen, onClose, onShowToast, onCust
                 return (
                   <div
                     key={cfg.key}
-                    style={{
-                      background: '#ffffff',
-                      border: '1.5px solid #e7dac8',
-                      borderRadius: '10px',
-                      padding: '1rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-                      transition: 'all 0.2s ease'
-                    }}
+                    className="custom-part-premium-card"
                   >
                     <div>
                       {/* Part Header */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <span style={{ fontSize: '1.3rem' }}>{cfg.icon}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.55rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                          <div className="custom-part-icon-badge">
+                            {cfg.icon}
+                          </div>
                           <div>
-                            <strong style={{ color: '#800020', fontSize: '0.92rem' }}>{cfg.label}</strong>
-                            <div style={{ fontSize: '0.74rem', color: '#777' }}>{cfg.labelGu}</div>
+                            <div className="custom-part-title-text">{cfg.label}</div>
+                            <div className="custom-part-sub-gu">{cfg.labelGu}</div>
                           </div>
                         </div>
                         {part.photo ? (
-                          <span style={{ background: '#dcfce7', color: '#166534', border: '1px solid #86efac', padding: '0.15rem 0.5rem', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 700 }}>
-                            ✓ Photo Added
+                          <span className="custom-part-badge-added">
+                            <span>✓</span> Photo Added
                           </span>
                         ) : (
-                          <span style={{ background: '#f3f4f6', color: '#6b7280', padding: '0.15rem 0.5rem', borderRadius: '10px', fontSize: '0.7rem' }}>
+                          <span className="custom-part-badge-optional">
                             Optional Photo
                           </span>
                         )}
                       </div>
 
-                      <p style={{ margin: '0 0 0.8rem 0', fontSize: '0.75rem', color: '#666', lineHeight: '1.3' }}>
+                      <p className="custom-part-desc">
                         {cfg.desc}
                       </p>
 
                       {/* Photo Upload / Preview Dropzone */}
-                      <div style={{ marginBottom: '0.8rem' }}>
+                      <div style={{ marginBottom: '0.6rem' }}>
                         {compressingPart === cfg.key ? (
                           <div style={{
                             border: '1.5px dashed #d4af37',
-                            borderRadius: '8px',
-                            padding: '0.85rem 0.6rem',
+                            borderRadius: '10px',
+                            padding: '1rem 0.6rem',
                             textAlign: 'center',
-                            background: '#fffbeb',
+                            background: '#fffdf5',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '4px'
+                            gap: '6px'
                           }}>
                             <div style={{
-                              width: '20px',
-                              height: '20px',
+                              width: '24px',
+                              height: '24px',
                               border: '2.5px solid #d4af37',
-                              borderTopColor: 'transparent',
+                              borderTopColor: '#5c0b10',
                               borderRadius: '50%',
                               animation: 'spin 0.7s linear infinite'
                             }} />
-                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#92400e', marginTop: '2px' }}>
-                              ⚡ Auto-compressing {cfg.label}...
+                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#5c0b10', marginTop: '2px' }}>
+                              ⚡ Optimizing {cfg.label}...
                             </div>
-                            <div style={{ fontSize: '0.7rem', color: '#b45309' }}>
-                              Optimizing any file size to fast HD format
+                            <div style={{ fontSize: '0.71rem', color: '#946e2b' }}>
+                              Auto-compressing any image size to high-clarity HD
                             </div>
                           </div>
                         ) : !part.photo ? (
                           <div
                             onClick={() => triggerUpload(cfg.key)}
-                            style={{
-                              border: '1.5px dashed #c4a47c',
-                              borderRadius: '8px',
-                              padding: '0.8rem 0.6rem',
-                              textAlign: 'center',
-                              background: '#fffcf7',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s'
-                            }}
+                            className="custom-part-upload-dropzone"
                             title={`Upload ${cfg.label} Reference Photo`}
                           >
-                            <span style={{ fontSize: '1.3rem', display: 'block', marginBottom: '0.2rem' }}>📷</span>
-                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#800020' }}>
+                            <div className="custom-part-camera-icon-wrap">
+                              📷
+                            </div>
+                            <div className="custom-part-upload-heading">
                               Upload {cfg.label} Photo
                             </div>
-                            <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '2px' }}>
-                              Any size (Auto-compressed to HD)
+                            <div className="custom-part-upload-subtext">
+                              <span>⚡ Any size (Auto-compressed to HD)</span>
                             </div>
                           </div>
                         ) : (
                           <div style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '0.75rem',
-                            background: '#fcfbf8',
+                            gap: '0.85rem',
+                            background: 'linear-gradient(145deg, #ffffff 0%, #fdfbf7 100%)',
                             border: '1.5px solid #d4af37',
-                            borderRadius: '8px',
-                            padding: '0.5rem',
+                            borderRadius: '10px',
+                            padding: '0.65rem',
+                            boxShadow: '0 3px 12px rgba(212, 175, 55, 0.15)',
                             position: 'relative'
                           }}>
                             <img
                               src={part.photo}
                               alt={cfg.label}
                               style={{
-                                width: '56px',
-                                height: '56px',
+                                width: '62px',
+                                height: '62px',
                                 objectFit: 'cover',
-                                borderRadius: '6px',
-                                border: '1px solid #c4a47c',
-                                cursor: 'pointer'
+                                borderRadius: '8px',
+                                border: '2px solid #d4af37',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                                cursor: 'pointer',
+                                flexShrink: 0
                               }}
                               onClick={() => handleZoomPhoto(part.photo, `${cfg.label} Reference Photo`)}
                               title="Click to view & zoom image"
                             />
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#166534', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#166534', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
                                 <span>✓ {cfg.label} Attached</span>
-                                <span style={{ fontSize: '0.66rem', fontWeight: 700, color: '#047857', background: '#d1fae5', padding: '1px 5px', borderRadius: '4px', border: '1px solid #a7f3d0' }}>
-                                  ⚡ Auto-compressed
+                                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#047857', background: '#d1fae5', padding: '1px 5px', borderRadius: '4px', border: '1px solid #a7f3d0' }}>
+                                  ⚡ HD Ready
                                 </span>
                               </div>
-                              <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.3rem' }}>
+                              <div style={{ display: 'flex', gap: '0.45rem', marginTop: '0.45rem' }}>
                                 <button
                                   type="button"
                                   onClick={() => handleZoomPhoto(part.photo, `${cfg.label} Reference Photo`)}
                                   style={{
-                                    background: '#800020',
-                                    color: '#d4af37',
-                                    border: 'none',
-                                    padding: '0.2rem 0.5rem',
-                                    borderRadius: '4px',
-                                    fontSize: '0.7rem',
+                                    background: 'linear-gradient(135deg, #5c0b10 0%, #800020 100%)',
+                                    color: '#f5e6ca',
+                                    border: '1px solid #d4af37',
+                                    padding: '0.28rem 0.65rem',
+                                    borderRadius: '6px',
+                                    fontSize: '0.72rem',
                                     cursor: 'pointer',
-                                    fontWeight: 700
+                                    fontWeight: 700,
+                                    boxShadow: '0 2px 6px rgba(92, 11, 16, 0.2)'
                                   }}
-                                  title="Open & zoom reference photo in new page / viewer"
+                                  title="Open & zoom reference photo in high resolution"
                                 >
                                   🔍 Zoom
                                 </button>
@@ -710,13 +693,14 @@ export default function CustomPatolaModal({ isOpen, onClose, onShowToast, onCust
                                   type="button"
                                   onClick={() => handleRemovePhoto(cfg.key)}
                                   style={{
-                                    background: '#fee2e2',
-                                    color: '#991b1b',
-                                    border: '1px solid #fca5a5',
-                                    padding: '0.2rem 0.5rem',
-                                    borderRadius: '4px',
-                                    fontSize: '0.7rem',
-                                    cursor: 'pointer'
+                                    background: '#fff1f2',
+                                    color: '#9f1239',
+                                    border: '1px solid #fecdd3',
+                                    padding: '0.28rem 0.65rem',
+                                    borderRadius: '6px',
+                                    fontSize: '0.72rem',
+                                    cursor: 'pointer',
+                                    fontWeight: 600
                                   }}
                                 >
                                   🗑️ Remove
@@ -727,37 +711,21 @@ export default function CustomPatolaModal({ isOpen, onClose, onShowToast, onCust
                         )}
                       </div>
 
-                      {/* Custom Shade Name Input Only (No preset chips) */}
-                      <div style={{ marginTop: '0.6rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                          <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#800020', margin: 0 }}>
-                            🎨 {cfg.label} Color / Shade:
+                      {/* Custom Shade Name Input */}
+                      <div className="custom-part-color-input-wrap">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                          <label style={{ fontSize: '0.82rem', fontWeight: 700, color: '#5c0b10', margin: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <span>🎨</span> {cfg.label} Color / Shade:
                           </label>
                           {part.customColor?.trim() && (
-                            <span style={{
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              color: '#800020',
-                              background: '#fef3c7',
-                              padding: '1px 6px',
-                              borderRadius: '4px'
-                            }}>
+                            <span className="custom-part-color-pill">
                               {part.customColor.trim()}
                             </span>
                           )}
                         </div>
                         <input
                           type="text"
-                          className="form-input"
-                          style={{
-                            fontSize: '0.84rem',
-                            padding: '0.5rem 0.75rem',
-                            borderRadius: '6px',
-                            border: '1.5px solid #d4af37',
-                            background: '#ffffff',
-                            width: '100%',
-                            boxSizing: 'border-box'
-                          }}
+                          className="custom-part-color-input"
                           value={part.customColor}
                           onChange={(e) => handleCustomColorChange(cfg.key, e.target.value)}
                           placeholder={`Enter custom color for ${cfg.label} (e.g. Royal Maroon, Rama Green, Antique Gold)...`}

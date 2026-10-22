@@ -1,5 +1,5 @@
 /**
- * PATOLA MADE VANKAR - GOOGLE ANALYTICS 4 (GA4) HELPER
+ * PATOLA - HANDMADE BY VANKAR - GOOGLE ANALYTICS 4 (GA4) HELPER
  * Official Ecommerce & User Behavior Tracking
  */
 

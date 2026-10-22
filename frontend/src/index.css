@@ -2018,6 +2018,265 @@ body {
   box-shadow: 0 8px 24px rgba(92, 11, 16, 0.22);
 }
 
+/* Mobile-only Return to Store button wrapper above Artisan video */
+.artisan-mobile-back-store-wrap {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .artisan-mobile-back-store-wrap {
+    display: flex !important;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0.85rem;
+    padding-right: 0.2rem;
+  }
+
+  .btn-return-store.btn-return-store-mobile {
+    padding: 0.52rem 1.15rem !important;
+    font-size: 0.78rem !important;
+    letter-spacing: 0.08em !important;
+    border-radius: 50px !important;
+    box-shadow: 0 4px 14px rgba(92, 11, 16, 0.12) !important;
+    background: #ffffff !important;
+    border: 1.5px solid var(--color-border-gold, #d4af37) !important;
+    color: var(--color-primary-dark, #5c0b10) !important;
+  }
+
+  .btn-return-store.btn-return-store-mobile:hover,
+  .btn-return-store.btn-return-store-mobile:active {
+    background: var(--color-primary-dark, #5c0b10) !important;
+    color: #ffffff !important;
+    border-color: var(--color-primary-dark, #5c0b10) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(92, 11, 16, 0.25);
+  }
+
+  /* In mobile, hide the bottom duplicate button so it only appears at the top marked position */
+  .btn-return-store.btn-return-store-desktop {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   ROYAL PATOLA CUSTOM ORDER SPECIFICATION CARDS
+   ========================================================================== */
+.custom-specifications-container {
+  background: linear-gradient(135deg, #ffffff 0%, #fdfaf4 50%, #f9f2e3 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.55);
+  border-radius: 16px;
+  padding: 1.4rem;
+  margin-bottom: 1.6rem;
+  box-shadow: 0 8px 30px rgba(128, 0, 32, 0.06), 0 1px 3px rgba(212, 175, 55, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.custom-specifications-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #d4af37, #fef3c7, #800020, #fef3c7, #d4af37);
+}
+
+.custom-spec-header-badge {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #78350f;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  padding: 0.32rem 0.85rem;
+  border-radius: 30px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.15);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.custom-part-premium-card {
+  background: linear-gradient(145deg, #ffffff 0%, #fdfcf9 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.38);
+  border-radius: 14px;
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 16px rgba(128, 0, 32, 0.04), 0 1px 4px rgba(212, 175, 55, 0.08);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.custom-part-premium-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(212, 175, 55, 0.85);
+  box-shadow: 0 10px 28px rgba(128, 0, 32, 0.09), 0 0 0 1px rgba(212, 175, 55, 0.5);
+}
+
+.custom-part-icon-badge {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.5);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.custom-part-premium-card:hover .custom-part-icon-badge {
+  transform: scale(1.08) rotate(-3deg);
+}
+
+.custom-part-title-text {
+  font-family: 'Cinzel', serif;
+  color: #5c0b10;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+}
+
+.custom-part-sub-gu {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8c7355;
+  margin-top: 1px;
+}
+
+.custom-part-badge-optional {
+  background: #fdfaf3;
+  color: #92400e;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  padding: 0.22rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.custom-part-badge-added {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+  padding: 0.22rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.custom-part-desc {
+  margin: 0.55rem 0 0.85rem 0;
+  font-size: 0.76rem;
+  color: #6b6359;
+  line-height: 1.45;
+}
+
+.custom-part-upload-dropzone {
+  border: 1.5px dashed #c99e4b;
+  border-radius: 10px;
+  padding: 1rem 0.75rem;
+  text-align: center;
+  background: linear-gradient(180deg, #fffcf8 0%, #faf4e8 100%);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.custom-part-upload-dropzone:hover {
+  background: #fffdfa;
+  border-color: #946e2b;
+  border-style: solid;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.22);
+}
+
+.custom-part-camera-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid rgba(201, 158, 75, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.45rem auto;
+  box-shadow: 0 2px 8px rgba(201, 158, 75, 0.15);
+  font-size: 1.25rem;
+  transition: transform 0.2s ease;
+}
+
+.custom-part-upload-dropzone:hover .custom-part-camera-icon-wrap {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(201, 158, 75, 0.28);
+}
+
+.custom-part-upload-heading {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #5c0b10;
+  letter-spacing: 0.02em;
+}
+
+.custom-part-upload-subtext {
+  font-size: 0.71rem;
+  color: #946e2b;
+  margin-top: 3px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.custom-part-color-input-wrap {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba(212, 175, 55, 0.35);
+}
+
+.custom-part-color-input {
+  font-size: 0.84rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
+  background: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+  color: #2b1d0c;
+  transition: all 0.25s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.custom-part-color-input:focus {
+  outline: none;
+  border-color: #800020;
+  box-shadow: 0 0 0 3.5px rgba(128, 0, 32, 0.12), 0 2px 8px rgba(212, 175, 55, 0.18);
+  background: #fffdfb;
+}
+
+.custom-part-color-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #5c0b10;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  padding: 2px 8px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(217, 119, 6, 0.1);
+}
+
 .artisan-floating-quote-card {
   position: relative;
   margin-top: 1.25rem;

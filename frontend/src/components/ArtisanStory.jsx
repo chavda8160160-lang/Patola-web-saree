@@ -82,11 +82,40 @@ export default function ArtisanStory({ onOpenBooking }) {
     }
   };
 
+  const handleReturnToStore = () => {
+    const elem = document.getElementById('sareeGridArea') || document.querySelector('.saree-grid') || document.getElementById('collection');
+    if (elem) {
+      const navHeight = 70;
+      const elementPosition = elem.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navHeight;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+      window.history.pushState(null, '', '#sarees');
+    }
+  };
+
   return (
     <section className="section-padding artisan-section" id="artisans">
       <div className="container">
         <div className="artisan-split-grid">
           <div className="artisan-media-composition">
+            {/* Mobile Only: Back to Store button placed top-right above video frame */}
+            <div className="artisan-mobile-back-store-wrap">
+              <button
+                type="button"
+                className="btn-return-store btn-return-store-mobile"
+                onClick={handleReturnToStore}
+                title="Return to Sarees & Dupattas Collection"
+              >
+                <span>🛍️ Return to Store</span>
+                <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
             {/* Live Handloom Weaving Video Player with Lazy-Load & Optimization */}
             <div className="artisan-video-frame" ref={containerRef}>
               <video
@@ -174,20 +203,8 @@ export default function ArtisanStory({ onOpenBooking }) {
               </button>
               <button
                 type="button"
-                className="btn-return-store"
-                onClick={() => {
-                  const elem = document.getElementById('sareeGridArea') || document.querySelector('.saree-grid') || document.getElementById('collection');
-                  if (elem) {
-                    const navHeight = 70;
-                    const elementPosition = elem.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - navHeight;
-                    window.scrollTo({
-                      top: offsetPosition,
-                      behavior: 'smooth'
-                    });
-                    window.history.pushState(null, '', '#sarees');
-                  }
-                }}
+                className="btn-return-store btn-return-store-desktop"
+                onClick={handleReturnToStore}
                 title="Return to Sarees & Dupattas Collection"
               >
                 <span>🛍️ Return to Store</span>

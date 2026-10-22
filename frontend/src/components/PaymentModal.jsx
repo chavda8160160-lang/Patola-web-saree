@@ -1297,7 +1297,7 @@ export default function PaymentModal({
             <span>PCI-DSS Level 1 Certified</span>
           </div>
           <div style={{ fontWeight: 600, color: '#0c2340' }}>
-            PATOLA MADE VANKAR
+            PATOLA - HANDMADE BY VANKAR
           </div>
         </div>
       </div>

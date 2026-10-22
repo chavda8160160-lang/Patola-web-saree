@@ -21,6 +21,7 @@ export default function CustomerAuthModal({
   const [regName, setRegName] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [regShowPassword, setRegShowPassword] = useState(false);
   const [regEmail, setRegEmail] = useState('');
   const [regAddress, setRegAddress] = useState('');
   const [regCity, setRegCity] = useState('');
@@ -113,30 +114,48 @@ export default function CustomerAuthModal({
   };
 
   return (
-    <div className="modal-backdrop open" onClick={onClose} style={{ zIndex: 100000 }}>
+    <div
+      className="modal-backdrop open"
+      onClick={onClose}
+      style={{
+        zIndex: 100000,
+        overflowY: 'auto',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.2rem 0.65rem'
+      }}
+    >
       <div
         className="modal-container"
         onClick={(e) => e.stopPropagation()}
         style={{
-          maxWidth: '430px',
-          width: '92%',
-          background: '#ffffff',
-          borderRadius: '10px',
-          border: '1px solid #d4af37',
-          boxShadow: '0 16px 40px rgba(0, 0, 0, 0.22)',
+          maxWidth: '445px',
+          width: '100%',
+          maxHeight: 'min(92vh, 680px)',
+          display: 'flex',
+          flexDirection: 'column',
+          background: 'linear-gradient(180deg, #ffffff 0%, #fdfcf9 100%)',
+          borderRadius: '16px',
+          border: '1.5px solid rgba(212, 175, 55, 0.6)',
+          boxShadow: '0 24px 60px rgba(43, 2, 10, 0.35), 0 0 0 1px rgba(212, 175, 55, 0.25)',
           overflow: 'hidden',
+          margin: 'auto',
           padding: '0',
-          fontFamily: 'inherit'
+          fontFamily: 'inherit',
+          position: 'relative'
         }}
       >
-        {/* Classic Heritage Header */}
+        {/* Royal Classic Heritage Header (Sticky at Top) */}
         <div style={{
-          background: '#2b020a',
-          padding: '1.4rem 1.6rem 1.3rem',
+          flexShrink: 0,
+          background: 'linear-gradient(145deg, #2b020a 0%, #4a0614 60%, #1f0107 100%)',
+          padding: '1.2rem 1.4rem 1.1rem',
           color: '#ffffff',
           position: 'relative',
           textAlign: 'center',
-          borderBottom: '1px solid #c5a059'
+          borderBottom: '2px solid #d4af37',
+          boxShadow: '0 4px 14px rgba(0, 0, 0, 0.18)'
         }}>
           <button
             onClick={onClose}
@@ -144,13 +163,20 @@ export default function CustomerAuthModal({
             style={{
               position: 'absolute',
               top: '12px',
-              right: '14px',
-              background: 'transparent',
-              border: 'none',
+              right: '12px',
+              width: '30px',
+              height: '30px',
+              borderRadius: '50%',
+              background: 'rgba(212, 175, 55, 0.15)',
+              border: '1px solid rgba(212, 175, 55, 0.4)',
               color: '#d4af37',
-              fontSize: '1.3rem',
+              fontSize: '0.95rem',
               cursor: 'pointer',
-              lineHeight: 1
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: 1,
+              transition: 'all 0.2s'
             }}
           >
             ✕
@@ -159,93 +185,121 @@ export default function CustomerAuthModal({
           <span style={{
             display: 'inline-block',
             letterSpacing: '3px',
-            fontSize: '0.68rem',
+            fontSize: '0.64rem',
             textTransform: 'uppercase',
-            color: '#d4af37',
-            fontWeight: 600,
-            marginBottom: '0.35rem'
+            color: '#e5c158',
+            fontWeight: 700,
+            marginBottom: '0.3rem',
+            background: 'rgba(212, 175, 55, 0.12)',
+            padding: '0.15rem 0.6rem',
+            borderRadius: '20px',
+            border: '1px solid rgba(212, 175, 55, 0.3)'
           }}>
-           PATOLA • HANDMADE BY VANKAR
+            PATOLA • HANDMADE BY VANKAR
           </span>
           <h3 style={{
             margin: 0,
-            fontSize: '1.3rem',
-            fontFamily: 'var(--font-serif, "Cinzel", "Playfair Display", Georgia, serif)',
-            color: '#fdfbf7',
-            letterSpacing: '0.5px',
-            fontWeight: 500
+            fontSize: '1.35rem',
+            fontFamily: 'var(--font-royal, "Cinzel", "Playfair Display", Georgia, serif)',
+            color: '#fffbf2',
+            letterSpacing: '0.6px',
+            fontWeight: 700,
+            textShadow: '0 2px 8px rgba(0,0,0,0.4)'
           }}>
             {mode === 'login' ? 'Patron Sign In' : 'Create Patron Account'}
           </h3>
           <p style={{
-            margin: '0.3rem 0 0',
+            margin: '0.25rem 0 0',
             fontSize: '0.78rem',
-            color: '#e5d7ba',
-            letterSpacing: '0.3px'
+            color: '#e8dcbe',
+            letterSpacing: '0.3px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.35rem'
           }}>
-            Access your handloom commissions and order tracking
+            <span>❖</span> Access your handloom commissions & order tracking <span>❖</span>
           </p>
         </div>
 
-        {/* Classic Underline Tabs */}
+        {/* Royal Classic Tabs (Sticky Below Header) */}
         <div style={{
+          flexShrink: 0,
           display: 'flex',
-          borderBottom: '1px solid #e8e2d5',
-          background: '#faf8f5'
+          borderBottom: '1.5px solid rgba(212, 175, 55, 0.35)',
+          background: '#faf6ee'
         }}>
           <button
             type="button"
             onClick={() => { setMode('login'); setErrorMessage(''); }}
             style={{
               flex: 1,
-              padding: '0.85rem 1rem',
+              padding: '0.82rem 1rem',
               border: 'none',
               background: mode === 'login' ? '#ffffff' : 'transparent',
-              borderBottom: mode === 'login' ? '2.5px solid #6b001a' : 'none',
-              color: mode === 'login' ? '#6b001a' : '#736d65',
-              fontWeight: mode === 'login' ? 700 : 500,
-              fontSize: '0.88rem',
-              letterSpacing: '0.4px',
+              borderBottom: mode === 'login' ? '3px solid #800020' : '3px solid transparent',
+              color: mode === 'login' ? '#650019' : '#786e64',
+              fontWeight: mode === 'login' ? 700 : 600,
+              fontFamily: 'Cinzel, serif',
+              fontSize: '0.9rem',
+              letterSpacing: '0.6px',
               cursor: 'pointer',
-              transition: 'all 0.2s'
+              transition: 'all 0.25s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.4rem'
             }}
           >
-            Sign In
+            <span>🔑</span> Sign In
           </button>
           <button
             type="button"
             onClick={() => { setMode('register'); setErrorMessage(''); }}
             style={{
               flex: 1,
-              padding: '0.85rem 1rem',
+              padding: '0.82rem 1rem',
               border: 'none',
               background: mode === 'register' ? '#ffffff' : 'transparent',
-              borderBottom: mode === 'register' ? '2.5px solid #6b001a' : 'none',
-              color: mode === 'register' ? '#6b001a' : '#736d65',
-              fontWeight: mode === 'register' ? 700 : 500,
-              fontSize: '0.88rem',
-              letterSpacing: '0.4px',
+              borderBottom: mode === 'register' ? '3px solid #800020' : '3px solid transparent',
+              color: mode === 'register' ? '#650019' : '#786e64',
+              fontWeight: mode === 'register' ? 700 : 600,
+              fontFamily: 'Cinzel, serif',
+              fontSize: '0.9rem',
+              letterSpacing: '0.6px',
               cursor: 'pointer',
-              transition: 'all 0.2s'
+              transition: 'all 0.25s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.4rem'
             }}
           >
-            Register
+            <span>📜</span> Register
           </button>
         </div>
 
-        {/* Content Body */}
-        <div style={{ padding: '1.4rem 1.6rem 1.6rem' }}>
+        {/* Content Body (Fully Scrollable) */}
+        <div style={{
+          padding: '1.3rem 1.45rem 1.45rem',
+          overflowY: 'auto',
+          flex: 1,
+          WebkitOverflowScrolling: 'touch'
+        }}>
           {errorMessage && (
             <div style={{
               background: '#fef2f2',
               color: '#991b1b',
               border: '1px solid #fecaca',
-              padding: '0.65rem 0.85rem',
-              borderRadius: '6px',
+              padding: '0.7rem 0.9rem',
+              borderRadius: '8px',
               fontSize: '0.82rem',
-              marginBottom: '1.1rem'
+              marginBottom: '1.15rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem'
             }}>
-              {errorMessage}
+              <span>⚠️</span> {errorMessage}
             </div>
           )}
 
@@ -254,24 +308,27 @@ export default function CustomerAuthModal({
               background: '#f0fdf4',
               color: '#166534',
               border: '1px solid #bbf7d0',
-              padding: '0.65rem 0.85rem',
-              borderRadius: '6px',
+              padding: '0.7rem 0.9rem',
+              borderRadius: '8px',
               fontSize: '0.82rem',
-              marginBottom: '1.1rem'
+              marginBottom: '1.15rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem'
             }}>
-              {successMessage}
+              <span>✓</span> {successMessage}
             </div>
           )}
 
           {mode === 'login' ? (
             /* CLASSIC LOGIN FORM */
             <form onSubmit={handleLoginSubmit}>
-              <div style={{ marginBottom: '1.1rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.82rem', color: '#2a2421', marginBottom: '0.35rem', letterSpacing: '0.2px' }}>
-                  Mobile Number
+              <div style={{ marginBottom: '1.15rem' }}>
+                <label style={{ display: 'block', fontWeight: 700, fontSize: '0.82rem', color: '#5c0b10', marginBottom: '0.4rem', letterSpacing: '0.02em' }}>
+                  Mobile Number *
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#888', fontWeight: 500, fontSize: '0.88rem' }}>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#946e2b', fontWeight: 700, fontSize: '0.88rem' }}>
                     +91
                   </span>
                   <input
@@ -280,24 +337,26 @@ export default function CustomerAuthModal({
                     maxLength={10}
                     value={loginPhone}
                     onChange={(e) => setLoginPhone(e.target.value.replace(/\D/g, ''))}
-                    placeholder="ENTER PHONE NUMBER"
+                    placeholder="Enter 10-digit mobile number"
                     style={{
                       width: '100%',
-                      padding: '0.7rem 0.85rem 0.7rem 3.2rem',
-                      borderRadius: '6px',
-                      border: '1px solid #c9c0b1',
-                      fontSize: '0.92rem',
+                      padding: '0.72rem 0.85rem 0.72rem 3.4rem',
+                      borderRadius: '8px',
+                      border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                      fontSize: '0.9rem',
                       boxSizing: 'border-box',
-                      color: '#1f1a17',
-                      outlineColor: '#6b001a'
+                      color: '#2a1a08',
+                      background: '#fdfbf7',
+                      outline: 'none',
+                      transition: 'all 0.2s'
                     }}
                   />
                 </div>
               </div>
 
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.82rem', color: '#2a2421', marginBottom: '0.35rem', letterSpacing: '0.2px' }}>
-                  Password
+              <div style={{ marginBottom: '1.35rem' }}>
+                <label style={{ display: 'block', fontWeight: 700, fontSize: '0.82rem', color: '#5c0b10', marginBottom: '0.4rem', letterSpacing: '0.02em' }}>
+                  Password *
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input
@@ -308,13 +367,15 @@ export default function CustomerAuthModal({
                     placeholder="Enter your password"
                     style={{
                       width: '100%',
-                      padding: '0.7rem 2.6rem 0.7rem 0.85rem',
-                      borderRadius: '6px',
-                      border: '1px solid #c9c0b1',
-                      fontSize: '0.92rem',
+                      padding: '0.72rem 3.2rem 0.72rem 0.95rem',
+                      borderRadius: '8px',
+                      border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                      fontSize: '0.9rem',
                       boxSizing: 'border-box',
-                      color: '#1f1a17',
-                      outlineColor: '#6b001a'
+                      color: '#2a1a08',
+                      background: '#fdfbf7',
+                      outline: 'none',
+                      transition: 'all 0.2s'
                     }}
                   />
                   <button
@@ -322,18 +383,18 @@ export default function CustomerAuthModal({
                     onClick={() => setShowPassword(!showPassword)}
                     style={{
                       position: 'absolute',
-                      right: '10px',
+                      right: '12px',
                       top: '50%',
                       transform: 'translateY(-50%)',
                       background: 'none',
                       border: 'none',
-                      color: '#736d65',
+                      color: '#946e2b',
                       cursor: 'pointer',
-                      fontSize: '0.78rem',
-                      fontWeight: 600
+                      fontSize: '0.8rem',
+                      fontWeight: 700
                     }}
                   >
-                    {showPassword ? 'Hide' : 'Show'}
+                    {showPassword ? 'Hide 👁️' : 'Show 👁️'}
                   </button>
                 </div>
               </div>
@@ -343,43 +404,54 @@ export default function CustomerAuthModal({
                 disabled={loading}
                 style={{
                   width: '100%',
-                  padding: '0.8rem',
-                  background: '#6b001a',
-                  color: '#ffffff',
-                  border: '1px solid #500014',
-                  borderRadius: '6px',
-                  fontWeight: 600,
-                  fontSize: '0.92rem',
-                  letterSpacing: '0.8px',
+                  padding: '0.92rem',
+                  background: 'linear-gradient(135deg, #650019 0%, #800020 50%, #4a0012 100%)',
+                  color: '#fffbf2',
+                  border: '1.5px solid #d4af37',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontFamily: 'Cinzel, serif',
+                  fontSize: '0.96rem',
+                  letterSpacing: '1.2px',
                   textTransform: 'uppercase',
                   cursor: loading ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 2px 6px rgba(107, 0, 26, 0.25)',
-                  transition: 'background 0.2s'
+                  boxShadow: '0 6px 20px rgba(107, 0, 26, 0.32), 0 2px 6px rgba(212, 175, 55, 0.25)',
+                  transition: 'all 0.25s ease'
                 }}
               >
                 {loading ? 'Signing in…' : 'Sign In'}
               </button>
 
-              <div style={{ marginTop: '0.9rem', fontSize: '0.76rem', color: '#888', textAlign: 'center' }}>
-                Secure session: Automatically logs out when the browser is closed.
+              <div style={{
+                marginTop: '1.15rem',
+                padding: '0.55rem',
+                background: 'rgba(212, 175, 55, 0.08)',
+                border: '1px dashed rgba(212, 175, 55, 0.35)',
+                borderRadius: '6px',
+                fontSize: '0.72rem',
+                color: '#8c7355',
+                textAlign: 'center',
+                fontWeight: 600
+              }}>
+                🔒 Secure session: Encrypted login session
               </div>
 
-              <div style={{ marginTop: '1.1rem', textAlign: 'center', fontSize: '0.82rem', color: '#666', borderTop: '1px solid #f0eae1', paddingTop: '0.9rem' }}>
+              <div style={{ marginTop: '1.15rem', textAlign: 'center', fontSize: '0.84rem', color: '#666', borderTop: '1px solid #f0eae1', paddingTop: '1rem' }}>
                 New patron?{' '}
                 <button
                   type="button"
                   onClick={() => { setMode('register'); setErrorMessage(''); }}
-                  style={{ background: 'none', border: 'none', color: '#6b001a', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                  style={{ background: 'none', border: 'none', color: '#6b001a', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
                 >
-                  Create an account
+                  Create an account →
                 </button>
               </div>
             </form>
           ) : (
             /* CLASSIC REGISTER FORM */
             <form onSubmit={handleRegisterSubmit}>
-              <div style={{ marginBottom: '0.9rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.82rem', color: '#2a2421', marginBottom: '0.3rem' }}>
+              <div style={{ marginBottom: '0.95rem' }}>
+                <label style={{ display: 'block', fontWeight: 700, fontSize: '0.82rem', color: '#5c0b10', marginBottom: '0.38rem', letterSpacing: '0.02em' }}>
                   Full Name *
                 </label>
                 <input
@@ -387,25 +459,28 @@ export default function CustomerAuthModal({
                   required
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
-                  placeholder="ENTER FULL NAME"
+                  placeholder="Enter your full name"
                   style={{
                     width: '100%',
-                    padding: '0.65rem 0.8rem',
-                    borderRadius: '6px',
-                    border: '1px solid #c9c0b1',
+                    padding: '0.72rem 0.95rem',
+                    borderRadius: '8px',
+                    border: '1.5px solid rgba(212, 175, 55, 0.45)',
                     fontSize: '0.9rem',
                     boxSizing: 'border-box',
-                    outlineColor: '#6b001a'
+                    color: '#2a1a08',
+                    background: '#fdfbf7',
+                    outline: 'none',
+                    transition: 'all 0.2s'
                   }}
                 />
               </div>
 
-              <div style={{ marginBottom: '0.9rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.82rem', color: '#2a2421', marginBottom: '0.3rem' }}>
+              <div style={{ marginBottom: '0.95rem' }}>
+                <label style={{ display: 'block', fontWeight: 700, fontSize: '0.82rem', color: '#5c0b10', marginBottom: '0.38rem', letterSpacing: '0.02em' }}>
                   Mobile Number *
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#888', fontWeight: 500, fontSize: '0.88rem' }}>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#946e2b', fontWeight: 700, fontSize: '0.88rem' }}>
                     +91
                   </span>
                   <input
@@ -414,66 +489,95 @@ export default function CustomerAuthModal({
                     maxLength={10}
                     value={regPhone}
                     onChange={(e) => setRegPhone(e.target.value.replace(/\D/g, ''))}
-                    placeholder="ENTER PHONE NUMBER"
+                    placeholder="Enter 10-digit mobile number"
                     style={{
                       width: '100%',
-                      padding: '0.65rem 0.8rem 0.65rem 3.2rem',
-                      borderRadius: '6px',
-                      border: '1px solid #c9c0b1',
+                      padding: '0.72rem 0.85rem 0.72rem 3.4rem',
+                      borderRadius: '8px',
+                      border: '1.5px solid rgba(212, 175, 55, 0.45)',
                       fontSize: '0.9rem',
                       boxSizing: 'border-box',
-                      outlineColor: '#6b001a'
+                      color: '#2a1a08',
+                      background: '#fdfbf7',
+                      outline: 'none',
+                      transition: 'all 0.2s'
                     }}
                   />
                 </div>
               </div>
 
-              <div style={{ marginBottom: '0.9rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.82rem', color: '#2a2421', marginBottom: '0.3rem' }}>
+              <div style={{ marginBottom: '0.95rem' }}>
+                <label style={{ display: 'block', fontWeight: 700, fontSize: '0.82rem', color: '#5c0b10', marginBottom: '0.38rem', letterSpacing: '0.02em' }}>
                   Password *
                 </label>
-                <input
-                  type="password"
-                  required
-                  minLength={4}
-                  value={regPassword}
-                  onChange={(e) => setRegPassword(e.target.value)}
-                  placeholder="Create 4+ character password"
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 0.8rem',
-                    borderRadius: '6px',
-                    border: '1px solid #c9c0b1',
-                    fontSize: '0.9rem',
-                    boxSizing: 'border-box',
-                    outlineColor: '#6b001a'
-                  }}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={regShowPassword ? 'text' : 'password'}
+                    required
+                    minLength={4}
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    placeholder="Create 4+ character password"
+                    style={{
+                      width: '100%',
+                      padding: '0.72rem 3.2rem 0.72rem 0.95rem',
+                      borderRadius: '8px',
+                      border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                      fontSize: '0.9rem',
+                      boxSizing: 'border-box',
+                      color: '#2a1a08',
+                      background: '#fdfbf7',
+                      outline: 'none',
+                      transition: 'all 0.2s'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setRegShowPassword(!regShowPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: '#946e2b',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                      fontWeight: 700
+                    }}
+                  >
+                    {regShowPassword ? 'Hide 👁️' : 'Show 👁️'}
+                  </button>
+                </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.7rem', marginBottom: '0.9rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.95rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.8rem', color: '#2a2421', marginBottom: '0.3rem' }}>
+                  <label style={{ display: 'block', fontWeight: 700, fontSize: '0.8rem', color: '#5c0b10', marginBottom: '0.38rem', letterSpacing: '0.02em' }}>
                     City
                   </label>
                   <input
                     type="text"
                     value={regCity}
                     onChange={(e) => setRegCity(e.target.value)}
-                    placeholder="ENTER CITY"
+                    placeholder="e.g. Ahmedabad"
                     style={{
                       width: '100%',
-                      padding: '0.65rem 0.75rem',
-                      borderRadius: '6px',
-                      border: '1px solid #c9c0b1',
+                      padding: '0.72rem 0.85rem',
+                      borderRadius: '8px',
+                      border: '1.5px solid rgba(212, 175, 55, 0.45)',
                       fontSize: '0.88rem',
                       boxSizing: 'border-box',
-                      outlineColor: '#6b001a'
+                      color: '#2a1a08',
+                      background: '#fdfbf7',
+                      outline: 'none',
+                      transition: 'all 0.2s'
                     }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.8rem', color: '#2a2421', marginBottom: '0.3rem' }}>
+                  <label style={{ display: 'block', fontWeight: 700, fontSize: '0.8rem', color: '#5c0b10', marginBottom: '0.38rem', letterSpacing: '0.02em' }}>
                     PIN Code
                   </label>
                   <input
@@ -481,37 +585,44 @@ export default function CustomerAuthModal({
                     maxLength={6}
                     value={regPincode}
                     onChange={(e) => setRegPincode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="ENTER PIN CODE"
+                    placeholder="Enter 6-digit PIN code"
                     style={{
                       width: '100%',
-                      padding: '0.65rem 0.75rem',
-                      borderRadius: '6px',
-                      border: '1px solid #c9c0b1',
+                      padding: '0.72rem 0.85rem',
+                      borderRadius: '8px',
+                      border: '1.5px solid rgba(212, 175, 55, 0.45)',
                       fontSize: '0.88rem',
                       boxSizing: 'border-box',
-                      outlineColor: '#6b001a'
+                      color: '#2a1a08',
+                      background: '#fdfbf7',
+                      outline: 'none',
+                      transition: 'all 0.2s'
                     }}
                   />
                 </div>
               </div>
 
-              <div style={{ marginBottom: '1.2rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.8rem', color: '#2a2421', marginBottom: '0.3rem' }}>
+              <div style={{ marginBottom: '1.3rem' }}>
+                <label style={{ display: 'block', fontWeight: 700, fontSize: '0.8rem', color: '#5c0b10', marginBottom: '0.38rem', letterSpacing: '0.02em' }}>
                   Delivery Address (Optional)
                 </label>
                 <textarea
                   rows={2}
                   value={regAddress}
                   onChange={(e) => setRegAddress(e.target.value)}
-                  placeholder="Street, House No, Landmark"
+                  placeholder="Flat / House No, Street name, Landmark, Area"
                   style={{
                     width: '100%',
-                    padding: '0.65rem 0.75rem',
-                    borderRadius: '6px',
-                    border: '1px solid #c9c0b1',
+                    padding: '0.72rem 0.85rem',
+                    borderRadius: '8px',
+                    border: '1.5px solid rgba(212, 175, 55, 0.45)',
                     fontSize: '0.88rem',
                     boxSizing: 'border-box',
-                    outlineColor: '#6b001a'
+                    color: '#2a1a08',
+                    background: '#fdfbf7',
+                    outline: 'none',
+                    fontFamily: 'inherit',
+                    transition: 'all 0.2s'
                   }}
                 />
               </div>
@@ -521,31 +632,50 @@ export default function CustomerAuthModal({
                 disabled={loading}
                 style={{
                   width: '100%',
-                  padding: '0.8rem',
-                  background: '#6b001a',
-                  color: '#ffffff',
-                  border: '1px solid #500014',
-                  borderRadius: '6px',
-                  fontWeight: 600,
-                  fontSize: '0.92rem',
-                  letterSpacing: '0.8px',
+                  padding: '0.92rem',
+                  background: 'linear-gradient(135deg, #650019 0%, #800020 50%, #4a0012 100%)',
+                  color: '#fffbf2',
+                  border: '1.5px solid #d4af37',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontFamily: 'Cinzel, serif',
+                  fontSize: '0.96rem',
+                  letterSpacing: '1.2px',
                   textTransform: 'uppercase',
                   cursor: loading ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 2px 6px rgba(107, 0, 26, 0.25)',
-                  transition: 'background 0.2s'
+                  boxShadow: '0 6px 20px rgba(107, 0, 26, 0.32), 0 2px 6px rgba(212, 175, 55, 0.25)',
+                  transition: 'all 0.25s ease'
                 }}
               >
                 {loading ? 'Creating account…' : 'Create Account'}
               </button>
 
-              <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.82rem', color: '#666', borderTop: '1px solid #f0eae1', paddingTop: '0.9rem' }}>
+              <div style={{
+                marginTop: '1.15rem',
+                padding: '0.55rem',
+                background: 'rgba(212, 175, 55, 0.08)',
+                border: '1px dashed rgba(212, 175, 55, 0.35)',
+                borderRadius: '6px',
+                fontSize: '0.72rem',
+                color: '#8c7355',
+                textAlign: 'center',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.35rem'
+              }}>
+                <span>🔒</span> 100% Encrypted Patron Portal • Handloom Weaver Heritage
+              </div>
+
+              <div style={{ marginTop: '1.15rem', textAlign: 'center', fontSize: '0.84rem', color: '#666', borderTop: '1px solid #f0eae1', paddingTop: '1rem' }}>
                 Already registered?{' '}
                 <button
                   type="button"
                   onClick={() => { setMode('login'); setErrorMessage(''); }}
-                  style={{ background: 'none', border: 'none', color: '#6b001a', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                  style={{ background: 'none', border: 'none', color: '#6b001a', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
                 >
-                  Sign In
+                  Sign In →
                 </button>
               </div>
             </form>

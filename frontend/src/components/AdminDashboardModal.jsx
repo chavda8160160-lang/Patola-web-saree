@@ -3593,7 +3593,7 @@ Warm regards,
           </div>
           <div>
             <div style={{ fontSize: '0.72rem', letterSpacing: '2px', color: '#d4af37', fontWeight: 800, textTransform: 'uppercase' }}>
-              Patola Made Vankar🏛️
+              PATOLA - Handmade by Vankar 🏛️
             </div>
             <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', letterSpacing: '0.5px' }}>
               Artisan Admin & Master Loom Portal
@@ -7088,73 +7088,7 @@ Warm regards,
             ) : activeTab === 'visits' ? (
               /* TAB 3: Book Loom Visits & Consultations */
               <div className="admin-visits-section">
-                {/* Custom Loom Orders Notice Banner */}
-                {customOrders.length > 0 && (
-                  <div style={{
-                    background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
-                    border: '1.5px solid #f59e0b',
-                    borderRadius: '10px',
-                    padding: '0.85rem 1.2rem',
-                    marginBottom: '1.2rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '0.75rem',
-                    boxShadow: '0 2px 8px rgba(245,158,11,0.12)'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                      <span style={{ fontSize: '1.7rem' }}>🧵</span>
-                      <div>
-                        <div style={{ fontWeight: 800, color: '#92400e', fontSize: '0.95rem' }}>
-                          તમે ઉમેરેલા {customOrders.length} કસ્ટમ લૂમ વિવિંગ ઓર્ડર્સ "✨ Custom Orders" ટેબમાં છે!
-                        </div>
-                        <div style={{ fontSize: '0.83rem', color: '#78350f', marginTop: '2px' }}>
-                          {customOrders.map(c => `#CST-${c.id} (${c.fullName} - ${c.phone})`).join(', ')} | અહીં જોવા માટે [બધા લૂમ ઓર્ડર અહીં જુઓ] ક્લિક કરો:
-                        </div>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setBookingTypeFilter('all-everything');
-                          setBookingStatusFilter('all');
-                          setVisitViewMode('all');
-                        }}
-                        style={{
-                          background: '#ffffff',
-                          color: '#92400e',
-                          border: '1.5px solid #f59e0b',
-                          padding: '0.45rem 0.9rem',
-                          borderRadius: '6px',
-                          fontWeight: 700,
-                          fontSize: '0.82rem',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        👁️ બધા લૂમ ઓર્ડર અહીં જુઓ ({bookings.length})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab('custom-orders')}
-                        style={{
-                          background: '#800020',
-                          color: '#d4af37',
-                          border: 'none',
-                          padding: '0.45rem 1rem',
-                          borderRadius: '6px',
-                          fontWeight: 700,
-                          fontSize: '0.84rem',
-                          cursor: 'pointer',
-                          boxShadow: '0 2px 5px rgba(128,0,32,0.3)'
-                        }}
-                      >
-                        ✨ Custom Orders ટેબ ખોલો ({customOrders.length}) →
-                      </button>
-                    </div>
-                  </div>
-                )}
+
 
                 {/* Visits Toolbar */}
                 <div className="admin-toolbar" style={{ flexWrap: 'wrap', gap: '1rem', marginBottom: '1.2rem' }}>
