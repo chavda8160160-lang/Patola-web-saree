@@ -1,5 +1,5 @@
 # PATOLA - Handmade by Vankar – robots.txt
-# https://patolahandmadevankar.com
+# https://patolahandmadebyvankar.com
 
 # Allow all major search engine crawlers
 User-agent: *
@@ -52,6 +52,6 @@ Allow: /
 Crawl-delay: 2
 
 # Sitemap & Product Feed locations
-Sitemap: https://patolahandmadevankar.com/sitemap.xml
-# Google Merchant Center Product Feed: https://patolahandmadevankar.com/google-shopping-feed.xml
+Sitemap: https://patolahandmadebyvankar.com/sitemap.xml
+# Google Merchant Center Product Feed: https://patolahandmadebyvankar.com/google-shopping-feed.xml
 

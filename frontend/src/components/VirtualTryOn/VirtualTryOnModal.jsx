@@ -4,6 +4,8 @@ import PhotoPreview from './PhotoPreview';
 import TryOnLoader from './TryOnLoader';
 import TryOnResult from './TryOnResult';
 import TryOnError from './TryOnError';
+import LiveAnywearTryOn from './LiveAnywearTryOn';
+import AnywearDemoVideo from './AnywearDemoVideo';
 import { executeVirtualTryOn } from '../../services/virtualTryOnService';
 import {
   trackTryOnOpened,
@@ -31,6 +33,7 @@ export default function VirtualTryOnModal({
   showToast
 }) {
   const [selectedSaree, setSelectedSaree] = useState(saree);
+  const [activeTab, setActiveTab] = useState('photo'); // 'photo' (No webcam needed) | 'live' | 'demo'
   const [step, setStep] = useState('upload'); // 'upload' | 'preview' | 'generating' | 'result' | 'error'
   const [personImageFile, setPersonImageFile] = useState(null);
   const [personImageUrl, setPersonImageUrl] = useState(null);
@@ -334,52 +337,167 @@ export default function VirtualTryOnModal({
           </div>
         )}
 
+        {/* Try-On Mode Switcher Tabs */}
+        <div className="vton-mode-tabs" style={{
+          display: 'flex',
+          background: 'rgba(0, 0, 0, 0.45)',
+          borderBottom: '1px solid rgba(212, 175, 55, 0.25)',
+          padding: '6px 16px',
+          gap: '8px',
+          overflowX: 'auto'
+        }}>
+          <button
+            type="button"
+            className={`vton-mode-tab-btn ${activeTab === 'photo' ? 'active' : ''}`}
+            onClick={() => setActiveTab('photo')}
+            style={{
+              padding: '8px 14px',
+              borderRadius: '8px',
+              border: activeTab === 'photo' ? '1px solid #d4af37' : '1px solid transparent',
+              background: activeTab === 'photo' ? 'rgba(212, 175, 55, 0.2)' : 'transparent',
+              color: activeTab === 'photo' ? '#ffd700' : '#cbd5e1',
+              fontWeight: activeTab === 'photo' ? '600' : '400',
+              fontSize: '0.84rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <span>📸 Photo / Demo Model</span>
+            <span style={{ fontSize: '0.68rem', background: 'rgba(16, 185, 129, 0.25)', color: '#34d399', padding: '1px 6px', borderRadius: '10px' }}>
+              No Cam Needed
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={`vton-mode-tab-btn ${activeTab === 'live' ? 'active' : ''}`}
+            onClick={() => setActiveTab('live')}
+            style={{
+              padding: '8px 14px',
+              borderRadius: '8px',
+              border: activeTab === 'live' ? '1px solid #d4af37' : '1px solid transparent',
+              background: activeTab === 'live' ? 'rgba(212, 175, 55, 0.2)' : 'transparent',
+              color: activeTab === 'live' ? '#ffd700' : '#cbd5e1',
+              fontWeight: activeTab === 'live' ? '600' : '400',
+              fontSize: '0.84rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <span>📹 Live Anywear Cam</span>
+            <span style={{ fontSize: '0.68rem', background: 'rgba(239, 68, 68, 0.25)', color: '#f87171', padding: '1px 6px', borderRadius: '10px' }}>
+              Webcam / Mobile
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={`vton-mode-tab-btn ${activeTab === 'demo' ? 'active' : ''}`}
+            onClick={() => setActiveTab('demo')}
+            style={{
+              padding: '8px 14px',
+              borderRadius: '8px',
+              border: activeTab === 'demo' ? '1px solid #d4af37' : '1px solid transparent',
+              background: activeTab === 'demo' ? 'rgba(212, 175, 55, 0.2)' : 'transparent',
+              color: activeTab === 'demo' ? '#ffd700' : '#cbd5e1',
+              fontWeight: activeTab === 'demo' ? '600' : '400',
+              fontSize: '0.84rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <span>🎬 Anywear Demo Reel</span>
+          </button>
+        </div>
+
         {/* Modal Content Body */}
         <div className="vton-modal-body">
-          {step === 'upload' && (
-            <PhotoUploader
-              onPhotoSelected={handlePhotoSelected}
-              onError={(msg) => {
-                setErrorMessage(msg);
-                setStep('error');
+          {activeTab === 'live' && (
+            <LiveAnywearTryOn
+              selectedSaree={selectedSaree}
+              onSelectSaree={handleSwitchSaree}
+              allSarees={allSarees}
+              formatPrice={formatPrice}
+              onSwitchToUpload={() => setActiveTab('photo')}
+              onSwitchToDemo={() => setActiveTab('demo')}
+              onCapturePhoto={async (capturedDataUrl) => {
+                try {
+                  const res = await fetch(capturedDataUrl);
+                  const blob = await res.blob();
+                  const file = new File([blob], 'live_webcam_snap.jpg', { type: 'image/jpeg' });
+                  handlePhotoSelected(file);
+                  setActiveTab('photo');
+                } catch {
+                  setActiveTab('photo');
+                }
               }}
             />
           )}
 
-          {step === 'preview' && (
-            <PhotoPreview
-              photoUrl={personImageUrl}
-              saree={selectedSaree}
-              onGenerate={handleGenerateLook}
-              onChangePhoto={handleResetPhoto}
-              formatPrice={formatPrice}
+          {activeTab === 'demo' && (
+            <AnywearDemoVideo
+              onSwitchToLiveCam={() => setActiveTab('live')}
+              onSwitchToUpload={() => setActiveTab('photo')}
             />
           )}
 
-          {step === 'generating' && (
-            <TryOnLoader sareeTitle={selectedSaree?.title} />
-          )}
+          {activeTab === 'photo' && (
+            <>
+              {step === 'upload' && (
+                <PhotoUploader
+                  onPhotoSelected={handlePhotoSelected}
+                  onError={(msg) => {
+                    setErrorMessage(msg);
+                    setStep('error');
+                  }}
+                />
+              )}
 
-          {step === 'result' && (
-            <TryOnResult
-              beforeImage={personImageUrl}
-              generatedImage={generatedImageUrl}
-              saree={selectedSaree}
-              formatPrice={formatPrice}
-              onAddToCart={handleAddToCartWrapper}
-              onBuyNow={handleBuyNowWrapper}
-              onTryAnotherPhoto={handleResetPhoto}
-              onTryAnotherSaree={allSarees.length > 1 ? () => setShowSareeSelector(true) : null}
-              showToast={showToast}
-            />
-          )}
+              {step === 'preview' && (
+                <PhotoPreview
+                  photoUrl={personImageUrl}
+                  saree={selectedSaree}
+                  onGenerate={handleGenerateLook}
+                  onChangePhoto={handleResetPhoto}
+                  formatPrice={formatPrice}
+                />
+              )}
 
-          {step === 'error' && (
-            <TryOnError
-              message={errorMessage}
-              onRetry={handleGenerateLook}
-              onReset={handleResetPhoto}
-            />
+              {step === 'generating' && (
+                <TryOnLoader sareeTitle={selectedSaree?.title} />
+              )}
+
+              {step === 'result' && (
+                <TryOnResult
+                  beforeImage={personImageUrl}
+                  generatedImage={generatedImageUrl}
+                  saree={selectedSaree}
+                  formatPrice={formatPrice}
+                  onAddToCart={handleAddToCartWrapper}
+                  onBuyNow={handleBuyNowWrapper}
+                  onTryAnotherPhoto={handleResetPhoto}
+                  onTryAnotherSaree={allSarees.length > 1 ? () => setShowSareeSelector(true) : null}
+                  showToast={showToast}
+                />
+              )}
+
+              {step === 'error' && (
+                <TryOnError
+                  message={errorMessage}
+                  onRetry={handleGenerateLook}
+                  onReset={handleResetPhoto}
+                />
+              )}
+            </>
           )}
         </div>
       </div>

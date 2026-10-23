@@ -50,6 +50,17 @@ export default function PhotoUploader({
     }
   };
 
+  const handleSelectPresetModel = async (modelUrl, modelName) => {
+    try {
+      const res = await fetch(modelUrl);
+      const blob = await res.blob();
+      const file = new File([blob], modelName, { type: blob.type || 'image/jpeg' });
+      validateAndPass(file);
+    } catch (err) {
+      if (onError) onError('સેમ્પલ મોડેલ લોડ કરવામાં સમસ્યા આવી. કૃપા કરીને તમારો ફોટો પસંદ કરો.');
+    }
+  };
+
   return (
     <div className="vton-uploader-wrap">
       {/* Hidden file inputs */}
@@ -111,6 +122,86 @@ export default function PhotoUploader({
         <span className="vton-format-pill">
           Accepts JPG, JPEG, PNG, WebP • Max 20MB
         </span>
+      </div>
+
+      {/* 1-Click Demo Models (No Webcam or Personal Photo Needed) */}
+      <div className="vton-preset-models-card" style={{
+        marginTop: '16px',
+        background: 'rgba(212, 175, 55, 0.08)',
+        border: '1px solid rgba(212, 175, 55, 0.3)',
+        borderRadius: '12px',
+        padding: '14px 16px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '1.2rem' }}>💃</span>
+            <div>
+              <strong style={{ color: '#ffd700', fontSize: '0.88rem' }}>1-Click Try on Sample Models</strong>
+              <div style={{ color: '#94a3b8', fontSize: '0.74rem' }}>વેબકેમ કે ફોટો ન હોય તો નીચેના તૈયાર મોડેલ પર ૧ ક્લિકમાં સાડી ટ્રાય કરો:</div>
+            </div>
+          </div>
+          <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', fontSize: '0.7rem', padding: '3px 8px', borderRadius: '20px', fontWeight: 600 }}>
+            Instant Ready
+          </span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+          <button
+            type="button"
+            onClick={() => handleSelectPresetModel('/assets/images/model_base_demo.jpg', 'royal_patola_model.jpg')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              background: 'rgba(0, 0, 0, 0.5)',
+              border: '1px solid rgba(212, 175, 55, 0.4)',
+              borderRadius: '8px',
+              padding: '8px',
+              cursor: 'pointer',
+              color: '#fff',
+              textAlign: 'left',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <img
+              src="/assets/images/model_base_demo.jpg"
+              alt="Royal Pose Model"
+              style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }}
+            />
+            <div>
+              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#f8fafc' }}>Royal Pose</div>
+              <div style={{ fontSize: '0.68rem', color: '#cbd5e1' }}>Traditional Fit 👑</div>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSelectPresetModel('/assets/images/patola_model_reference.jpg', 'heritage_model_ref.jpg')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              background: 'rgba(0, 0, 0, 0.5)',
+              border: '1px solid rgba(212, 175, 55, 0.4)',
+              borderRadius: '8px',
+              padding: '8px',
+              cursor: 'pointer',
+              color: '#fff',
+              textAlign: 'left',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <img
+              src="/assets/images/patola_model_reference.jpg"
+              alt="Heritage Studio Model"
+              style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }}
+            />
+            <div>
+              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#f8fafc' }}>Heritage Model</div>
+              <div style={{ fontSize: '0.68rem', color: '#cbd5e1' }}>Front Angle ✨</div>
+            </div>
+          </button>
+        </div>
       </div>
 
       {/* Helpful Instructions Box */}

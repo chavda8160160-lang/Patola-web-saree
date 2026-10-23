@@ -17,6 +17,7 @@ import { ApiService } from '../services/api';
 import { getOrderDeliveryOtp, formatDateDDMMYYYY } from '../utils/security';
 import CustomerReviewModal from './CustomerReviewModal';
 import { parseCustomOrderParts, CUSTOM_PARTS_CONFIG } from '../utils/customOrderHelper';
+import { resolveProductImage } from '../utils/productResolver';
 
 export default function OrderTrackingModal({
   isOpen,
@@ -2432,64 +2433,53 @@ export default function OrderTrackingModal({
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    {item.image ? (
-                      <div
-                        onClick={() => setPreviewCustomPhoto({
-                          img: item.image,
-                          name: item.pieceTitle || item.sareeTitle || 'Ordered Item',
-                          title: `Ordered ${itemType}: ${item.pieceTitle || item.sareeTitle}`,
-                          subtitle: `${item.weave || 'Authentic Double Ikat'} • Motif: ${item.motifName || 'Heritage Patola Design'} (Order #${order.orderReference})`
-                        })}
-                        style={{ position: 'relative', width: '60px', height: '60px', flexShrink: 0, cursor: 'pointer' }}
-                        title="Click to view full photo 🔍"
-                      >
-                        <img
-                          src={item.image}
-                          alt={item.sareeTitle}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            borderRadius: '6px',
-                            border: itemCanc ? '1.5px solid #f87171' : '1px solid #d4af37',
-                            filter: itemCanc ? 'grayscale(40%)' : 'none',
-                            boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-                          }}
-                        />
-                        <span style={{
-                          position: 'absolute',
-                          top: '-3px',
-                          left: '-3px',
-                          background: '#800020',
-                          color: '#d4af37',
-                          border: '1px solid #d4af37',
-                          fontSize: '0.58rem',
-                          width: '15px',
-                          height: '15px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                        }}>
-                          🔍
-                        </span>
-                      </div>
-                    ) : (
-                      <div style={{
-                        width: '58px',
-                        height: '58px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: '#fff',
-                        borderRadius: '6px',
-                        border: itemCanc ? '1.5px solid #f87171' : '1px solid #d4af37',
-                        fontSize: '1.8rem'
-                      }}>
-                        {itemType === 'Dupatta' ? '🧣' : '🥻'}
-                      </div>
-                    )}
+                    {(() => {
+                      const itemPhoto = resolveProductImage(item, order, allOrders);
+                      return (
+                        <div
+                          onClick={() => setPreviewCustomPhoto({
+                            img: itemPhoto,
+                            name: item.pieceTitle || item.sareeTitle || 'Ordered Item',
+                            title: `Ordered ${itemType}: ${item.pieceTitle || item.sareeTitle}`,
+                            subtitle: `${item.weave || 'Authentic Double Ikat'} • Motif: ${item.motifName || 'Heritage Patola Design'} (Order #${order.orderReference})`
+                          })}
+                          style={{ position: 'relative', width: '60px', height: '60px', flexShrink: 0, cursor: 'pointer' }}
+                          title="Click to view full photo 🔍"
+                        >
+                          <img
+                            src={itemPhoto}
+                            alt={item.sareeTitle}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                              borderRadius: '6px',
+                              border: itemCanc ? '1.5px solid #f87171' : '1px solid #d4af37',
+                              filter: itemCanc ? 'grayscale(40%)' : 'none',
+                              boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                            }}
+                          />
+                          <span style={{
+                            position: 'absolute',
+                            top: '-3px',
+                            left: '-3px',
+                            background: '#800020',
+                            color: '#d4af37',
+                            border: '1px solid #d4af37',
+                            fontSize: '0.58rem',
+                            width: '15px',
+                            height: '15px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                          }}>
+                            🔍
+                          </span>
+                        </div>
+                      );
+                    })()}
 
                     <div style={{ flex: '1 1 220px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -3049,23 +3039,22 @@ export default function OrderTrackingModal({
                                 />
                               </div>
 
-                              {piece.image ? (
-                                <img
-                                  src={piece.image}
-                                  alt={piece.sareeTitle}
-                                  style={{
-                                    width: '48px',
-                                    height: '48px',
-                                    objectFit: 'cover',
-                                    borderRadius: '6px',
-                                    border: isSelected ? '1.5px solid #dc2626' : '1px solid #d4af37'
-                                  }}
-                                />
-                              ) : (
-                                <div style={{ fontSize: '1.5rem', width: '48px', textAlign: 'center' }}>
-                                  {itemType === 'Dupatta' ? '🧣' : '🥻'}
-                                </div>
-                              )}
+                              {(() => {
+                                const piecePhoto = resolveProductImage(piece, order, allOrders);
+                                return (
+                                  <img
+                                    src={piecePhoto}
+                                    alt={piece.sareeTitle}
+                                    style={{
+                                      width: '48px',
+                                      height: '48px',
+                                      objectFit: 'cover',
+                                      borderRadius: '6px',
+                                      border: isSelected ? '1.5px solid #dc2626' : '1px solid #d4af37'
+                                    }}
+                                  />
+                                );
+                              })()}
 
                               <div style={{ flex: 1, minWidth: '180px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
@@ -3349,7 +3338,7 @@ export default function OrderTrackingModal({
 
             {isCancelled && (
               <a
-                href={`https://wa.me/918160160750?text=Namaste%20PATOLA%20MADE%20VANKAR%2C%20regarding%20my%20cancelled%20order%20${order.orderReference}`}
+                href={`https://wa.me/918160160750?text=Namaste%20PATOLA%20(Handmade%20by%20Vankar)%2C%20regarding%20my%20cancelled%20order%20${order.orderReference}`}
                 target="_blank"
                 rel="noreferrer"
                 className="contact-chip whatsapp"
@@ -3572,15 +3561,16 @@ export default function OrderTrackingModal({
                       border: '1.5px solid #d4af37',
                       marginBottom: '1.1rem'
                     }}>
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={pieceTitle}
-                          style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '6px', border: '1.5px solid #d4af37' }}
-                        />
-                      ) : (
-                        <div style={{ fontSize: '2.4rem' }}>{itemType === 'Dupatta' ? '🧣' : '🥻'}</div>
-                      )}
+                      {(() => {
+                        const modalItemPhoto = resolveProductImage(item, selectedOrder, allOrders);
+                        return (
+                          <img
+                            src={modalItemPhoto}
+                            alt={pieceTitle}
+                            style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '6px', border: '1.5px solid #d4af37' }}
+                          />
+                        );
+                      })()}
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                           <strong style={{ fontSize: '0.96rem', color: '#800020', display: 'block' }}>

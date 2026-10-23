@@ -48,13 +48,13 @@ export default function TryOnResult({
 
       // Add gold brand watermark bar
       ctx.fillStyle = 'rgba(25, 8, 12, 0.88)';
-      ctx.fillRect(20, canvas.height - 75, 420, 52);
+      ctx.fillRect(20, canvas.height - 75, 460, 52);
       ctx.fillStyle = '#ffd700';
-      ctx.font = 'bold 20px Georgia, serif';
-      ctx.fillText(`👑 VIRASAT PATOLA • ${sareeTitle}`, 36, canvas.height - 42);
+      ctx.font = 'bold 18px Georgia, serif';
+      ctx.fillText(`❖ PATOLA - HANDMADE BY VANKAR • ${sareeTitle}`, 36, canvas.height - 42);
 
       const link = document.createElement('a');
-      link.download = `Virasat_Patola_Look_${(saree?.id || 'tryon').replace(/\s+/g, '_')}.jpg`;
+      link.download = `Patola_Handmade_By_Vankar_Look_${(saree?.id || 'tryon').replace(/\s+/g, '_')}.jpg`;
       link.href = canvas.toDataURL('image/jpeg', 0.95);
       document.body.appendChild(link);
       link.click();
@@ -64,7 +64,7 @@ export default function TryOnResult({
       console.warn('Download notice:', err);
       const fallbackLink = document.createElement('a');
       fallbackLink.href = generatedImage || beforeImage;
-      fallbackLink.download = `Virasat_Patola_Look.jpg`;
+      fallbackLink.download = `Patola_Handmade_By_Vankar_Look.jpg`;
       fallbackLink.click();
     } finally {
       setIsDownloading(false);
@@ -73,7 +73,7 @@ export default function TryOnResult({
 
   // Share Look via Web Share or WhatsApp
   const handleShare = async () => {
-    const shareText = `See how I look draped in the royal ${sareeTitle} by PATOLA (Handmade by Vankar)!`;
+    const shareText = `See how I look draped in the royal ${sareeTitle} by PATOLA - Handmade by Vankar!`;
     const shareUrl = window.location.href;
 
     if (navigator.share) {

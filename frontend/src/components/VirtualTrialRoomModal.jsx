@@ -171,7 +171,7 @@ export default function VirtualTrialRoomModal({
 
       // Render composite preview
       const link = document.createElement('a');
-      link.download = `Virasat_Patola_My_Trial_Look_${selectedSaree?.title || 'Saree'}.png`;
+      link.download = `Patola_Handmade_By_Vankar_My_Trial_Look_${selectedSaree?.title || 'Saree'}.png`;
       link.href = canvas.toDataURL('image/png');
 
       if (showToast) {
@@ -184,7 +184,7 @@ export default function VirtualTrialRoomModal({
 
   const handleShareWhatsApp = () => {
     const text = encodeURIComponent(
-      `Look at how stunning I look in this Royal Patola Saree: "${selectedSaree?.title || 'Heritage Patola'}" on Virasat Patola! ✨ Check it out: ${window.location.origin}`
+      `Look at how stunning I look in this Royal Patola Saree: "${selectedSaree?.title || 'Heritage Patola'}" on PATOLA - Handmade by Vankar! ✨ Check it out: ${window.location.origin}`
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };

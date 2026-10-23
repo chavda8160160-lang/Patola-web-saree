@@ -5,25 +5,25 @@
 
   <!-- Homepage -->
   <url>
-    <loc>https://patolahandmadevankar.com/</loc>
+    <loc>https://patolahandmadebyvankar.com/</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://patolahandmadevankar.com/assets/images/hero.jpg</image:loc>
+      <image:loc>https://patolahandmadebyvankar.com/assets/images/hero.jpg</image:loc>
       <image:title>Authentic Patan Patola Handwoven Double Ikat Silk Saree</image:title>
       <image:caption>Royal Patola silk saree on loom – PATOLA - Handmade by Vankar, Patan Gujarat</image:caption>
     </image:image>
     <image:image>
-      <image:loc>https://patolahandmadevankar.com/assets/images/saree_nari_kunjar.jpg</image:loc>
+      <image:loc>https://patolahandmadebyvankar.com/assets/images/saree_nari_kunjar.jpg</image:loc>
       <image:title>Nari Kunjar Patola Saree – Traditional Elephant and Woman Motif</image:title>
       <image:caption>Authentic double ikat Nari Kunjar Patola saree by master weaver, Patan Gujarat</image:caption>
     </image:image>
     <video:video>
-      <video:thumbnail_loc>https://patolahandmadevankar.com/assets/images/artisan_loom_real.jpg</video:thumbnail_loc>
+      <video:thumbnail_loc>https://patolahandmadebyvankar.com/assets/images/artisan_loom_real.jpg</video:thumbnail_loc>
       <video:title>Authentic Patan Patola Double Ikat Handloom Weaving – Live Artisan Video</video:title>
       <video:description>Watch master artisans weave an authentic Patan Patola double ikat silk saree using traditional handloom techniques in Gujarat, India.</video:description>
-      <video:content_loc>https://patolahandmadevankar.com/assets/videos/loom_artisan_pure.mp4</video:content_loc>
+      <video:content_loc>https://patolahandmadebyvankar.com/assets/videos/loom_artisan_pure.mp4</video:content_loc>
       <video:duration>150</video:duration>
       <video:publication_date>2026-10-01</video:publication_date>
     </video:video>
@@ -31,7 +31,7 @@
 
   <!-- Saree Collection -->
   <url>
-    <loc>https://patolahandmadevankar.com/#sarees</loc>
+    <loc>https://patolahandmadebyvankar.com/#sarees</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
@@ -39,67 +39,67 @@
 
   <!-- Product 1: Imperial Crimson Ratanchowk -->
   <url>
-    <loc>https://patolahandmadevankar.com/?product=patola-crimson-ratanchowk#sarees</loc>
+    <loc>https://patolahandmadebyvankar.com/?product=patola-crimson-ratanchowk#sarees</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
     <image:image>
-      <image:loc>https://patolahandmadevankar.com/assets/images/saree_crimson_ratanchowk_1_full.jpg</image:loc>
+      <image:loc>https://patolahandmadebyvankar.com/assets/images/saree_crimson_ratanchowk_1_full.jpg</image:loc>
       <image:title>Imperial Crimson Ratanchowk &amp; Kalash Double Ikat Patola</image:title>
     </image:image>
   </url>
 
   <!-- Product 2: Imperial Crimson Nari Kunjar -->
   <url>
-    <loc>https://patolahandmadevankar.com/?product=patola-01#sarees</loc>
+    <loc>https://patolahandmadebyvankar.com/?product=patola-01#sarees</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
     <image:image>
-      <image:loc>https://patolahandmadevankar.com/assets/images/saree_nari_kunjar.jpg</image:loc>
+      <image:loc>https://patolahandmadebyvankar.com/assets/images/saree_nari_kunjar.jpg</image:loc>
       <image:title>Imperial Crimson Nari Kunjar Double Ikat Patan Patola</image:title>
     </image:image>
   </url>
 
   <!-- Product 3: Imperial Ruby Ratanchowk -->
   <url>
-    <loc>https://patolahandmadevankar.com/?product=patola-02#sarees</loc>
+    <loc>https://patolahandmadebyvankar.com/?product=patola-02#sarees</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
     <image:image>
-      <image:loc>https://patolahandmadevankar.com/assets/images/saree_ratanchowk.jpg</image:loc>
+      <image:loc>https://patolahandmadebyvankar.com/assets/images/saree_ratanchowk.jpg</image:loc>
       <image:title>Imperial Ruby Ratanchowk Heritage Silk Patola</image:title>
     </image:image>
   </url>
 
   <!-- Product 4: Vedic Emerald Chhabdi Bhat -->
   <url>
-    <loc>https://patolahandmadevankar.com/?product=patola-03#sarees</loc>
+    <loc>https://patolahandmadebyvankar.com/?product=patola-03#sarees</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
     <image:image>
-      <image:loc>https://patolahandmadevankar.com/assets/images/saree_emerald_chhabdi.jpg</image:loc>
+      <image:loc>https://patolahandmadebyvankar.com/assets/images/saree_emerald_chhabdi.jpg</image:loc>
       <image:title>Vedic Emerald Chhabdi Bhat Silk Patola Saree</image:title>
     </image:image>
   </url>
 
   <!-- Product 5: Midnight Peacock Blue Navratna -->
   <url>
-    <loc>https://patolahandmadevankar.com/?product=patola-04#sarees</loc>
+    <loc>https://patolahandmadebyvankar.com/?product=patola-04#sarees</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.88</priority>
     <image:image>
-      <image:loc>https://patolahandmadevankar.com/assets/images/saree_royal_blue.jpg</image:loc>
+      <image:loc>https://patolahandmadebyvankar.com/assets/images/saree_royal_blue.jpg</image:loc>
       <image:title>Midnight Peacock Blue Navratna Patola Saree</image:title>
     </image:image>
   </url>
 
   <!-- Dupatta Collection -->
   <url>
-    <loc>https://patolahandmadevankar.com/#dupattas</loc>
+    <loc>https://patolahandmadebyvankar.com/#dupattas</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
@@ -107,7 +107,7 @@
 
   <!-- Motif Magnifier / Heritage Patterns -->
   <url>
-    <loc>https://patolahandmadevankar.com/#motifs</loc>
+    <loc>https://patolahandmadebyvankar.com/#motifs</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
@@ -115,7 +115,7 @@
 
   <!-- 8-Step Weaving Ritual / Craftsmanship -->
   <url>
-    <loc>https://patolahandmadevankar.com/#craftsmanship</loc>
+    <loc>https://patolahandmadebyvankar.com/#craftsmanship</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
@@ -123,7 +123,7 @@
 
   <!-- Artisan Heritage Story -->
   <url>
-    <loc>https://patolahandmadevankar.com/#artisans</loc>
+    <loc>https://patolahandmadebyvankar.com/#artisans</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>

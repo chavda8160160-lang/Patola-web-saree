@@ -79,7 +79,8 @@ builder.Services.AddCors(options =>
                 "http://127.0.0.1:5173",
                 "http://127.0.0.1:5174",
                 "http://localhost:5285",
-                "https://patolamadevankar.com")
+                "https://patolahandmadebyvankar.com",
+                "https://www.patolahandmadebyvankar.com")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();

@@ -23,6 +23,8 @@ import { ApiService } from '../services/api';
 import { getOrderDeliveryOtp, formatDateDDMMYYYY } from '../utils/security';
 import { compressImageFile, cleanupAndCompressStorageSarees } from '../utils/imageCompressor';
 import { parseCustomOrderParts, CUSTOM_PARTS_CONFIG } from '../utils/customOrderHelper';
+import { DEFAULT_SAREES } from '../data/defaultSarees';
+import { resolveProductImage, resolveProductTitle, resolveProductMotif, resolveProductWeave } from '../utils/productResolver';
 
 const STAGES = [
   { id: 1, name: 'Pending', desc: 'Order Placed (Awaiting Payment / Confirmation)' },
@@ -1184,11 +1186,17 @@ export default function AdminDashboardModal({
         const editedMap = JSON.parse(localStorage.getItem('patola_edited_sarees') || '{}');
         list = list.map(s => editedMap[s.id] ? { ...s, ...editedMap[s.id] } : s);
       } catch (err) {}
+      // Ensure DEFAULT_SAREES are always present so default catalog items resolve reliably
+      const existingIds = new Set(list.map(s => String(s.id || '').toLowerCase()));
+      const defaultsToAdd = (DEFAULT_SAREES || []).filter(d => !existingIds.has(String(d.id || '').toLowerCase()));
+      list = [...list, ...defaultsToAdd];
+
       if (list.length > 0) {
         setSarees(list);
       }
     } catch (e) {
       console.warn('Load sarees error:', e);
+      setSarees(DEFAULT_SAREES || []);
     } finally {
       setLoadingSarees(false);
     }
@@ -4360,6 +4368,22 @@ Warm regards,
                           return ord.customerName && o.customerName && (o.customerName || '').trim().toLowerCase() === (ord.customerName || '').trim().toLowerCase();
                         });
 
+                        const orderItems = (ord.items && ord.items.length > 0)
+                          ? ord.items
+                          : [{
+                              sareeId: ord.sareeId || 'patola-crimson-ratanchowk',
+                              sareeTitle: ord.sareeTitle || 'Imperial Crimson Ratanchowk & Kalash Double Ikat Patola',
+                              quantity: 1,
+                              unitPrice: ord.totalAmount || 0,
+                              lineTotal: ord.totalAmount || 0
+                            }];
+
+                        const primaryOrderItem = orderItems[0];
+                        const primaryOrderPhoto = resolveProductImage(primaryOrderItem, ord, sarees);
+                        const primaryOrderTitle = resolveProductTitle(primaryOrderItem, ord, sarees);
+                        const primaryOrderMotif = resolveProductMotif(primaryOrderItem, ord, sarees);
+                        const primaryOrderWeave = resolveProductWeave(primaryOrderItem, ord, sarees);
+
                         return (
                           <div
                             key={ord.orderReference}
@@ -4372,7 +4396,36 @@ Warm regards,
                           >
                             {/* Card Header */}
                             <div className="admin-card-header">
-                              <div className="order-ref-pill">
+                              <div className="order-ref-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem' }}>
+                                {/* Clickable Mini Product Preview Thumbnail in Header */}
+                                <div
+                                  onClick={() => setPreviewCustomPhoto({
+                                    img: primaryOrderPhoto,
+                                    name: primaryOrderTitle,
+                                    title: `Ordered Handloom: ${primaryOrderTitle}`,
+                                    subtitle: `${primaryOrderWeave} • Motif: ${primaryOrderMotif} (Order #${ord.orderReference} • Patron: ${ord.customerName})`
+                                  })}
+                                  style={{
+                                    position: 'relative',
+                                    width: '36px',
+                                    height: '36px',
+                                    flexShrink: 0,
+                                    cursor: 'pointer',
+                                    borderRadius: '6px',
+                                    overflow: 'hidden',
+                                    border: '1.5px solid #d4af37',
+                                    boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                                    background: '#fdf7ee'
+                                  }}
+                                  title={`Click to view full photo of ${primaryOrderTitle} 🔍`}
+                                >
+                                  <img
+                                    src={primaryOrderPhoto}
+                                    alt={primaryOrderTitle}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    onError={(e) => { e.target.src = DEFAULT_SAREE_IMAGES[0]; }}
+                                  />
+                                </div>
                                 <strong>#{ord.orderReference}</strong>
                                 <span className="order-time-badge">
                                   {formatDateDDMMYYYY(ord.createdAt, 'Today')}
@@ -4499,6 +4552,105 @@ Warm regards,
 
                             {/* Customer & Delivery Details Grid */}
                             <div className="admin-order-info-grid">
+                              {/* Prominent Ordered Product Photo Showcase Column */}
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.85rem',
+                                background: '#fdfbf7',
+                                padding: '0.55rem 0.75rem',
+                                borderRadius: '8px',
+                                border: '1.5px solid #e8decb',
+                                minWidth: '220px'
+                              }}>
+                                <div
+                                  onClick={() => setPreviewCustomPhoto({
+                                    img: primaryOrderPhoto,
+                                    name: primaryOrderTitle,
+                                    title: `Ordered Handloom: ${primaryOrderTitle}`,
+                                    subtitle: `${primaryOrderWeave} • Motif: ${primaryOrderMotif} (Order #${ord.orderReference} • Patron: ${ord.customerName})`
+                                  })}
+                                  style={{
+                                    position: 'relative',
+                                    width: '72px',
+                                    height: '72px',
+                                    flexShrink: 0,
+                                    cursor: 'pointer',
+                                    borderRadius: '8px',
+                                    overflow: 'hidden',
+                                    border: '2px solid #d4af37',
+                                    boxShadow: '0 2px 8px rgba(128,0,32,0.18)',
+                                    background: '#fff'
+                                  }}
+                                  title={`Click to inspect high-resolution photo: ${primaryOrderTitle} 🔍`}
+                                >
+                                  <img
+                                    src={primaryOrderPhoto}
+                                    alt={primaryOrderTitle}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    onError={(e) => { e.target.src = DEFAULT_SAREE_IMAGES[0]; }}
+                                  />
+                                  <span style={{
+                                    position: 'absolute',
+                                    bottom: '0',
+                                    left: '0',
+                                    right: '0',
+                                    background: 'rgba(128, 0, 32, 0.9)',
+                                    color: '#d4af37',
+                                    fontSize: '0.62rem',
+                                    textAlign: 'center',
+                                    padding: '1px 0',
+                                    fontWeight: 700
+                                  }}>
+                                    🔍 Photo
+                                  </span>
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <span className="info-label" style={{ color: '#800020', fontWeight: 700 }}>
+                                    🛍️ Ordered Handloom:
+                                  </span>
+                                  <div
+                                    onClick={() => setPreviewCustomPhoto({
+                                      img: primaryOrderPhoto,
+                                      name: primaryOrderTitle,
+                                      title: `Ordered Handloom: ${primaryOrderTitle}`,
+                                      subtitle: `${primaryOrderWeave} • Motif: ${primaryOrderMotif} (Order #${ord.orderReference} • Patron: ${ord.customerName})`
+                                    })}
+                                    style={{
+                                      fontWeight: 800,
+                                      fontSize: '0.88rem',
+                                      color: '#800020',
+                                      cursor: 'pointer',
+                                      lineHeight: 1.3,
+                                      display: '-webkit-box',
+                                      WebkitLineClamp: 2,
+                                      WebkitBoxOrient: 'vertical',
+                                      overflow: 'hidden'
+                                    }}
+                                    title={`Click to view full photo: ${primaryOrderTitle}`}
+                                  >
+                                    {primaryOrderTitle}
+                                  </div>
+                                  <div style={{ fontSize: '0.74rem', color: '#666', marginTop: '0.2rem' }}>
+                                    🎨 <strong>Motif:</strong> {primaryOrderMotif}
+                                  </div>
+                                  {orderItems.length > 1 && (
+                                    <span style={{
+                                      display: 'inline-block',
+                                      background: '#fef3c7',
+                                      color: '#92400e',
+                                      fontSize: '0.68rem',
+                                      fontWeight: 700,
+                                      padding: '1px 6px',
+                                      borderRadius: '4px',
+                                      marginTop: '0.2rem'
+                                    }}>
+                                      +{orderItems.length - 1} More Item{orderItems.length > 2 ? 's' : ''}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
                               <div>
                                 <span className="info-label">Recipient Customer:</span>
                                 <div className="info-val-strong">{ord.customerName}</div>
@@ -4631,15 +4783,12 @@ Warm regards,
                                     {orderItems.map((item, idx) => {
                                       const sId = item.sareeId || item.id;
                                       const isDup = isDupattaItem(item);
-                                      const match = (sarees || []).find(s => String(s.id).toLowerCase() === String(sId).toLowerCase()) ||
-                                        (sarees || []).find(s => s.title && (item.sareeTitle || item.title) && s.title.toLowerCase().trim() === (item.sareeTitle || item.title).toLowerCase().trim());
-
-                                      const displayImage = item.image || match?.image || match?.images?.[0] || (isDup ? '/assets/images/saree_royal_blue.jpg' : DEFAULT_SAREE_IMAGES[0]);
-                                      const displayTitle = item.sareeTitle || item.title || match?.title || (isDup ? 'Royal Heritage Patola Dupatta' : 'Royal Heritage Patola Saree');
-                                      const displayMotif = item.motifName || match?.motifName || (isDup ? 'Royal Ikat Dupatta Bhat' : 'Traditional Sacred Ikat Motif');
-                                      const displayWeave = item.weave || match?.weave || (isDup ? 'Double Ikat Dupatta Weave' : 'Double Ikat Handloom');
-                                      const displayCat = getCategoryLabel(item.category || match?.category || (isDup ? 'double-dupatta' : 'double-ikat'));
-                                      const unitPrice = Number(item.unitPrice || match?.finalPriceINR || match?.basePriceINR || (ord.totalAmount / Math.max(1, orderItems.length)));
+                                      const displayImage = resolveProductImage(item, ord, sarees);
+                                      const displayTitle = resolveProductTitle(item, ord, sarees);
+                                      const displayMotif = resolveProductMotif(item, ord, sarees);
+                                      const displayWeave = resolveProductWeave(item, ord, sarees);
+                                      const displayCat = getCategoryLabel(item.category || (isDup ? 'double-dupatta' : 'double-ikat'));
+                                      const unitPrice = Number(item.unitPrice || (ord.totalAmount / Math.max(1, orderItems.length)));
                                       const qty = Number(item.quantity) || 1;
                                       const itemTotal = Number(item.lineTotal) || (unitPrice * qty);
 

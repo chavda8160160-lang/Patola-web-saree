@@ -82,7 +82,7 @@ namespace VirasatPatola.Api.Security
             if (_knownDummyPhones.Contains(cleanPhone))
             {
                 TriggerBlock(ip);
-                return (true, "Fake/Dummy phone numbers are not permitted on Virasat Patola.");
+                return (true, "Fake/Dummy phone numbers are not permitted on PATOLA - Handmade by Vankar.");
             }
 
             // Indian mobile numbers must start with 6, 7, 8, or 9

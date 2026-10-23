@@ -21,8 +21,8 @@
 
 # ── WWW to non-WWW Redirect ────────────────────────
 # <IfModule mod_rewrite.c>
-#   RewriteCond %{HTTP_HOST} ^www\.patolamadevankar\.com [NC]
-#   RewriteRule ^(.*)$ https://patolamadevankar.com/$1 [L,R=301]
+#   RewriteCond %{HTTP_HOST} ^www\.patolahandmadebyvankar\.com [NC]
+#   RewriteRule ^(.*)$ https://patolahandmadebyvankar.com/$1 [L,R=301]
 # </IfModule>
 
 # ── Gzip Compression ─────────────────────────────

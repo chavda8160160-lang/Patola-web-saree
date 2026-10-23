@@ -175,6 +175,18 @@ export default function CheckoutModal({
 
     saveOrderDeliveryOtp(orderRef, authoritativeOtp);
 
+    // Persist exact ordered product photos in localStorage for Admin & Tracking displays
+    try {
+      const savedImgs = JSON.parse(localStorage.getItem('patola_order_item_images') || '{}');
+      orderPayload.items.forEach(i => {
+        if (i.image) {
+          savedImgs[`${orderRef}_${i.sareeId}`] = i.image;
+          savedImgs[orderRef] = i.image;
+        }
+      });
+      localStorage.setItem('patola_order_item_images', JSON.stringify(savedImgs));
+    } catch (e) {}
+
     // Save auto-created Customer account to session if returned by API
     if (result?.customerAccount) {
       try {
@@ -191,7 +203,7 @@ export default function CheckoutModal({
     const cleanPhone = (customerSnapshot.contactPhone || '').replace(/\D/g, '');
     const waTarget = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
     const customerPasswordDisplay = result?.customerAccount?.password || 'Auto-Generated';
-    const waMessageText = `👑 *PATOLA (Handmade by Vankar) - Thank You!*
+    const waMessageText = `👑 *PATOLA - HANDMADE BY VANKAR - Thank You!*
 
 Dear *${customerSnapshot.customerName || 'Patron'}*,
 

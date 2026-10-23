@@ -98,7 +98,7 @@ export default function CustomerAuthModal({
 
       const res = await ApiService.customerRegister(payload);
       if (res && res.success) {
-        setSuccessMessage('Account registered successfully. Welcome to Virasat Patola.');
+        setSuccessMessage('Account registered successfully. Welcome to PATOLA - Handmade by Vankar.');
         setTimeout(() => {
           if (onLoginSuccess) onLoginSuccess(res.customer);
           onClose();
