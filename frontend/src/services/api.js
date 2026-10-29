@@ -25,7 +25,10 @@
  * 14. subscribeNewsletter()     -> Calls POST /api/newsletter  -> Public
  * ==================================================================================================== */
 
-const API_BASE_URL = '/api';
+// Environment Variable for API: supports separate production cloud domain or local proxy fallback
+const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL)
+  ? import.meta.env.VITE_API_BASE_URL
+  : '/api';
 
 const getAuthHeaders = () => {
   try {
