@@ -1,4 +1,4 @@
-/* ====================================================================================================
+﻿/* ====================================================================================================
  * File Name: ArtisanStory.jsx
  * Folder: frontend/src/components/
  * 
@@ -16,6 +16,7 @@ export default function ArtisanStory({ onOpenBooking }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true); // By default sound is muted (Off)
   const [isVideoVisible, setIsVideoVisible] = useState(false);
+  const [isReturnClicked, setIsReturnClicked] = useState(false);
 
   // Lazy load video only when user scrolls near the section to prevent page load slowdown
   useEffect(() => {
@@ -105,8 +106,14 @@ export default function ArtisanStory({ onOpenBooking }) {
             <div className="artisan-mobile-back-store-wrap">
               <button
                 type="button"
-                className="btn-return-store btn-return-store-mobile"
-                onClick={handleReturnToStore}
+                className={`btn-return-store btn-return-store-mobile ${isReturnClicked ? 'is-clicked' : ''}`}
+                onClick={(e) => {
+                  setIsReturnClicked(true);
+                  setTimeout(() => setIsReturnClicked(false), 500);
+                  handleReturnToStore();
+                }}
+                onTouchStart={() => setIsReturnClicked(true)}
+                onTouchEnd={() => setTimeout(() => setIsReturnClicked(false), 500)}
                 title="Return to Sarees & Dupattas Collection"
               >
                 <span>🛍️ Return to Store</span>

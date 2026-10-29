@@ -12,6 +12,7 @@
  * ==================================================================================================== */
 
 import React from 'react';
+import CustomPartIcon from './CustomPartIcon';
 
 export default function CartDrawer({
   isOpen,
@@ -59,8 +60,8 @@ export default function CartDrawer({
                 <div className="cart-item-info">
                   <h4 className="cart-item-title">{item.title}</h4>
                   {/* Length Spec */}
-                  <div style={{ fontSize: '0.76rem', color: '#6d4c41', marginBottom: '4px', fontWeight: 600 }}>
-                    📏 Length: {item.length || (item.title?.toLowerCase().includes('dupatta') ? '2.50 Meters' : '6.30 Meters (with Blouse)')}
+                  <div style={{ fontSize: '0.76rem', color: '#6d4c41', marginBottom: '4px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <CustomPartIcon partKey="length" size={13} /> Length: {item.length || (item.title?.toLowerCase().includes('dupatta') ? '2.50 Meters' : '6.30 Meters (with Blouse)')}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                     <span className="cart-item-price">{formatPrice(getItemEffectivePrice(item) * item.quantity)}</span>

@@ -21,6 +21,7 @@ import { ApiService } from '../services/api';
 import { validateCustomerSecurity, showSecurityToast, saveOrderDeliveryOtp, getOrderDeliveryOtp } from '../utils/security';
 import { compressImageFile, openImageInNewTab } from '../utils/imageCompressor';
 import { CUSTOM_PARTS_CONFIG } from '../utils/customOrderHelper';
+import CustomPartIcon from './CustomPartIcon';
 
 export default function CustomPatolaModal({ isOpen, onClose, onShowToast, onCustomOrderCreated, loggedInCustomer = null }) {
   const activeCustomer = loggedInCustomer || ApiService.getCurrentCustomer();
@@ -567,7 +568,7 @@ export default function CustomPatolaModal({ isOpen, onClose, onShowToast, onCust
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.55rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                           <div className="custom-part-icon-badge">
-                            {cfg.icon}
+                            <CustomPartIcon partKey={cfg.key} size={28} />
                           </div>
                           <div>
                             <div className="custom-part-title-text">{cfg.label}</div>

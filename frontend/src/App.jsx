@@ -20,6 +20,7 @@ import Footer from './components/Footer';
 import { initAppSecurity } from './utils/security';
 import { initGA, trackPageView, trackViewItem, trackAddToCart } from './utils/analytics';
 import { cleanupAndCompressStorageSarees } from './utils/imageCompressor';
+import CustomPartIcon from './components/CustomPartIcon';
 
 const ConsultationModal = lazy(() => import('./components/ConsultationModal'));
 const CustomPatolaModal = lazy(() => import('./components/CustomPatolaModal'));
@@ -866,7 +867,7 @@ export default function App() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.84rem' }}>
                       <div>🧵 <strong>Weave:</strong> {quickViewSaree.weave || 'Double Ikat Handloom'}</div>
                       <div>🌸 <strong>Motif:</strong> {quickViewSaree.motifName || quickViewSaree.motif || 'Sacred Heritage'}</div>
-                      <div>🎨 <strong>Color:</strong> {quickViewSaree.colors || quickViewSaree.color || 'Natural Dyes & Golden Zari'}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><CustomPartIcon partKey="color" size={14} /> <strong>Color:</strong> {quickViewSaree.colors || quickViewSaree.color || 'Natural Dyes & Golden Zari'}</div>
                       <div>⏳ <strong>Handcrafted:</strong> {quickViewSaree.timeToWeave || '9 Months'}</div>
                       <div>🛡️ <strong>Certified:</strong> Silk Mark 100% Pure</div>
                     </div>

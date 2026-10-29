@@ -23,6 +23,7 @@ import { ApiService } from '../services/api';
 import { getOrderDeliveryOtp, formatDateDDMMYYYY } from '../utils/security';
 import { compressImageFile, cleanupAndCompressStorageSarees } from '../utils/imageCompressor';
 import { parseCustomOrderParts, CUSTOM_PARTS_CONFIG } from '../utils/customOrderHelper';
+import CustomPartIcon from './CustomPartIcon';
 import { DEFAULT_SAREES } from '../data/defaultSarees';
 import { resolveProductImage, resolveProductTitle, resolveProductMotif, resolveProductWeave } from '../utils/productResolver';
 
@@ -6162,7 +6163,7 @@ Warm regards,
                                     >
                                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
                                         <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#800020', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                          <span>{cfg.icon}</span> {cfg.label}
+                                          <CustomPartIcon partKey={cfg.key} size={16} /> {cfg.label}
                                         </span>
                                         <span style={{
                                           background: '#fef3c7',
@@ -8283,7 +8284,9 @@ Warm regards,
                         return (
                           <div>
                             <label className="form-label" style={{ fontWeight: 700, color: '#800020', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span>📏 Dupatta Length (દુપટ્ટા લંબાઈ) *</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                <CustomPartIcon partKey="length" size={15} /> Dupatta Length (દુપટ્ટા લંબાઈ) *
+                              </span>
                               <span style={{ fontSize: '0.72rem', color: '#666', fontWeight: 500 }}>
                                 {currentUnit === 'CM' ? '(e.g. 250, 225, 275)' : '(e.g. 2.50, 2.25, 2.75)'}
                               </span>
@@ -8845,7 +8848,9 @@ Warm regards,
                         return (
                           <div>
                             <label className="form-label" style={{ fontWeight: 700, color: '#800020', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span>📏 Dupatta Length (દુપટ્ટા લંબાઈ) *</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                <CustomPartIcon partKey="length" size={15} /> Dupatta Length (દુપટ્ટા લંબાઈ) *
+                              </span>
                               <span style={{ fontSize: '0.72rem', color: '#666', fontWeight: 500 }}>
                                 {currentUnit === 'CM' ? '(e.g. 250, 225, 275)' : '(e.g. 2.50, 2.25, 2.75)'}
                               </span>
@@ -9450,7 +9455,9 @@ Warm regards,
                         return (
                           <div>
                             <label className="form-label" style={{ fontWeight: 700, color: '#800020', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span>📏 Saree Length (સાડીની લંબાઈ) *</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                <CustomPartIcon partKey="length" size={15} /> Saree Length (સાડીની લંબાઈ) *
+                              </span>
                               <span style={{ fontSize: '0.72rem', color: '#666', fontWeight: 500 }}>
                                 {currentUnit === 'CM' ? '(e.g. 630, 550, 650)' : '(e.g. 6.30, 5.50, 6.50)'}
                               </span>
@@ -10017,7 +10024,9 @@ Warm regards,
                       return (
                         <div>
                           <label className="form-label" style={{ fontWeight: 700, color: '#800020', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span>📏 Saree Length (સાડીની લંબાઈ) *</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              <CustomPartIcon partKey="length" size={15} /> Saree Length (સાડીની લંબાઈ) *
+                            </span>
                             <span style={{ fontSize: '0.72rem', color: '#666', fontWeight: 500 }}>
                               {currentUnit === 'CM' ? '(e.g. 630, 550, 650)' : '(e.g. 6.30, 5.50, 6.50)'}
                             </span>

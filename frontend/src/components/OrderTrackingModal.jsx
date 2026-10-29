@@ -17,6 +17,7 @@ import { ApiService } from '../services/api';
 import { getOrderDeliveryOtp, formatDateDDMMYYYY } from '../utils/security';
 import CustomerReviewModal from './CustomerReviewModal';
 import { parseCustomOrderParts, CUSTOM_PARTS_CONFIG } from '../utils/customOrderHelper';
+import CustomPartIcon from './CustomPartIcon';
 import { resolveProductImage } from '../utils/productResolver';
 
 export default function OrderTrackingModal({
@@ -2772,7 +2773,7 @@ export default function OrderTrackingModal({
                       >
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
                           <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#800020', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <span>{cfg.icon}</span> {cfg.label}
+                            <CustomPartIcon partKey={cfg.key} size={16} /> {cfg.label}
                           </span>
                           <span style={{
                             background: '#fef3c7',

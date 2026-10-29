@@ -14,6 +14,7 @@ import React, { Suspense, lazy, useState, useEffect, useRef, useCallback } from 
 import { ApiService } from '../services/api';
 import { isStandingModelPhoto } from '../utils/imageHelper';
 import { DEFAULT_SAREES } from '../data/defaultSarees';
+import CustomPartIcon from './CustomPartIcon';
 
 const VirtualDrape3D = lazy(() => import('./VirtualDrape3D'));
 const Photo360Viewer = lazy(() => import('./Photo360Viewer'));
@@ -429,7 +430,20 @@ function SareeCardItem({
                 marginBottom: '0.65rem',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
               }}>
-                <span style={{ color: '#800020', fontSize: '0.85rem' }}>📏</span>
+                <span className="saree-spec-mini-badge" style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '7px',
+                  background: 'radial-gradient(circle at 30% 25%, #ffffff 0%, #fffbf2 55%, #f6e8cc 100%)',
+                  border: '1px solid #d4af37',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  boxShadow: '0 1px 4px rgba(133, 18, 24, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.8)'
+                }}>
+                  <CustomPartIcon partKey="length" size={16} />
+                </span>
                 <span style={{ letterSpacing: '0.01em', lineHeight: 1.3 }}>
                   <strong style={{ color: '#800020', fontWeight: 700 }}>Length:</strong> {cleanLengthText}
                 </span>
@@ -481,7 +495,20 @@ function SareeCardItem({
                 marginBottom: '0.75rem',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
               }}>
-                <span style={{ color: '#800020', fontSize: '0.85rem' }}>🎨</span>
+                <span className="saree-spec-mini-badge" style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '7px',
+                  background: 'radial-gradient(circle at 30% 25%, #ffffff 0%, #fffbf2 55%, #f6e8cc 100%)',
+                  border: '1px solid #d4af37',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  boxShadow: '0 1px 4px rgba(133, 18, 24, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.8)'
+                }}>
+                  <CustomPartIcon partKey="color" size={16} />
+                </span>
                 <span style={{ letterSpacing: '0.01em', lineHeight: 1.3 }}>
                   <strong style={{ color: '#800020', fontWeight: 700 }}>Color:</strong> {cleanColorText}
                 </span>

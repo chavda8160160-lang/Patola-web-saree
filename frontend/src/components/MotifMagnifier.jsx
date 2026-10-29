@@ -8,6 +8,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { isStandingModelPhoto } from '../utils/imageHelper';
 import { compressImageFile } from '../utils/imageCompressor';
+import CustomPartIcon from './CustomPartIcon';
 
 const PHOTO_ANGLES = [
   { key: 'drape', label: '1. Full Drape', shortLabel: 'Drape', subtitle: 'Full Saree Front Silhouette' },
@@ -782,7 +783,7 @@ export default function MotifMagnifier({
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.5rem',
+                      gap: '0.55rem',
                       fontSize: '0.78rem',
                       color: '#fef3c7',
                       background: 'rgba(212, 175, 55, 0.1)',
@@ -791,7 +792,19 @@ export default function MotifMagnifier({
                       padding: '0.38rem 0.65rem',
                       borderRadius: '6px'
                     }}>
-                      <span style={{ fontSize: '0.85rem' }}>📏</span>
+                      <span style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '5px',
+                        background: 'rgba(212, 175, 55, 0.2)',
+                        border: '1px solid #d4af37',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <CustomPartIcon partKey="length" size={14} />
+                      </span>
                       <span style={{ lineHeight: 1.3 }}>
                         <strong style={{ color: '#ffd700' }}>Length:</strong> {currentLength}
                       </span>
@@ -802,7 +815,7 @@ export default function MotifMagnifier({
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.5rem',
+                      gap: '0.55rem',
                       fontSize: '0.78rem',
                       color: '#fef3c7',
                       background: 'rgba(212, 175, 55, 0.1)',
@@ -811,7 +824,19 @@ export default function MotifMagnifier({
                       padding: '0.38rem 0.65rem',
                       borderRadius: '6px'
                     }}>
-                      <span style={{ fontSize: '0.85rem' }}>🎨</span>
+                      <span style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '5px',
+                        background: 'rgba(212, 175, 55, 0.2)',
+                        border: '1px solid #d4af37',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <CustomPartIcon partKey="color" size={14} />
+                      </span>
                       <span style={{ lineHeight: 1.3 }}>
                         <strong style={{ color: '#ffd700' }}>Color:</strong> {currentColor}
                       </span>
